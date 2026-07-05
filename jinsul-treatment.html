@@ -4,44 +4,7 @@
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width,initial-scale=1"/>
         <title>JINSUL 치료 유형 조합 통계 리포트</title>
-        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-            // ===== JINSUL standard add-on: back + dark/light theme =====
-            (function(){
-                const THEME_KEY = "jinsul-report-theme";
-                const backBtn = document.getElementById("jinsulBackBtn");
-                const themeBtn = document.getElementById("jinsulThemeBtn");
-
-                function applyTheme(theme){
-                    document.body.setAttribute("data-theme", theme);
-                    if(themeBtn){
-                        themeBtn.textContent = theme === "dark" ? "☀️ 라이트모드" : "🌙 다크모드";
-                    }
-                    try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
-                }
-
-                let savedTheme = "light";
-                try { savedTheme = localStorage.getItem(THEME_KEY) || "light"; } catch(e) {}
-                applyTheme(savedTheme);
-
-                if(backBtn){
-                    backBtn.addEventListener("click", function(){
-                        if(window.history.length > 1){
-                            window.history.back();
-                        } else {
-                            window.location.href = "index.html";
-                        }
-                    });
-                }
-
-                if(themeBtn){
-                    themeBtn.addEventListener("click", function(){
-                        const current = document.body.getAttribute("data-theme") || "light";
-                        applyTheme(current === "dark" ? "light" : "dark");
-                    });
-                }
-            })();
-
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         <style>
             :root {
                 --bg: #f6f1e9;
@@ -1439,216 +1402,267 @@
                 }
             }
         
-            /* ===== JINSUL standard add-on: back + dark/light theme ===== */
-            .jinsul-top-actions {
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                gap: 10px;
-                margin: 0 0 14px;
-                position: relative;
-                z-index: 5;
-            }
-            .jinsul-action-btn {
-                appearance: none;
-                border: 1px solid rgba(189,169,139,.45);
-                background: rgba(255,255,255,.78);
-                color: #253044;
-                border-radius: 16px;
-                min-height: 46px;
-                padding: 0 16px;
-                font-weight: 1000;
-                font-size: 14px;
-                cursor: pointer;
-                box-shadow: 0 12px 28px rgba(30,41,59,.08);
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                transition: .18s ease;
-                backdrop-filter: blur(10px);
-            }
-            .jinsul-action-btn:hover {
-                transform: translateY(-1px);
-                border-color: #bda98b;
-                box-shadow: 0 18px 36px rgba(30,41,59,.13);
-            }
-            .jinsul-action-btn.primary {
-                background: linear-gradient(135deg,#111821,#2c3035);
-                color: #fff;
-                border-color: rgba(189,169,139,.58);
-            }
-            .logo-box img {
-                width: auto !important;
-                height: auto !important;
-                max-width: 214px !important;
-                max-height: 118px !important;
-                object-fit: contain !important;
-            }
-            body:before {
-                content: "";
-                position: fixed;
-                inset: 0;
-                background-image: url("https://xginini-dot.github.io/jinsul/진설로고.png");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: min(520px, 68vw);
-                opacity: .035;
-                filter: grayscale(1);
-                pointer-events: none;
-                z-index: -1;
-            }
-            body[data-theme="dark"] {
-                --bg: #080808;
-                --card: #151515;
-                --ink: #f5efe5;
-                --ink2: #e8dfd2;
-                --muted: #b9b2a8;
-                --line: rgba(189,169,139,.22);
-                --soft: #171717;
-                --soft2: #211d18;
-                background:
-                    radial-gradient(circle at top center, rgba(190,169,139,.20), transparent 38%),
-                    linear-gradient(135deg,#080808,#151515 48%,#29231c 100%) !important;
-                color: var(--ink);
-            }
-            body[data-theme="dark"]:before {
-                opacity: .055;
-                filter: grayscale(1) brightness(1.7);
-            }
-            body[data-theme="dark"] .jinsul-action-btn {
-                background: rgba(255,255,255,.06);
-                color: #d8c7ac;
-                border-color: rgba(190,169,139,.45);
-                box-shadow: 0 16px 38px rgba(0,0,0,.26);
-            }
-            body[data-theme="dark"] .jinsul-action-btn.primary {
-                background: rgba(190,169,139,.12);
-                color: #f5efe5;
-            }
-            body[data-theme="dark"] .brandbar {
-                background: linear-gradient(135deg,#080808 0%,#151515 55%,#2a241d 100%) !important;
-                border-color: rgba(190,169,139,.45);
-                box-shadow: 0 28px 70px rgba(0,0,0,.45);
-            }
-            body[data-theme="dark"] .brand-title h1,
-            body[data-theme="dark"] .section-title h2,
-            body[data-theme="dark"] .upload-card h3,
-            body[data-theme="dark"] .note-card b {
-                color: #f5efe5 !important;
-            }
-            body[data-theme="dark"] .brand-title p,
-            body[data-theme="dark"] .section-title small,
-            body[data-theme="dark"] .note-card span,
-            body[data-theme="dark"] .upload-card p,
-            body[data-theme="dark"] .count,
-            body[data-theme="dark"] .footer {
-                color: #b9b2a8 !important;
-            }
-            body[data-theme="dark"] .panel,
-            body[data-theme="dark"] .upload-card,
-            body[data-theme="dark"] .note-card {
-                background: linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.045)) !important;
-                border-color: rgba(190,169,139,.24) !important;
-                box-shadow: 0 24px 60px rgba(0,0,0,.35) !important;
-                backdrop-filter: blur(14px);
-            }
-            body[data-theme="dark"] .metric {
-                background: linear-gradient(135deg,#111 0%,#211d18 100%) !important;
-                border-color: rgba(190,169,139,.42) !important;
-            }
-            body[data-theme="dark"] .metric b {
-                color: #fff !important;
-            }
-            body[data-theme="dark"] .filebox {
-                background: rgba(255,255,255,.055) !important;
-                border-color: rgba(190,169,139,.38) !important;
-                color: #e8dfd2;
-            }
-            body[data-theme="dark"] .field input,
-            body[data-theme="dark"] .field select,
-            body[data-theme="dark"] .searchrow input {
-                background: rgba(255,255,255,.06) !important;
-                border-color: rgba(190,169,139,.30) !important;
-                color: #f5efe5 !important;
-            }
-            body[data-theme="dark"] .btn.ghost {
-                background: rgba(255,255,255,.06) !important;
-                color: #f5efe5 !important;
-                border-color: rgba(190,169,139,.30) !important;
-            }
-            body[data-theme="dark"] .tab {
-                background: rgba(255,255,255,.06) !important;
-                color: #d8c7ac !important;
-                border-color: rgba(190,169,139,.24) !important;
-            }
-            body[data-theme="dark"] .tab.active {
-                background: linear-gradient(135deg,#bda98b,#7a6648) !important;
-                color: #111 !important;
-                border-color: transparent !important;
-            }
-            body[data-theme="dark"] table {
-                background: rgba(255,255,255,.045) !important;
-                border-color: rgba(190,169,139,.22) !important;
-                box-shadow: 0 16px 36px rgba(0,0,0,.26) !important;
-            }
-            body[data-theme="dark"] th {
-                background: rgba(190,169,139,.14) !important;
-                color: #e8dfd2 !important;
-                border-bottom-color: rgba(190,169,139,.25) !important;
-            }
-            body[data-theme="dark"] td {
-                color: #f3efe8 !important;
-                border-bottom-color: rgba(255,255,255,.08) !important;
-            }
-            body[data-theme="dark"] tbody tr:nth-child(even) td {
-                background: rgba(255,255,255,.035) !important;
-            }
-            body[data-theme="dark"] tr:hover td,
-            body[data-theme="dark"] .clickable:hover {
-                background: rgba(190,169,139,.10) !important;
-            }
-            body[data-theme="dark"] .badge {
-                background: rgba(190,169,139,.16) !important;
-                color: #e8dfd2 !important;
-            }
-            body[data-theme="dark"] .notice {
-                background: rgba(190,169,139,.12) !important;
-                border-color: rgba(190,169,139,.28) !important;
-                color: #e8dfd2 !important;
-            }
-            body[data-theme="dark"] .hint {
-                background: rgba(15,118,110,.12) !important;
-                border-color: rgba(15,118,110,.26) !important;
-                color: #99f6e4 !important;
-            }
-            body[data-theme="dark"] .bar {
-                background: rgba(255,255,255,.12) !important;
-            }
-            body[data-theme="dark"] .bar i {
-                background: linear-gradient(90deg,#d8c7aa,#8f8069) !important;
-            }
-            @media(max-width:760px){
-                .jinsul-top-actions {
-                    justify-content: stretch;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                }
-                .jinsul-action-btn {
-                    justify-content: center;
-                    width: 100%;
-                }
-            }
+
+/* =========================================================
+   JINSUL PREMIUM THEME SYSTEM - 실제 디자인/기능 적용본
+   - 기존 계산 로직 변경 없음
+   - 다크/라이트 모드 전체 적용
+   - 뒤로가기 카드 버튼 적용
+   - 공식 로고 URL 적용
+========================================================= */
+:root{
+  --js-logo-url:url("https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png");
+  --js-gold:#bea98b;
+  --js-gold2:#d8c7aa;
+  --js-gold3:#8f7a5f;
+  --js-radius:24px;
+  --js-shadow:0 24px 70px rgba(17,24,39,.18);
+}
+body.theme-dark{
+  --page-bg:#070707;
+  --page-bg2:#171717;
+  --surface:rgba(22,22,22,.94);
+  --surface2:rgba(32,32,32,.92);
+  --surface3:#1f1f1f;
+  --text-main:#f8f4ec;
+  --text-sub:#c8bda9;
+  --line-main:rgba(190,169,139,.28);
+  --table-head:#2a241d;
+  --table-row:#161616;
+  --table-row-alt:#1d1d1d;
+  --input-bg:#111;
+  --input-text:#fffaf3;
+  --hero-start:#050505;
+  --hero-mid:#161616;
+  --hero-end:#2b241d;
+}
+body.theme-light{
+  --page-bg:#f7f3ec;
+  --page-bg2:#eef1f5;
+  --surface:rgba(255,255,255,.96);
+  --surface2:rgba(255,252,247,.98);
+  --surface3:#fffdf9;
+  --text-main:#111827;
+  --text-sub:#64748b;
+  --line-main:#e4d9c8;
+  --table-head:#f6efe5;
+  --table-row:#fff;
+  --table-row-alt:#fcfbf8;
+  --input-bg:#fff;
+  --input-text:#111827;
+  --hero-start:#111821;
+  --hero-mid:#171f2b;
+  --hero-end:#3a3022;
+}
+body.theme-dark,
+body.theme-light{
+  color:var(--text-main)!important;
+  background:
+    radial-gradient(circle at top center, rgba(190,169,139,.20), transparent 34%),
+    linear-gradient(180deg,var(--page-bg) 0%,var(--page-bg2) 100%)!important;
+  transition:background .25s ease,color .25s ease;
+}
+body.theme-dark::before,
+body.theme-light::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:var(--js-logo-url);
+  background-repeat:no-repeat;
+  background-position:center 45%;
+  background-size:min(520px,58vw);
+  opacity:.035;
+  filter:grayscale(1);
+  pointer-events:none;
+  z-index:-1;
+}
+body.theme-light::before{opacity:.045; filter:grayscale(1) sepia(.15)}
+.jinsul-top-actions{
+  max-width:1480px;
+  margin:0 auto;
+  padding:22px 28px 0;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  position:relative;
+  z-index:20;
+}
+.jinsul-action-card{
+  min-height:44px;
+  border-radius:999px;
+  padding:0 18px;
+  border:1px solid rgba(190,169,139,.42);
+  background:rgba(255,255,255,.08);
+  color:#d8c7aa;
+  font-weight:1000;
+  font-size:13px;
+  cursor:pointer;
+  box-shadow:0 12px 28px rgba(0,0,0,.16), inset 0 0 0 1px rgba(255,255,255,.04);
+  backdrop-filter:blur(12px);
+  transition:transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+}
+body.theme-light .jinsul-action-card{
+  background:#fffdf9;
+  color:#4b4033;
+  border-color:#d9cbb8;
+  box-shadow:0 10px 24px rgba(64,54,42,.09);
+}
+.jinsul-action-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(216,199,170,.8);
+  background:rgba(190,169,139,.18);
+}
+.wrap{position:relative;z-index:1;}
+body.theme-dark .brandbar,
+body.theme-light .brandbar{
+  background:linear-gradient(135deg,var(--hero-start) 0%,var(--hero-mid) 56%,var(--hero-end) 100%)!important;
+  border:1px solid rgba(190,169,139,.58)!important;
+  box-shadow:var(--js-shadow)!important;
+}
+.logo-box{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.logo-box img{
+  width:auto!important;
+  max-width:214px!important;
+  max-height:118px!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 14px 28px rgba(0,0,0,.32))!important;
+}
+body.theme-light .logo-box img{filter:drop-shadow(0 10px 22px rgba(64,54,42,.18))!important;}
+.brand-title h1{color:#fff!important;}
+.brand-title p{color:#ece8df!important;}
+.brand-chip{
+  border-color:rgba(216,199,170,.44)!important;
+  background:rgba(255,255,255,.08)!important;
+  color:#d8c7aa!important;
+}
+.report-note,.grid,.summary{position:relative;z-index:1;}
+.note-card,.upload-card,.panel,.metric,table,.hint,.notice{
+  background:var(--surface)!important;
+  border-color:var(--line-main)!important;
+  color:var(--text-main)!important;
+  box-shadow:0 18px 48px rgba(30,41,59,.10)!important;
+}
+body.theme-dark .note-card,
+body.theme-dark .upload-card,
+body.theme-dark .panel,
+body.theme-dark table,
+body.theme-dark .hint,
+body.theme-dark .notice{
+  box-shadow:0 22px 60px rgba(0,0,0,.38)!important;
+}
+.note-card b,.upload-card h3,.section-title h2,.toolbar b,.metric b,
+.card-title,h1,h2,h3,strong,b{
+  color:var(--text-main)!important;
+}
+.note-card span,.upload-card p,.section-title small,.footer,.count,.small,
+.card-subtitle,.muted,p,small{
+  color:var(--text-sub)!important;
+}
+.upload-card{
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease!important;
+}
+.upload-card:hover,.panel:hover{
+  border-color:rgba(190,169,139,.68)!important;
+}
+.upload-card:hover{transform:translateY(-3px)!important;}
+.filebox{
+  background:var(--surface3)!important;
+  border-color:rgba(190,169,139,.56)!important;
+}
+.filebox input[type=file]::file-selector-button,
+.btn:not(.ghost):not(.secondary){
+  background:linear-gradient(135deg,#171717,#2b241d 58%,#8f7a5f)!important;
+  color:#fff!important;
+  border:1px solid rgba(216,199,170,.35)!important;
+}
+.btn.secondary{
+  background:linear-gradient(135deg,#bda98b,#dfcaa4)!important;
+  color:#fff!important;
+}
+.btn.ghost{
+  background:var(--surface3)!important;
+  color:var(--text-main)!important;
+  border:1px solid var(--line-main)!important;
+}
+.field input,.field select,.searchrow input,.search,input[type="date"],select{
+  background:var(--input-bg)!important;
+  color:var(--input-text)!important;
+  border-color:var(--line-main)!important;
+}
+.field input:focus,.field select:focus,.searchrow input:focus,.search:focus{
+  outline:none!important;
+  border-color:var(--js-gold)!important;
+  box-shadow:0 0 0 4px rgba(190,169,139,.16)!important;
+}
+th{
+  background:var(--table-head)!important;
+  color:var(--text-main)!important;
+  border-color:var(--line-main)!important;
+}
+td{
+  color:var(--text-main)!important;
+  border-color:var(--line-main)!important;
+}
+tbody tr:nth-child(odd) td{background:var(--table-row)!important;}
+tbody tr:nth-child(even) td{background:var(--table-row-alt)!important;}
+tr:hover td,.clickable:hover{background:rgba(190,169,139,.13)!important;}
+.badge{
+  background:rgba(190,169,139,.18)!important;
+  color:var(--text-main)!important;
+  border:1px solid rgba(190,169,139,.25)!important;
+}
+.tab{
+  background:var(--surface3)!important;
+  color:var(--text-main)!important;
+  border-color:var(--line-main)!important;
+}
+.tab.active{
+  background:linear-gradient(135deg,#171717,#2b241d)!important;
+  color:#fff!important;
+  border-color:#bda98b!important;
+}
+body.theme-dark .metric{
+  background:linear-gradient(135deg,#111 0%,#24211c 100%)!important;
+}
+body.theme-light .metric{
+  background:linear-gradient(135deg,#111821 0%,#2c3035 100%)!important;
+}
+.metric span{color:#d8c7aa!important;}
+.metric b{color:#fff!important;}
+.bar{background:rgba(190,169,139,.20)!important;}
+.bar i{background:linear-gradient(90deg,#111821,#bda98b)!important;}
+.notice{
+  background:rgba(189,169,139,.12)!important;
+  color:var(--text-main)!important;
+}
+.hint{
+  background:rgba(15,118,110,.10)!important;
+  color:var(--text-main)!important;
+}
+@media(max-width:760px){
+  .jinsul-top-actions{padding:14px 14px 0;gap:8px;}
+  .jinsul-action-card{flex:1;justify-content:center;padding:0 12px;font-size:12px;}
+  body.theme-dark::before,body.theme-light::before{background-size:min(360px,72vw);}
+}
+@media print{
+  .jinsul-top-actions{display:none!important;}
+}
 
         </style>
     </head>
     <body>
+
+        <div class="jinsul-top-actions" aria-label="페이지 제어 버튼">
+            <button type="button" class="jinsul-action-card" id="jinsulBackBtn">← 뒤로가기</button>
+            <button type="button" class="jinsul-action-card" id="jinsulThemeBtn">🌙 다크모드</button>
+        </div>
+
         <!-- JINSUL report design refreshed: logic unchanged -->
         <div class="wrap">
-            <div class="jinsul-top-actions">
-                <button type="button" class="jinsul-action-btn" id="jinsulBackBtn">← 뒤로가기</button>
-                <button type="button" class="jinsul-action-btn primary" id="jinsulThemeBtn">🌙 다크모드</button>
-            </div>
-            
             <div class="brandbar">
                 <div class="brand-left">
                     <div class="logo-box">
@@ -2275,5 +2289,39 @@
             }
             );
         </script>
+    
+        <script>
+        (function(){
+          const THEME_KEY='jinsul-treatment-combo-theme';
+          const body=document.body;
+          const btn=document.getElementById('jinsulThemeBtn');
+          const back=document.getElementById('jinsulBackBtn');
+          function applyTheme(theme){
+            body.classList.remove('theme-dark','theme-light');
+            body.classList.add(theme==='light'?'theme-light':'theme-dark');
+            if(btn){
+              btn.textContent=theme==='light'?'🌙 다크모드':'☀️ 라이트모드';
+              btn.setAttribute('aria-label',theme==='light'?'다크모드로 변경':'라이트모드로 변경');
+            }
+            try{localStorage.setItem(THEME_KEY, theme);}catch(e){}
+          }
+          let saved='dark';
+          try{saved=localStorage.getItem(THEME_KEY)||'dark';}catch(e){}
+          applyTheme(saved==='light'?'light':'dark');
+          if(btn){
+            btn.addEventListener('click',function(){
+              const next=body.classList.contains('theme-light')?'dark':'light';
+              applyTheme(next);
+            });
+          }
+          if(back){
+            back.addEventListener('click',function(){
+              if(window.history.length>1){ window.history.back(); }
+              else { window.location.href='index.html'; }
+            });
+          }
+        })();
+        </script>
+
     </body>
 </html>
