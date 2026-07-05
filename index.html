@@ -262,7 +262,7 @@ h1 {
   .wrap { padding: 24px 14px 42px; }
   .topbar { flex-direction: column; align-items: stretch; }
   .left-actions, .right-actions { justify-content: center; }
-  .action-btn, .logout-btn { flex: 1; padding: 11px 12px; }
+  .action-btn, .logout-btn { flex: 1; min-width: 0; height: 44px; padding: 0 12px; }
   .hero { padding-top: 22px; margin-bottom: 32px; }
   .logo { width: 220px; }
   .card { padding: 22px; border-radius: 22px; }
@@ -274,7 +274,7 @@ h1 {
 <main class="wrap">
 
   <div class="topbar">
-    <div class="left-actions"
+    <div class="left-actions">
       <button class="action-btn theme-btn" type="button" id="themeBtn" onclick="toggleTheme()">☀️ 라이트</button>
     </div>
     <div class="right-actions">
@@ -394,15 +394,6 @@ function toggleTheme(){
   syncThemeButton();
 }
 
-function goBack(){
-  if(window.history.length > 1){
-    window.history.back();
-  } else if(document.referrer){
-    location.href = document.referrer;
-  } else {
-    location.href = "./";
-  }
-}
 </script>
 </body>
 </html>
