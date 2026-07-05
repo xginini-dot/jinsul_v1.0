@@ -1,0 +1,1892 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>JINSUL 리푸스 월별·주별 통계</title>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        <style>
+            :root {
+                --gold: #bda98b;
+                --gold2: #d8c7aa;
+                --gold3: #9b886e;
+                --ink: #111827;
+                --ink2: #253044;
+                --muted: #64748b;
+                --bg: #f6f2eb;
+                --card: #ffffff;
+                --line: #e6dfd3;
+                --soft: #faf7f0;
+                --navy: #111827;
+                --navy2: #202838;
+            }
+
+            * {
+                box-sizing: border-box
+            }
+
+            html {
+                scroll-behavior: smooth
+            }
+
+            body {
+                margin: 0;
+                font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+                background: radial-gradient(circle at 10% 0%,rgba(216,199,170,.34),transparent 32%),linear-gradient(180deg,#f7f3ec 0,#f4f2ee 390px,#eef1f5 100%);
+                color: var(--ink);
+                font-size: 15px
+            }
+
+            .topBar {
+                width: 100%;
+                height: 112px;
+                background: linear-gradient(135deg,#101720 0%,#111827 45%,#1e2531 100%);
+                border-bottom: 1px solid rgba(189,169,139,.55);
+                box-shadow: 0 18px 48px rgba(17,24,39,.18)
+            }
+
+            .topBarInner {
+                max-width: 1480px;
+                height: 100%;
+                margin: 0 auto;
+                padding: 0 28px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 30px
+            }
+
+            .topLogo {
+                width: 172px;
+                max-height: 92px;
+                object-fit: contain;
+                filter: drop-shadow(0 12px 22px rgba(0,0,0,.28))
+            }
+
+            .topTitle {
+                color: #cbb895;
+                letter-spacing: .42em;
+                font-size: 15px;
+                font-weight: 900;
+                white-space: nowrap;
+                text-align: right;
+                text-shadow: 0 2px 12px rgba(0,0,0,.25)
+            }
+
+            .wrap {
+                max-width: 1480px;
+                margin: 0 auto;
+                padding: 14px 28px 70px
+            }
+
+            .hero {
+                min-height: 220px;
+                display: flex;
+                justify-content: space-between;
+                gap: 24px;
+                align-items: center;
+                margin: 0 0 22px;
+                background: linear-gradient(135deg,#111821 0%,#171f2b 55%,#252b31 100%);
+                border: 1px solid rgba(189,169,139,.62);
+                border-radius: 24px;
+                padding: 42px 42px;
+                box-shadow: 0 28px 70px rgba(17,24,39,.18);
+                overflow: hidden;
+                position: relative
+            }
+
+            .hero:before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle at 82% 22%,rgba(216,199,170,.11),transparent 30%),linear-gradient(90deg,rgba(255,255,255,.035),transparent 50%);
+                pointer-events: none
+            }
+
+            .heroWatermark {
+                position: absolute;
+                right: 110px;
+                top: -38px;
+                width: 330px;
+                height: 330px;
+                object-fit: contain;
+                opacity: .075;
+                filter: grayscale(1) brightness(1.7);
+                pointer-events: none;
+                z-index: 0
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 22px;
+                position: relative;
+                z-index: 1
+            }
+
+            .brand>div {
+                position: relative;
+                z-index: 1
+            }
+
+            .logoBox {
+                display: none
+            }
+
+            .logoBox img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain
+            }
+
+            .hero h1 {
+                margin: 0;
+                font-size: 44px;
+                letter-spacing: -.06em;
+                color: #fff;
+                font-weight: 1000;
+                line-height: 1.1;
+                text-shadow: 0 4px 18px rgba(0,0,0,.33)
+            }
+
+            .hero p {
+                margin: 14px 0 0;
+                color: #ece8df;
+                font-size: 16px;
+                font-weight: 700;
+                line-height: 1.55;
+                letter-spacing: -.02em
+            }
+
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: #cbb895;
+                border: 0;
+                background: transparent;
+                border-radius: 0;
+                padding: 0;
+                font-weight: 950;
+                font-size: 14px;
+                letter-spacing: .08em;
+                margin-bottom: 18px
+            }
+
+            .badge:before {
+                content: "✓";
+                color: #cbb895;
+                font-weight: 1000
+            }
+
+            .heroActions {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                gap: 10px;
+                align-items: center
+            }
+
+            .panel {
+                background: rgba(255,255,255,.94);
+                border: 1px solid var(--line);
+                border-radius: 22px;
+                padding: 28px;
+                box-shadow: 0 20px 50px rgba(30,41,59,.09);
+                backdrop-filter: blur(8px)
+            }
+
+            .uploadPanel {
+                position: relative;
+                overflow: hidden;
+                background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,252,247,.97));
+                border-color: #cbb895;
+                box-shadow: 0 22px 56px rgba(64,54,42,.12)
+            }
+
+            .uploadPanel:before {
+                display: none
+            }
+
+            .uploadHead {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin: 0 0 18px;
+                padding: 0;
+                border: 0
+            }
+
+            .uploadTitle {
+                display: flex;
+                align-items: center;
+                gap: 12px
+            }
+
+            .uploadIcon {
+                width: 24px;
+                height: 24px;
+                border-radius: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent;
+                color: #b0966f;
+                font-size: 18px;
+                box-shadow: none
+            }
+
+            .uploadHead h2 {
+                margin: 0;
+                font-size: 18px;
+                letter-spacing: -.04em;
+                color: #111827;
+                font-weight: 1000
+            }
+
+            .uploadHead p {
+                display: none
+            }
+
+            .uploadBadge {
+                display: none
+            }
+
+            .upload {
+                display: grid;
+                grid-template-columns: 1.28fr 1.1fr;
+                gap: 34px;
+                align-items: stretch
+            }
+
+            .fileField {
+                border-right: 1px solid #e4dbcf;
+                padding-right: 34px
+            }
+
+            .field {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end
+            }
+
+            .field label {
+                display: block;
+                font-size: 15px;
+                font-weight: 1000;
+                margin: 0 0 12px;
+                color: #253044;
+                letter-spacing: -.035em
+            }
+
+            .fileField label {
+                margin-bottom: 12px
+            }
+
+            .filebox {
+                position: relative;
+                border: 2px dashed #cdbb9f;
+                background: linear-gradient(180deg,#fffdf9 0%,#fbf7ef 100%);
+                border-radius: 18px;
+                padding: 18px;
+                min-height: 188px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: inset 0 0 0 1px rgba(255,255,255,.65);
+                transition: .22s ease
+            }
+
+            .filebox:hover {
+                border-color: #bda98b;
+                background: #fff;
+                box-shadow: 0 14px 32px rgba(189,169,139,.16)
+            }
+
+            .fileInner {
+                width: 100%;
+                height: 100%;
+                min-height: 142px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                text-align: center
+            }
+
+            .fileInner:before {
+                content: "↥";
+                width: 54px;
+                height: 54px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg,#1c2531,#111821);
+                color: #fff;
+                font-size: 30px;
+                font-weight: 300;
+                box-shadow: 0 14px 26px rgba(17,24,39,.22)
+            }
+
+            .fileGuide {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px
+            }
+
+            .fileGuide strong {
+                font-size: 16px;
+                letter-spacing: -.03em;
+                color: #111827;
+                font-weight: 1000
+            }
+
+            .fileGuide span {
+                font-size: 13px;
+                color: #64748b;
+                font-weight: 750
+            }
+
+            .filebox input[type=file] {
+                width: 176px;
+                max-width: 100%;
+                height: 48px;
+                color: transparent;
+                font-size: 0;
+                cursor: pointer
+            }
+
+            .filebox input[type=file]::file-selector-button {
+                width: 176px;
+                height: 48px;
+                border: 0;
+                border-radius: 15px;
+                background: linear-gradient(135deg,#1c2531,#111821);
+                color: #fff;
+                font-size: 15px;
+                font-weight: 1000;
+                cursor: pointer;
+                box-shadow: 0 12px 24px rgba(17,24,39,.22)
+            }
+
+            .filebox input[type=file]:hover::file-selector-button {
+                filter: brightness(1.08)
+            }
+
+            .uploadControls {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 28px 40px;
+                align-content: center
+            }
+
+            .uploadControls .field:nth-child(3) {
+                grid-column: 1/3
+            }
+
+            .uploadControls .field:nth-child(4) {
+                grid-column: 1/3;
+                text-align: center;
+                justify-content: flex-start
+            }
+
+            .uploadControls .field:nth-child(3) {
+                grid-column: auto
+            }
+
+            .uploadControls .field:nth-child(5) {
+                grid-column: 1/3;
+                text-align: center;
+                justify-content: flex-start
+            }
+
+            .field input,.field select {
+                width: 100%;
+                height: 58px;
+                border: 1px solid #cdbb9f;
+                border-radius: 14px;
+                background: #fff;
+                padding: 0 20px;
+                font-size: 24px;
+                font-weight: 1000;
+                color: #111827;
+                letter-spacing: -.04em;
+                box-shadow: 0 10px 22px rgba(30,41,59,.04)
+            }
+
+            .inputWrap {
+                position: relative
+            }
+
+            .inputWrap input {
+                padding-right: 46px
+            }
+
+            .inputUnit {
+                position: absolute;
+                right: 18px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: 900;
+                color: #5f6878
+            }
+
+            .inputHelp {
+                margin-top: 10px;
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 750;
+                line-height: 1.45
+            }
+
+            button {
+                height: 58px;
+                border: 0;
+                border-radius: 14px;
+                background: linear-gradient(135deg,#17212d,#0e1722);
+                color: #fff;
+                font-weight: 1000;
+                cursor: pointer;
+                padding: 0 22px;
+                box-shadow: 0 14px 30px rgba(17,24,39,.18);
+                font-size: 15px;
+                letter-spacing: -.02em
+            }
+
+            button:hover {
+                filter: brightness(1.08);
+                transform: translateY(-1px)
+            }
+
+            button.ghost {
+                min-width: 118px;
+                background: linear-gradient(135deg,#bda98b,#dfcaa4);
+                color: #fff;
+                border: 1px solid rgba(255,255,255,.3);
+                box-shadow: 0 14px 30px rgba(189,169,139,.25)
+            }
+
+            button.ghost:before {
+                content: "↻";
+                margin-right: 8px;
+                font-size: 20px
+            }
+
+            .uploadControls button {
+                width: 100%;
+                font-size: 17px
+            }
+
+            .uploadControls button:before {
+                content: "▣";
+                color: #cbb895;
+                margin-right: 12px
+            }
+
+            .hint {
+                font-size: 13px;
+                color: #64748b;
+                margin-top: 14px;
+                line-height: 1.65;
+                font-weight: 700
+            }
+
+            .hint:before {
+                content: "⚠";
+                color: #9b886e;
+                margin-right: 7px
+            }
+
+            .status {
+                font-size: 13px;
+                color: #475569;
+                font-weight: 800;
+                margin-top: 14px;
+                line-height: 1.55
+            }
+
+            .status:before {
+                content: "●";
+                color: #bda98b;
+                margin-right: 8px
+            }
+
+            .err {
+                color: #dc2626;
+                font-weight: 950
+            }
+
+            .reportNote {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: 8px;
+                padding: 7px 11px;
+                border-radius: 999px;
+                background: #fbf6ee;
+                border: 1px solid #eadfce;
+                color: #605849;
+                font-weight: 950;
+                font-size: 12px
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(4,1fr);
+                gap: 14px;
+                margin: 18px 0
+            }
+
+            .kpi {
+                background: linear-gradient(135deg,#111821 0%,#2c3035 100%);
+                border: 1px solid rgba(189,169,139,.5);
+                border-radius: 18px;
+                padding: 22px 24px;
+                box-shadow: 0 18px 36px rgba(17,24,39,.17);
+                position: relative;
+                overflow: hidden
+            }
+
+            .kpi:before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 4px;
+                height: 100%;
+                background: linear-gradient(180deg,#d8c7aa,#8f8069)
+            }
+
+            .kpi .t {
+                font-size: 14px;
+                color: #d8c7aa;
+                font-weight: 1000
+            }
+
+            .kpi .v {
+                font-size: 34px;
+                font-weight: 1000;
+                letter-spacing: -.055em;
+                margin-top: 8px;
+                color: #fff
+            }
+
+            .kpi .s {
+                font-size: 13px;
+                color: #e8dfd1;
+                margin-top: 6px;
+                font-weight: 750
+            }
+
+            .tabs {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin: 22px 0 14px
+            }
+
+            .tab {
+                height: 42px;
+                padding: 0 18px;
+                border-radius: 999px;
+                background: #fff;
+                border: 1px solid var(--line);
+                color: #334155;
+                font-weight: 950;
+                box-shadow: none
+            }
+
+            .tab.active {
+                background: #151c2f;
+                color: #fff;
+                border-color: #151c2f
+            }
+
+            .section {
+                display: none
+            }
+
+            .section.active {
+                display: block
+            }
+
+            .card {
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 24px;
+                padding: 18px;
+                margin-top: 14px;
+                box-shadow: 0 16px 42px rgba(30,41,59,.07)
+            }
+
+            .card h2 {
+                font-size: 22px;
+                margin: 0;
+                letter-spacing: -.04em;
+                color: #111827;
+                font-weight: 1000
+            }
+
+            .card h3 {
+                font-size: 18px;
+                margin: 18px 0 10px;
+                letter-spacing: -.035em;
+                color: #253044;
+                font-weight: 1000;
+                display: flex;
+                align-items: center;
+                gap: 8px
+            }
+
+            .card h3:before {
+                content: "";
+                width: 8px;
+                height: 20px;
+                border-radius: 999px;
+                background: linear-gradient(180deg,var(--gold2),var(--gold3))
+            }
+
+            .scroll {
+                overflow: auto;
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                background: #fff
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                min-width: 900px;
+                background: #fff
+            }
+
+            th,td {
+                padding: 14px 14px;
+                border-bottom: 1px solid #edf0f5;
+                text-align: right;
+                font-size: 15px;
+                white-space: nowrap;
+                color: #172033
+            }
+
+            th {
+                position: sticky;
+                top: 0;
+                background: #f7f2ea;
+                color: #2b3346;
+                font-weight: 1000;
+                z-index: 1;
+                font-size: 14px;
+                border-bottom: 2px solid #ded3c2
+            }
+
+            td {
+                font-weight: 800
+            }
+
+            td:first-child,th:first-child {
+                text-align: left;
+                font-weight: 1000;
+                color: #111827
+            }
+
+            tbody tr:nth-child(even) td {
+                background: #fcfbf8
+            }
+
+            tr:hover td {
+                background: #f8f3e9
+            }
+
+            .empty {
+                padding: 54px;
+                text-align: center;
+                color: var(--muted);
+                border: 1px dashed #c9bda9;
+                border-radius: 22px;
+                background: rgba(255,255,255,.72);
+                font-weight: 800
+            }
+
+            .tools {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+                margin-bottom: 12px
+            }
+
+            .small {
+                font-size: 14px;
+                color: var(--muted);
+                line-height: 1.7;
+                font-weight: 700;
+                margin: 10px 0 14px
+            }
+
+            .chart {
+                display: flex;
+                align-items: flex-end;
+                gap: 12px;
+                height: 260px;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 18px;
+                background: linear-gradient(180deg,#fffdf8,#f9fafb);
+                overflow: auto;
+                margin-bottom: 14px
+            }
+
+            .col {
+                min-width: 68px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-end;
+                height: 100%;
+                gap: 8px
+            }
+
+            .colbar {
+                width: 40px;
+                border-radius: 12px 12px 5px 5px;
+                background: linear-gradient(180deg,#d8c7aa,#8f8069)
+            }
+
+            .collabel {
+                font-size: 12px;
+                color: #64748b;
+                white-space: nowrap;
+                font-weight: 900
+            }
+
+            .colval {
+                font-size: 12px;
+                font-weight: 1000;
+                color: #111827
+            }
+
+            .foot {
+                margin-top: 20px;
+                color: #64748b;
+                font-size: 13px;
+                line-height: 1.8;
+                font-weight: 700
+            }
+
+            .distGrid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 18px
+            }
+
+            @media(max-width: 1100px) {
+                .topTitle {
+                    letter-spacing:.22em
+                }
+
+                .upload {
+                    grid-template-columns: 1fr
+                }
+
+                .fileField {
+                    border-right: 0;
+                    border-bottom: 1px solid #e4dbcf;
+                    padding-right: 0;
+                    padding-bottom: 24px
+                }
+
+                .uploadControls {
+                    grid-template-columns: 1fr
+                }
+
+                .uploadControls .field:nth-child(3),.uploadControls .field:nth-child(4) {
+                    grid-column: auto
+                }
+
+                .grid {
+                    grid-template-columns: repeat(2,1fr)
+                }
+            }
+
+            @media(max-width: 760px) {
+                .topBar {
+                    height:auto
+                }
+
+                .topBarInner {
+                    padding: 18px 20px;
+                    align-items: flex-start;
+                    flex-direction: column
+                }
+
+                .topLogo {
+                    width: 136px
+                }
+
+                .topTitle {
+                    font-size: 12px;
+                    letter-spacing: .16em;
+                    text-align: left
+                }
+
+                .wrap {
+                    padding: 14px 16px 50px
+                }
+
+                .hero {
+                    padding: 30px 24px;
+                    display: block
+                }
+
+                .hero h1 {
+                    font-size: 32px
+                }
+
+                .heroActions {
+                    margin-top: 22px
+                }
+
+                .heroWatermark {
+                    right: -80px;
+                    top: 20px;
+                    width: 260px;
+                    height: 260px
+                }
+
+                .panel {
+                    padding: 20px
+                }
+
+                .filebox {
+                    min-height: 162px
+                }
+
+                .grid {
+                    grid-template-columns: 1fr
+                }
+
+                table {
+                    min-width: 760px
+                }
+            }
+        
+/* =========================================================
+   JINSUL 실제 적용형 다크/라이트 + 뒤로가기 디자인 패치
+   - 기존 계산 로직 변경 없음
+   - body[data-theme] 기반으로 화면 전체 테마 전환
+   ========================================================= */
+:root{
+  --js-logo-url: url("https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png");
+}
+body{
+  transition: background .25s ease, color .25s ease;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:var(--js-logo-url);
+  background-repeat:no-repeat;
+  background-position:center 54%;
+  background-size:min(560px,64vw);
+  opacity:.035;
+  filter:grayscale(1);
+  pointer-events:none;
+  z-index:-1;
+}
+.jinsulActionBar{
+  position:sticky;
+  top:0;
+  z-index:9999;
+  max-width:1480px;
+  margin:0 auto;
+  padding:14px 28px 0;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  pointer-events:none;
+}
+.jinsulActionBtn{
+  pointer-events:auto;
+  height:42px;
+  padding:0 16px;
+  border-radius:16px;
+  border:1px solid rgba(203,184,149,.48);
+  background:rgba(255,255,255,.12);
+  color:#d8c7aa;
+  font-size:13px;
+  font-weight:1000;
+  letter-spacing:-.02em;
+  box-shadow:0 14px 30px rgba(17,24,39,.14);
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  transition:transform .16s ease, filter .16s ease, background .16s ease, border-color .16s ease;
+}
+.jinsulActionBtn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.08);
+  border-color:rgba(203,184,149,.85);
+}
+.topLogo{
+  width:172px !important;
+  height:92px !important;
+  object-fit:contain !important;
+}
+.heroWatermark{
+  content:url("https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png");
+}
+
+/* Light mode */
+body[data-theme="light"]{
+  --gold:#bda98b;
+  --gold2:#d8c7aa;
+  --gold3:#9b886e;
+  --ink:#111827;
+  --ink2:#253044;
+  --muted:#64748b;
+  --bg:#f6f2eb;
+  --card:#ffffff;
+  --line:#e6dfd3;
+  --soft:#faf7f0;
+  --navy:#111827;
+  --navy2:#202838;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(216,199,170,.34),transparent 32%),
+    linear-gradient(180deg,#f7f3ec 0,#f4f2ee 390px,#eef1f5 100%) !important;
+  color:#111827 !important;
+}
+body[data-theme="light"] .topBar,
+body[data-theme="light"] .hero{
+  background:linear-gradient(135deg,#101720 0%,#111827 50%,#252b31 100%) !important;
+  border-color:rgba(189,169,139,.62) !important;
+}
+body[data-theme="light"] .panel,
+body[data-theme="light"] .uploadPanel,
+body[data-theme="light"] .card{
+  background:rgba(255,255,255,.96) !important;
+  border-color:#e6dfd3 !important;
+  color:#111827 !important;
+}
+body[data-theme="light"] .filebox,
+body[data-theme="light"] .chart,
+body[data-theme="light"] .scroll,
+body[data-theme="light"] table{
+  background:#fff !important;
+  border-color:#e6dfd3 !important;
+}
+body[data-theme="light"] th{
+  background:#f7f2ea !important;
+  color:#2b3346 !important;
+}
+body[data-theme="light"] td{
+  color:#172033 !important;
+}
+body[data-theme="light"] tbody tr:nth-child(even) td{
+  background:#fcfbf8 !important;
+}
+body[data-theme="light"] tr:hover td{
+  background:#f8f3e9 !important;
+}
+body[data-theme="light"] .field label,
+body[data-theme="light"] .card h2,
+body[data-theme="light"] .card h3,
+body[data-theme="light"] .uploadHead h2,
+body[data-theme="light"] .fileGuide strong,
+body[data-theme="light"] td:first-child,
+body[data-theme="light"] th:first-child,
+body[data-theme="light"] .colval{
+  color:#111827 !important;
+}
+body[data-theme="light"] .small,
+body[data-theme="light"] .hint,
+body[data-theme="light"] .status,
+body[data-theme="light"] .fileGuide span,
+body[data-theme="light"] .inputHelp,
+body[data-theme="light"] .foot,
+body[data-theme="light"] .collabel{
+  color:#64748b !important;
+}
+body[data-theme="light"] .field input,
+body[data-theme="light"] .field select,
+body[data-theme="light"] .searchrow input{
+  background:#fff !important;
+  color:#111827 !important;
+  border-color:#cdbb9f !important;
+}
+body[data-theme="light"] .tab{
+  background:#fff !important;
+  color:#334155 !important;
+  border-color:#e6dfd3 !important;
+}
+body[data-theme="light"] .tab.active{
+  background:#151c2f !important;
+  color:#fff !important;
+  border-color:#151c2f !important;
+}
+body[data-theme="light"] .jinsulActionBar{
+  margin-top:-112px;
+}
+body[data-theme="light"] .jinsulActionBtn{
+  background:rgba(255,255,255,.10) !important;
+  color:#d8c7aa !important;
+  border-color:rgba(203,184,149,.42) !important;
+}
+
+/* Dark mode */
+body[data-theme="dark"]{
+  --gold:#d8c7aa;
+  --gold2:#ead9bc;
+  --gold3:#bda98b;
+  --ink:#f8fafc;
+  --ink2:#e5e7eb;
+  --muted:#aeb7c6;
+  --bg:#080808;
+  --card:#111318;
+  --line:rgba(203,184,149,.25);
+  --soft:#161616;
+  --navy:#05070a;
+  --navy2:#111827;
+  background:
+    radial-gradient(circle at top center, rgba(190,169,139,.21), transparent 38%),
+    linear-gradient(135deg,#080808,#161616 45%,#2a241d) !important;
+  color:#f8fafc !important;
+}
+body[data-theme="dark"]:before{
+  opacity:.055;
+  filter:grayscale(1) brightness(1.35);
+}
+body[data-theme="dark"] .topBar,
+body[data-theme="dark"] .hero{
+  background:linear-gradient(135deg,#050505 0%,#121212 48%,#2b251d 100%) !important;
+  border-color:rgba(203,184,149,.42) !important;
+  box-shadow:0 28px 70px rgba(0,0,0,.42) !important;
+}
+body[data-theme="dark"] .hero h1,
+body[data-theme="dark"] .hero p,
+body[data-theme="dark"] .topTitle{
+  color:#f7efe1 !important;
+}
+body[data-theme="dark"] .panel,
+body[data-theme="dark"] .uploadPanel,
+body[data-theme="dark"] .card{
+  background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.045)) !important;
+  border-color:rgba(203,184,149,.25) !important;
+  box-shadow:0 24px 60px rgba(0,0,0,.38) !important;
+  color:#f8fafc !important;
+}
+body[data-theme="dark"] .filebox,
+body[data-theme="dark"] .chart,
+body[data-theme="dark"] .scroll,
+body[data-theme="dark"] table{
+  background:rgba(8,8,8,.55) !important;
+  border-color:rgba(203,184,149,.22) !important;
+}
+body[data-theme="dark"] .filebox{
+  background:rgba(255,255,255,.045) !important;
+}
+body[data-theme="dark"] th{
+  background:rgba(203,184,149,.13) !important;
+  color:#e9dcc4 !important;
+  border-bottom-color:rgba(203,184,149,.28) !important;
+}
+body[data-theme="dark"] td{
+  color:#e5e7eb !important;
+  border-bottom-color:rgba(255,255,255,.075) !important;
+}
+body[data-theme="dark"] tbody tr:nth-child(even) td{
+  background:rgba(255,255,255,.025) !important;
+}
+body[data-theme="dark"] tr:hover td{
+  background:rgba(203,184,149,.105) !important;
+}
+body[data-theme="dark"] .field label,
+body[data-theme="dark"] .card h2,
+body[data-theme="dark"] .card h3,
+body[data-theme="dark"] .uploadHead h2,
+body[data-theme="dark"] .fileGuide strong,
+body[data-theme="dark"] td:first-child,
+body[data-theme="dark"] th:first-child,
+body[data-theme="dark"] .colval,
+body[data-theme="dark"] .kpi .v{
+  color:#fff7ea !important;
+}
+body[data-theme="dark"] .small,
+body[data-theme="dark"] .hint,
+body[data-theme="dark"] .status,
+body[data-theme="dark"] .fileGuide span,
+body[data-theme="dark"] .inputHelp,
+body[data-theme="dark"] .foot,
+body[data-theme="dark"] .collabel,
+body[data-theme="dark"] .empty{
+  color:#aeb7c6 !important;
+}
+body[data-theme="dark"] .field input,
+body[data-theme="dark"] .field select,
+body[data-theme="dark"] .searchrow input{
+  background:rgba(0,0,0,.35) !important;
+  color:#fff !important;
+  border-color:rgba(203,184,149,.32) !important;
+}
+body[data-theme="dark"] .field input::placeholder,
+body[data-theme="dark"] .searchrow input::placeholder{
+  color:#8f98a8 !important;
+}
+body[data-theme="dark"] .tab{
+  background:rgba(255,255,255,.06) !important;
+  color:#d8c7aa !important;
+  border-color:rgba(203,184,149,.25) !important;
+}
+body[data-theme="dark"] .tab.active{
+  background:linear-gradient(135deg,#bda98b,#dfcaa4) !important;
+  color:#15110b !important;
+  border-color:rgba(255,255,255,.18) !important;
+}
+body[data-theme="dark"] .kpi,
+body[data-theme="dark"] button:not(.jinsulActionBtn){
+  background:linear-gradient(135deg,#19140d,#3a3022) !important;
+  color:#fff !important;
+  border-color:rgba(203,184,149,.35) !important;
+}
+body[data-theme="dark"] button.ghost:not(.jinsulActionBtn){
+  background:rgba(255,255,255,.07) !important;
+  border:1px solid rgba(203,184,149,.35) !important;
+  color:#d8c7aa !important;
+}
+body[data-theme="dark"] .empty{
+  background:rgba(255,255,255,.045) !important;
+  border-color:rgba(203,184,149,.25) !important;
+}
+body[data-theme="dark"] .colbar,
+body[data-theme="dark"] .card h3:before,
+body[data-theme="dark"] .kpi:before{
+  background:linear-gradient(180deg,#ead9bc,#9b886e) !important;
+}
+body[data-theme="dark"] .heroWatermark,
+body[data-theme="dark"] .topLogo{
+  filter:drop-shadow(0 12px 22px rgba(0,0,0,.35)) brightness(1.12) !important;
+}
+@media(max-width:760px){
+  .jinsulActionBar{
+    padding:10px 16px 0;
+    justify-content:flex-end;
+  }
+  .jinsulActionBtn{
+    height:38px;
+    padding:0 12px;
+    font-size:12px;
+    border-radius:14px;
+  }
+  body[data-theme="light"] .jinsulActionBar{
+    margin-top:0;
+  }
+}
+
+        </style>
+    </head>
+    <body>
+
+        <div class="jinsulActionBar" aria-label="페이지 도구">
+            <button type="button" class="jinsulActionBtn back" onclick="goBackPage()">← 뒤로가기</button>
+            <button type="button" class="jinsulActionBtn theme" id="themeToggleBtn" onclick="toggleTheme()">라이트 모드</button>
+        </div>
+
+        <div class="topBar">
+            <div class="topBarInner">
+                <img class="topLogo" src="https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL logo">
+                <div class="topTitle">LIPUS MONTHLY DASHBOARD</div>
+            </div>
+        </div>
+        <div class="wrap">
+            <div class="hero">
+                <img class="heroWatermark" src="https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="" aria-hidden="true">
+                <div class="brand">
+                    <div>
+                        <span class="badge">JINSUL · LIPUS MONTHLY DASHBOARD</span>
+                        <h1>월별 신환 · 재진 · 매출 통계</h1>
+                        <p>
+                            경험과 가치를 현실화 하는 컨설팅<br>엑셀 업로드 후 2개월 기준 신환 재산정, 월별 매출 및 신환별 치료 횟수 분포를 확인합니다.
+                        
+                        </p>
+                    </div>
+                </div>
+                <div class="heroActions">
+                    <button class="ghost" onclick="resetAll()">초기화</button>
+                </div>
+            </div>
+            <div class="panel uploadPanel">
+                <div class="uploadHead">
+                    <div class="uploadTitle">
+                        <div class="uploadIcon">▣</div>
+                        <div>
+                            <h2>엑셀 파일 업로드</h2>
+                            <p>월별·주별 신환·재진·매출 통계를 계산할 원본 파일을 선택해주세요.</p>
+                        </div>
+                    </div>
+                    <span class="uploadBadge">필수 컬럼 자동 인식</span>
+                </div>
+                <div class="upload">
+                    <div class="field fileField">
+                        <label>엑셀 파일 업로드</label>
+                        <div class="filebox">
+                            <div class="fileInner">
+                                <div class="fileGuide">
+                                    <strong>엑셀 파일을 선택하거나 드래그하세요</strong>
+                                    <span>.xls, .xlsx 파일만 업로드 가능합니다.</span>
+                                </div>
+                                <input id="file" type="file" accept=".xls,.xlsx,.csv"/>
+                            </div>
+                        </div>
+                        <div class="hint">
+                            필수 컬럼 자동 인식: 차트번호/성명/주민번호, 내원일·진료일·처방일자, 총투여량<br>의사랑·비트 형식 모두 1개 업로드 창에서 자동 구분합니다.
+                        
+                        </div>
+                    </div>
+                    <div class="uploadControls">
+                        <div class="field">
+                            <label>신환 재기준 기간</label>
+                            <div class="inputWrap">
+                                <input id="gapDays" type="number" value="60" min="1"/>
+                                <span class="inputUnit">일</span>
+                            </div>
+                            <div class="inputHelp">* 60일 이후 재방문 시 신환으로 간주</div>
+                        </div>
+                        <div class="field">
+                            <label>총투여량 1당 단가</label>
+                            <div class="inputWrap">
+                                <input id="unitPrice" type="number" value="80000" step="1000"/>
+                                <span class="inputUnit">원</span>
+                            </div>
+                            <div class="inputHelp">* 매출 = 총투여량 × 단가</div>
+                        </div>
+                        <div class="field">
+                            <label>주 시작 요일</label>
+                            <select id="weekStart">
+                                <option value="0" selected>일요일 시작</option>
+                                <option value="1">월요일 시작</option>
+                                <option value="2">화요일 시작</option>
+                                <option value="3">수요일 시작</option>
+                                <option value="4">목요일 시작</option>
+                                <option value="5">금요일 시작</option>
+                                <option value="6">토요일 시작</option>
+                            </select>
+                            <div class="inputHelp">* 예: 일요일 시작 → 2026-06-14 ~ 2026-06-20</div>
+                        </div>
+                        <div class="field">
+                            <button onclick="runFile()">통계 계산 실행</button>
+                        </div>
+                        <div class="field">
+                            <div class="inputHelp" style="text-align:center">업로드한 데이터를 기준으로 통계를 계산합니다.</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="status" class="status">
+                    파일을 선택한 뒤 통계 계산을 눌러주세요. <span class="reportNote">의사랑·비트 자동 인식</span>
+                </div>
+            </div>
+            <div id="empty" class="empty" style="margin-top:18px">아직 계산된 통계가 없습니다.</div>
+            <div id="result" style="display:none">
+                <div class="grid" id="kpis"></div>
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('monthly',this)">월별 요약</button>
+                    <button class="tab" onclick="showTab('weekly',this)">주별 요약</button>
+                    <button class="tab" onclick="showTab('dist',this)">신환 치료횟수 분포</button>
+                    <button class="tab" onclick="showTab('episodes',this)">신환 상세</button>
+                    <button class="tab" onclick="showTab('raw',this)">정리 데이터</button>
+                </div>
+                <section id="monthly" class="section active">
+                    <div class="card">
+                        <div class="tools">
+                            <div>
+                                <h2>월별 신환·재진·매출</h2>
+                                <p class="small">신환 평균 치료간격은 해당 월 신환 에피소드 중 2회 이상 치료한 환자의 치료일 간 평균 간격입니다.</p>
+                            </div>
+                            <button class="ghost" onclick="downloadCSV('monthly')">CSV 다운로드</button>
+                        </div>
+                        <div id="monthlyChart" class="chart"></div>
+                        <div class="scroll">
+                            <table id="monthlyTable"></table>
+                        </div>
+                    </div>
+                </section>
+                <section id="weekly" class="section">
+                    <div class="card">
+                        <div class="tools">
+                            <div>
+                                <h2>주별 신환·재진·매출</h2>
+                                <p class="small">선택한 주 시작 요일 기준으로 7일 단위 집계합니다. 기본값은 일요일 시작이며, 예시는 2026-06-14 ~ 2026-06-20 형식입니다.</p>
+                            </div>
+                            <button class="ghost" onclick="downloadCSV('weekly')">CSV 다운로드</button>
+                        </div>
+                        <div id="weeklyChart" class="chart"></div>
+                        <div class="scroll">
+                            <table id="weeklyTable"></table>
+                        </div>
+                    </div>
+                </section>
+                <section id="dist" class="section">
+                    <div class="card">
+                        <div class="tools">
+                            <div>
+                                <h2>월별 신환 기준 치료 횟수 분포</h2>
+                                <p class="small">해당 월에 신환으로 잡힌 환자군이 현재 업로드 자료 기간 안에서 총 몇 회 치료를 받았는지 집계합니다.</p>
+                            </div>
+                            <button class="ghost" onclick="downloadCSV('dist')">CSV 다운로드</button>
+                        </div>
+                        <div class="distGrid">
+                            <div>
+                                <h3>1회~8회 이상 치료 건수</h3>
+                                <div class="scroll">
+                                    <table id="distCountTable"></table>
+                                </div>
+                            </div>
+                            <div>
+                                <h3>1회~8회 이상 치료 비율</h3>
+                                <div class="scroll">
+                                    <table id="distRateTable"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="episodes" class="section">
+                    <div class="card">
+                        <div class="tools">
+                            <h2>신환 에피소드 상세</h2>
+                            <button class="ghost" onclick="downloadCSV('episodes')">CSV 다운로드</button>
+                        </div>
+                        <div class="scroll">
+                            <table id="episodeTable"></table>
+                        </div>
+                    </div>
+                </section>
+                <section id="raw" class="section">
+                    <div class="card">
+                        <div class="tools">
+                            <h2>환자·날짜별 정리 데이터</h2>
+                            <button class="ghost" onclick="downloadCSV('raw')">CSV 다운로드</button>
+                        </div>
+                        <div class="scroll">
+                            <table id="rawTable"></table>
+                        </div>
+                    </div>
+                </section>
+                <div class="foot">기준: 같은 환자 같은 날짜는 1회 치료로 묶고 총투여량은 합산합니다. 환자 식별은 차트번호를 우선 사용하며, 없으면 주민등록번호·수진자명 조합을 사용합니다. 재진은 해당 신환 기준일 이후 동일 에피소드 내 추가 치료 건수입니다.</div>
+            </div>
+        </div>
+        <script>
+            let STORE = {
+                monthly: [],
+                weekly: [],
+                dist: [],
+                episodes: [],
+                raw: []
+            };
+            const fmtN = n => (Number(n) || 0).toLocaleString('ko-KR');
+            const fmtW = n => fmtN(Math.round(Number(n) || 0)) + '원';
+            const fmtP = n => (Number(n) || 0).toFixed(1) + '%';
+            const pad2 = n => String(n).padStart(2, '0');
+            const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+            const ym = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+            const addDays = (d, days) => new Date(d.getFullYear(),d.getMonth(),d.getDate() + days);
+            const getWeekRange = (date, startDay=0) => {
+                const d = new Date(date.getFullYear(),date.getMonth(),date.getDate());
+                const diff = (d.getDay() - startDay + 7) % 7;
+                const start = addDays(d, -diff);
+                const end = addDays(start, 6);
+                return {
+                    start,
+                    end,
+                    label: `${ymd(start)} ~ ${ymd(end)}`
+                };
+            }
+            ;
+            const avgIntervalDays = visits => {
+                if (!visits || visits.length < 2)
+                    return null;
+                let sum = 0
+                  , cnt = 0;
+                for (let i = 1; i < visits.length; i++) {
+                    const d = Math.round((visits[i].date - visits[i - 1].date) / 86400000);
+                    if (d >= 0) {
+                        sum += d;
+                        cnt++;
+                    }
+                }
+                return cnt ? sum / cnt : null;
+            }
+            ;
+            function parseDate(v) {
+                if (v instanceof Date && !isNaN(v))
+                    return v;
+                if (typeof v === 'number') {
+                    const o = XLSX.SSF.parse_date_code(v);
+                    if (o)
+                        return new Date(o.y,o.m - 1,o.d);
+                }
+                const s = String(v || '').trim();
+                if (!s)
+                    return null;
+                let m = s.match(/(\d{4})[-./년\s]*(\d{1,2})[-./월\s]*(\d{1,2})/);
+                if (m)
+                    return new Date(+m[1],+m[2] - 1,+m[3]);
+                return null;
+            }
+            function num(v) {
+                if (v == null)
+                    return 0;
+                const n = parseFloat(String(v).replace(/,/g, '').trim());
+                return isNaN(n) ? 0 : n;
+            }
+            function norm(s) {
+                return String(s || '').replace(/\s/g, '').toLowerCase();
+            }
+            function rowText(row) {
+                return (row || []).map(norm).join('|');
+            }
+            function findHeader(rows) {
+                const max = Math.min(rows.length, 40);
+                for (let i = 0; i < max; i++) {
+                    const r = rowText(rows[i]);
+                    const hasPatient = r.includes('차트번호') || r.includes('차트') || r.includes('주민등록번호') || r.includes('주민번호') || r.includes('성명') || r.includes('수진자명') || r.includes('환자명');
+                    const hasDate = r.includes('내원일') || r.includes('내원일자') || r.includes('진료일') || r.includes('진료일자') || r.includes('조회일') || r.includes('처방일자') || r.includes('처방일');
+                    const hasDose = r.includes('총투여량') || r.includes('투여량합계') || r.includes('총투여') || r.includes('금액');
+                    if (hasPatient && hasDate && hasDose)
+                        return i;
+                }
+                return 0;
+            }
+            function idx(headers, names) {
+                const hs = headers.map(norm);
+                for (const name of names) {
+                    const k = norm(name);
+                    const i = hs.findIndex(h => h === k || h.includes(k));
+                    if (i > -1)
+                        return i;
+                }
+                return -1;
+            }
+            function detectFormat(headers) {
+                const h = headers.map(norm).join('|');
+                if (h.includes('처방일자') || h.includes('처방코드') || h.includes('초재진구분'))
+                    return '비트';
+                return '의사랑';
+            }
+            async function runFile() {
+                const f = document.getElementById('file').files[0];
+                if (!f) {
+                    setStatus('파일을 먼저 선택해주세요.', true);
+                    return;
+                }
+                setStatus('파일을 읽는 중입니다...');
+                const data = await f.arrayBuffer();
+                const wb = XLSX.read(data, {
+                    type: 'array',
+                    cellDates: true
+                });
+                let best = null;
+                for (const sheetName of wb.SheetNames) {
+                    const ws = wb.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(ws, {
+                        header: 1,
+                        defval: null,
+                        raw: true
+                    });
+                    if (!rows.length)
+                        continue;
+                    const hrow = findHeader(rows);
+                    const headers = rows[hrow] || [];
+                    const di = idx(headers, ['내원일', '내원일자', '진료일', '진료일자', '조회일', '처방일자', '처방일']);
+                    const ti = idx(headers, ['총투여량', '총투여', '투여량합계', '투여량']);
+                    const ci = idx(headers, ['차트번호', '차트']);
+                    const ni = idx(headers, ['수진자명', '성명', '환자명']);
+                    const ri = idx(headers, ['주민등록번호', '주민번호', '주민등록']);
+                    const score = (di >= 0 ? 3 : 0) + (ti >= 0 ? 3 : 0) + (ci >= 0 ? 2 : 0) + (ni >= 0 ? 1 : 0) + (ri >= 0 ? 1 : 0);
+                    if (!best || score > best.score)
+                        best = {
+                            sheetName,
+                            rows,
+                            score
+                        };
+                }
+                if (!best || best.score < 6) {
+                    setStatus('통계 산정에 필요한 컬럼을 찾지 못했습니다. 차트번호/성명/주민번호, 날짜, 총투여량 컬럼을 확인해주세요.', true);
+                    return;
+                }
+                compute(best.rows, best.sheetName);
+            }
+            function compute(rows, sheetName='') {
+                try {
+                    const hrow = findHeader(rows);
+                    const headers = rows[hrow] || [];
+                    const source = detectFormat(headers);
+                    const ci = idx(headers, ['차트번호', '차트']);
+                    const ni = idx(headers, ['수진자명', '성명', '환자명']);
+                    const ri = idx(headers, ['주민등록번호', '주민번호', '주민등록']);
+                    const di = idx(headers, ['내원일', '내원일자', '진료일', '진료일자', '조회일', '처방일자', '처방일']);
+                    const ti = idx(headers, ['총투여량', '총투여', '투여량합계', '투여량']);
+                    const amtI = idx(headers, ['금액', '매출', '수납액']);
+                    if (di < 0 || ti < 0 || (ci < 0 && ri < 0 && ni < 0))
+                        throw new Error('필수 컬럼을 찾지 못했습니다. 차트번호/성명/주민번호, 날짜, 총투여량 컬럼명을 확인해주세요.');
+                    const unit = Number(document.getElementById('unitPrice').value) || 80000;
+                    const gap = Number(document.getElementById('gapDays').value) || 60;
+                    const weekStart = Number(document.getElementById('weekStart')?.value || 0);
+                    const byDay = new Map();
+                    let skipped = 0;
+                    for (let r of rows.slice(hrow + 1)) {
+                        const date = parseDate(r[di]);
+                        if (!date) {
+                            skipped++;
+                            continue;
+                        }
+                        const dose = num(r[ti]);
+                        if (!dose) {
+                            skipped++;
+                            continue;
+                        }
+                        const chart = ci >= 0 ? String(r[ci] || '').trim() : '';
+                        const rrn = ri >= 0 ? String(r[ri] || '').replace(/[^0-9]/g, '').trim() : '';
+                        const name = ni >= 0 ? String(r[ni] || '').trim() : '';
+                        const key = rrn || chart || name;
+                        if (!key) {
+                            skipped++;
+                            continue;
+                        }
+                        const k = key + '|' + ymd(date);
+                        if (!byDay.has(k))
+                            byDay.set(k, {
+                                key,
+                                chart,
+                                name,
+                                rrn,
+                                date,
+                                totalDose: 0,
+                                amount: 0
+                            });
+                        const day = byDay.get(k);
+                        day.totalDose += dose;
+                        if (amtI >= 0)
+                            day.amount += num(r[amtI]);
+                    }
+                    const visits = [...byDay.values()].sort( (a, b) => a.key.localeCompare(b.key) || a.date - b.date);
+                    const patientMap = new Map();
+                    visits.forEach(v => {
+                        if (!patientMap.has(v.key))
+                            patientMap.set(v.key, []);
+                        patientMap.get(v.key).push(v);
+                    }
+                    );
+                    const episodes = [];
+                    const raw = [];
+                    let epNo = 0;
+                    for (const [key,arr] of patientMap) {
+                        let current = null;
+                        for (const v of arr) {
+                            if (!current || Math.floor((v.date - current.startDate) / 86400000) > gap) {
+                                current = {
+                                    episodeId: ++epNo,
+                                    key: v.key,
+                                    chart: v.chart,
+                                    name: v.name,
+                                    rrn: v.rrn,
+                                    startDate: v.date,
+                                    startMonth: ym(v.date),
+                                    startWeek: getWeekRange(v.date, weekStart).label,
+                                    visits: [],
+                                    dose: 0,
+                                    amount: 0
+                                };
+                                episodes.push(current);
+                            }
+                            current.visits.push(v);
+                            current.dose += v.totalDose;
+                            current.amount += v.amount || 0;
+                            raw.push({
+                                월: ym(v.date),
+                                주: getWeekRange(v.date, weekStart).label,
+                                내원일: ymd(v.date),
+                                차트번호: v.chart,
+                                수진자명: v.name,
+                                구분: v.date.getTime() === current.startDate.getTime() ? '신환' : '재진',
+                                총투여량: v.totalDose,
+                                에피소드시작일: ymd(current.startDate)
+                            });
+                        }
+                    }
+                    episodes.forEach(e => {
+                        e.visitCount = e.visits.length;
+                        e.sales = e.dose * unit;
+                        e.lastDate = e.visits[e.visits.length - 1].date;
+                        e.avgInterval = avgIntervalDays(e.visits);
+                    }
+                    );
+                    const monthMap = new Map();
+                    function mget(m) {
+                        if (!monthMap.has(m))
+                            monthMap.set(m, {
+                                월: m,
+                                신환: 0,
+                                재진: 0,
+                                총치료건수: 0,
+                                총투여량: 0,
+                                매출: 0,
+                                신환평균치료횟수: 0,
+                                신환평균치료간격: 0,
+                                간격산출대상: 0
+                            });
+                        return monthMap.get(m);
+                    }
+                    raw.forEach(r => {
+                        const m = mget(r.월);
+                        m.총치료건수++;
+                        m.총투여량 += Number(r.총투여량) || 0;
+                        m.매출 += Number(r.총투여량 || 0) * unit;
+                        if (r.구분 === '재진')
+                            m.재진++;
+                    }
+                    );
+                    episodes.forEach(e => {
+                        mget(e.startMonth).신환++;
+                    }
+                    );
+                    const epByMonth = {};
+                    episodes.forEach(e => {
+                        (epByMonth[e.startMonth] ||= []).push(e);
+                    }
+                    );
+                    Object.keys(epByMonth).forEach(m => {
+                        const list = epByMonth[m];
+                        const mm = mget(m);
+                        mm.신환평균치료횟수 = list.reduce( (s, e) => s + e.visitCount, 0) / list.length;
+                        const intervalList = list.filter(e => e.avgInterval !== null);
+                        mm.간격산출대상 = intervalList.length;
+                        mm.신환평균치료간격 = intervalList.length ? intervalList.reduce( (s, e) => s + e.avgInterval, 0) / intervalList.length : null;
+                    }
+                    );
+                    const monthly = [...monthMap.values()].sort( (a, b) => a.월.localeCompare(b.월)).map(m => {
+                        const list = epByMonth[m.월] || [];
+                        const converted = list.filter(e => e.visitCount >= 2).length;
+                        return {
+                            ...m,
+                            재진율: m.신환 ? converted / m.신환 * 100 : 0,
+                            건당평균매출: m.총치료건수 ? m.매출 / m.총치료건수 : 0
+                        };
+                    }
+                    );
+                    const dist = Object.keys(epByMonth).sort().map(m => {
+                        const list = epByMonth[m]
+                          , row = {
+                            월: m,
+                            신환: list.length
+                        };
+                        for (let i = 1; i <= 7; i++) {
+                            const c = list.filter(e => e.visitCount === i).length;
+                            row[i + '회'] = c;
+                            row[i + '회비율'] = list.length ? c / list.length * 100 : 0;
+                        }
+                        const c8 = list.filter(e => e.visitCount >= 8).length;
+                        row['8회이상'] = c8;
+                        row['8회이상비율'] = list.length ? c8 / list.length * 100 : 0;
+                        return row;
+                    }
+                    );
+                    const weekMap = new Map();
+                    function wget(w) {
+                        if (!weekMap.has(w))
+                            weekMap.set(w, {
+                                주: w,
+                                신환: 0,
+                                재진: 0,
+                                총치료건수: 0,
+                                총투여량: 0,
+                                매출: 0,
+                                신환평균치료횟수: 0,
+                                신환평균치료간격: 0,
+                                간격산출대상: 0
+                            });
+                        return weekMap.get(w);
+                    }
+                    raw.forEach(r => {
+                        const w = wget(r.주);
+                        w.총치료건수++;
+                        w.총투여량 += Number(r.총투여량) || 0;
+                        w.매출 += Number(r.총투여량 || 0) * unit;
+                        if (r.구분 === '재진')
+                            w.재진++;
+                    }
+                    );
+                    episodes.forEach(e => {
+                        wget(e.startWeek).신환++;
+                    }
+                    );
+                    const epByWeek = {};
+                    episodes.forEach(e => {
+                        (epByWeek[e.startWeek] ||= []).push(e);
+                    }
+                    );
+                    Object.keys(epByWeek).forEach(w => {
+                        const list = epByWeek[w];
+                        const ww = wget(w);
+                        ww.신환평균치료횟수 = list.reduce( (s, e) => s + e.visitCount, 0) / list.length;
+                        const intervalList = list.filter(e => e.avgInterval !== null);
+                        ww.간격산출대상 = intervalList.length;
+                        ww.신환평균치료간격 = intervalList.length ? intervalList.reduce( (s, e) => s + e.avgInterval, 0) / intervalList.length : null;
+                    }
+                    );
+                    const weekly = [...weekMap.values()].sort( (a, b) => a.주.localeCompare(b.주)).map(w => {
+                        const list = epByWeek[w.주] || [];
+                        const converted = list.filter(e => e.visitCount >= 2).length;
+                        return {
+                            ...w,
+                            재진율: w.신환 ? converted / w.신환 * 100 : 0,
+                            건당평균매출: w.총치료건수 ? w.매출 / w.총치료건수 : 0
+                        };
+                    }
+                    );
+                    STORE.monthly = monthly;
+                    STORE.weekly = weekly;
+                    STORE.dist = dist;
+                    STORE.episodes = episodes.map(e => ({
+                        신환월: e.startMonth,
+                        신환주: e.startWeek,
+                        차트번호: e.chart,
+                        수진자명: e.name,
+                        신환일: ymd(e.startDate),
+                        마지막치료일: ymd(e.lastDate),
+                        치료횟수: e.visitCount,
+                        평균치료간격: e.avgInterval,
+                        총투여량: e.dose,
+                        예상매출: e.sales
+                    }));
+                    STORE.raw = raw.sort( (a, b) => a.내원일.localeCompare(b.내원일) || String(a.차트번호).localeCompare(String(b.차트번호)));
+                    render();
+                    setStatus(`계산 완료: ${fmtN(raw.length)}건 치료, ${fmtN(episodes.length)}건 신환 에피소드 · ${source} 형식 자동 인식 · 환자 식별: 주민번호 우선${sheetName ? ` · 시트: ${sheetName}` : ''}`);
+                } catch (e) {
+                    console.error(e);
+                    setStatus(e.message, true);
+                }
+            }
+            function render() {
+                document.getElementById('empty').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+                const totalNew = STORE.monthly.reduce( (s, m) => s + m.신환, 0)
+                  , totalRev = STORE.monthly.reduce( (s, m) => s + m.재진, 0)
+                  , sales = STORE.monthly.reduce( (s, m) => s + m.매출, 0)
+                  , avg = STORE.episodes.length ? STORE.episodes.reduce( (s, e) => s + e.치료횟수, 0) / STORE.episodes.length : 0;
+                document.getElementById('kpis').innerHTML = `<div class="kpi"><div class="t">전체 신환</div><div class="v">${fmtN(totalNew)}</div><div class="s">2개월 기준 재산정</div></div><div class="kpi"><div class="t">전체 재진</div><div class="v">${fmtN(totalRev)}</div><div class="s">신환 이후 추가 치료</div></div><div class="kpi"><div class="t">예상 매출</div><div class="v">${fmtW(sales)}</div><div class="s">총투여량 × 단가</div></div><div class="kpi"><div class="t">신환 평균 치료횟수</div><div class="v">${avg.toFixed(2)}회</div><div class="s">신환 에피소드 기준</div></div>`;
+                makeTable('monthlyTable', STORE.monthly, ['월', '신환', '재진', '총치료건수', '재진율', '총투여량', '매출', '건당평균매출', '신환평균치료횟수', '신환평균치료간격', '간격산출대상'], {
+                    재진율: fmtP,
+                    매출: fmtW,
+                    건당평균매출: fmtW,
+                    신환평균치료횟수: v => Number(v || 0).toFixed(2),
+                    신환평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일'
+                });
+                makeTable('weeklyTable', STORE.weekly, ['주', '신환', '재진', '총치료건수', '재진율', '총투여량', '매출', '건당평균매출', '신환평균치료횟수', '신환평균치료간격', '간격산출대상'], {
+                    재진율: fmtP,
+                    매출: fmtW,
+                    건당평균매출: fmtW,
+                    신환평균치료횟수: v => Number(v || 0).toFixed(2),
+                    신환평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일'
+                });
+                let countCols = ['월', '신환'];
+                for (let i = 1; i <= 7; i++)
+                    countCols.push(i + '회');
+                countCols.push('8회이상');
+                let rateCols = ['월', '신환'];
+                for (let i = 1; i <= 7; i++)
+                    rateCols.push(i + '회비율');
+                rateCols.push('8회이상비율');
+                const pct = {};
+                rateCols.filter(c => c.includes('비율')).forEach(c => pct[c] = fmtP);
+                const rateLabels = {};
+                for (let i = 1; i <= 7; i++)
+                    rateLabels[i + '회비율'] = i + '회 비율';
+                rateLabels['8회이상비율'] = '8회 이상 비율';
+                makeTable('distCountTable', STORE.dist, countCols, {});
+                makeTable('distRateTable', STORE.dist, rateCols, pct, rateLabels);
+                makeTable('episodeTable', STORE.episodes, ['신환월', '신환주', '차트번호', '수진자명', '신환일', '마지막치료일', '치료횟수', '평균치료간격', '총투여량', '예상매출'], {
+                    평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일',
+                    예상매출: fmtW
+                });
+                makeTable('rawTable', STORE.raw, ['월', '주', '내원일', '차트번호', '수진자명', '구분', '총투여량', '에피소드시작일'], {});
+                renderChart();
+            }
+            function makeTable(id, data, cols, formatters, labels={}) {
+                const th = '<thead><tr>' + cols.map(c => `<th>${labels[c] || c}</th>`).join('') + '</tr></thead>';
+                const body = '<tbody>' + data.map(r => '<tr>' + cols.map(c => `<td>${formatters[c] ? formatters[c](r[c]) : (typeof r[c] === 'number' ? fmtN(Math.round(r[c] * 100) / 100) : r[c] ?? '')}</td>`).join('') + '</tr>').join('') + '</tbody>';
+                document.getElementById(id).innerHTML = th + body;
+            }
+            function renderChart() {
+                const max = Math.max(...STORE.monthly.map(m => m.매출), 1);
+                document.getElementById('monthlyChart').innerHTML = STORE.monthly.map(m => `<div class="col"><div class="colval">${Math.round(m.매출 / 10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4, m.매출 / max * 180)}px"></div><div class="collabel">${m.월}</div></div>`).join('');
+                const wmax = Math.max(...STORE.weekly.map(w => w.매출), 1);
+                document.getElementById('weeklyChart').innerHTML = STORE.weekly.map(w => `<div class="col"><div class="colval">${Math.round(w.매출 / 10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4, w.매출 / wmax * 180)}px"></div><div class="collabel">${w.주.replace(' ~ ', '<br>~ ')}</div></div>`).join('');
+            }
+            function showTab(id, btn) {
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            function setStatus(msg, isErr=false) {
+                document.getElementById('status').innerHTML = isErr ? `<span class="err">${msg}</span>` : msg;
+            }
+            function downloadCSV(type) {
+                const data = STORE[type] || [];
+                if (!data.length)
+                    return;
+                const cols = Object.keys(data[0]);
+                const csv = [cols.join(','), ...data.map(r => cols.map(c => '"' + String(r[c] ?? '').replace(/"/g, '""') + '"').join(','))].join('\n');
+                const blob = new Blob(['\ufeff' + csv],{
+                    type: 'text/csv;charset=utf-8'
+                });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `lipus_${type}.csv`;
+                a.click();
+            }
+            function resetAll() {
+                STORE = {
+                    monthly: [],
+                    weekly: [],
+                    dist: [],
+                    episodes: [],
+                    raw: []
+                };
+                document.getElementById('file').value = '';
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('empty').style.display = 'block';
+                setStatus('파일을 선택한 뒤 통계 계산을 눌러주세요.');
+            }
+        </script>
+    
+        <script>
+            (function(){
+                const saved = localStorage.getItem('jinsul-theme') || 'dark';
+                document.body.setAttribute('data-theme', saved);
+                const btn = document.getElementById('themeToggleBtn');
+                if(btn) btn.textContent = saved === 'dark' ? '라이트 모드' : '다크 모드';
+                window.toggleTheme = function(){
+                    const current = document.body.getAttribute('data-theme') || 'dark';
+                    const next = current === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('data-theme', next);
+                    localStorage.setItem('jinsul-theme', next);
+                    const btn = document.getElementById('themeToggleBtn');
+                    if(btn) btn.textContent = next === 'dark' ? '라이트 모드' : '다크 모드';
+                };
+                window.goBackPage = function(){
+                    if(window.history.length > 1) window.history.back();
+                    else location.href = './';
+                };
+            })();
+        </script>
+
+    </body>
+</html>
