@@ -1171,6 +1171,61 @@
                 #setSearchInput { width: 100% !important; min-height: 44px; }
             }
 
+
+
+            /* ================= LOGO SIZE FIX - JINSUL OFFICIAL LOGO ================= */
+            :root{
+                --jinsul-logo-url: url("https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png");
+                --top-logo-height: 58px;
+                --top-logo-max-width: 240px;
+                --watermark-width: min(430px, 34vw);
+            }
+
+            header .top-logo,
+            .top-logo{
+                width: auto !important;
+                height: var(--top-logo-height) !important;
+                max-width: var(--top-logo-max-width) !important;
+                object-fit: contain !important;
+                display: inline-block !important;
+                opacity: .92 !important;
+                filter: grayscale(.08) brightness(.9) contrast(1.05) drop-shadow(0 12px 22px rgba(0,0,0,.13)) !important;
+            }
+
+            .wm{
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .wm img{
+                width: var(--watermark-width) !important;
+                max-width: 430px !important;
+                height: auto !important;
+                object-fit: contain !important;
+                opacity: .075 !important;
+                filter: grayscale(1) saturate(0) brightness(.9) contrast(1.08) !important;
+                transform: none !important;
+            }
+
+            html[data-theme="dark"] header .top-logo,
+            html[data-theme="dark"] .top-logo{
+                opacity: .88 !important;
+                filter: grayscale(.05) brightness(1.48) contrast(.96) drop-shadow(0 16px 34px rgba(0,0,0,.48)) !important;
+            }
+
+            html[data-theme="dark"] .wm img{
+                opacity: .055 !important;
+                filter: grayscale(1) brightness(1.72) contrast(.92) !important;
+            }
+
+            @media(max-width: 640px){
+                :root{
+                    --top-logo-height: 46px;
+                    --top-logo-max-width: 190px;
+                    --watermark-width: min(320px, 58vw);
+                }
+            }
+
         </style>
     </head>
     <body onclick="closeSearch(event)">
@@ -1180,7 +1235,7 @@
         </div>
 
         <div class="wm">
-            <img src="https://xginini-dot.github.io/jinsul/진설로고.png">
+            <img src="https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="">
         </div>
         <div id="setBoard">
             <div class="sync-row">
@@ -1203,7 +1258,7 @@
             </div>
         </div>
         <header>
-            <img src="https://xginini-dot.github.io/jinsul/진설로고.png">
+            <img src="https://xginini-dot.github.io/jinsul/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" class="top-logo" alt="JINSUL">
         </header>
         <div class="container">
             <div class="main-column">
