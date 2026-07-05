@@ -319,7 +319,7 @@
 
     <section class="summary" id="summary" style="display:none">
       <div class="metric"><h3>전체 초진환자수</h3><p id="m-total">-</p></div>
-      <div class="metric"><h3>초진 당일 주사처방률</h3><p id="m-inj-rate">-</p></div>
+      <div class="metric"><h3>초진 주사처방률</h3><p id="m-inj-rate">-</p></div>
       <div class="metric"><h3>초진 평균 내원횟수</h3><p id="m-visit-avg">-</p></div>
       <div class="metric"><h3>재내원율 2회 이상</h3><p id="m-revisit">-</p></div>
     </section>
@@ -570,7 +570,7 @@
           '구분':label,
           '초진환자수':total.length,
           '초진 주사환자수':inj.length,
-          '초진 당일 주사처방률':toPercent(inj.length,total.length),
+          '초진 주사처방률':toPercent(inj.length,total.length),
           '초진 주사치료 평균 주사횟수':inj.length?avgInj.toFixed(2):'-',
           '초진 주사치료 평균 내원횟수':inj.length?avgVisitAmongInj.toFixed(2):'-',
           '초진 주사환자 재진률(2회 이상)':inj.length?toPercent(revisit2pInj,inj.length):'-',
@@ -644,7 +644,7 @@ function computeAgeBandStats(merged){
         '연령대': band,
         '초진환자수': a.length,
         '초진 주사환자수': injN,
-        '초진 당일 주사처방률': toPercent(injN, a.length),
+        '초진 주사처방률': toPercent(injN, a.length),
         '초진 평균 내원횟수': avgVisit.toFixed(2),
         '초진 재내원율(2회 이상)': toPercent(revisit2p, a.length),
         '초진 주사치료 평균 주사횟수': avgInj.toFixed(2),
@@ -675,7 +675,7 @@ function computeAgeBandStats(merged){
         '연령대': '전체',
         '초진환자수': arr.length,
         '초진 주사환자수': injAllN,
-        '초진 당일 주사처방률': toPercent(injAllN, arr.length),
+        '초진 주사처방률': toPercent(injAllN, arr.length),
         '초진 평균 내원횟수': avgVisitAll.toFixed(2),
         '초진 재내원율(2회 이상)': toPercent(revisit2pAll, arr.length),
         '초진 주사치료 평균 주사횟수': avgInjAll.toFixed(2),
@@ -885,7 +885,7 @@ function computeAgeBandStats(merged){
       if (overall){
         $('#summary').style.display='grid';
         $('#m-total').textContent=fmt(overall['초진환자수']);
-        $('#m-inj-rate').textContent=fmt(overall['초진 당일 주사처방률']);
+        $('#m-inj-rate').textContent=fmt(overall['초진 주사처방률']);
         $('#m-visit-avg').textContent=fmt(overall['초진 평균 내원횟수']);
         $('#m-revisit').textContent=fmt(overall['초진 재내원율']);
       }
