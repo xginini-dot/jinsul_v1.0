@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>통계 대시보드 선택 – 비트 / 의사랑</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --bg: #080808;
+      --bg2: #161616;
+      --bg3: #2a241d;
+      --card: rgba(255,255,255,0.075);
+      --card2: rgba(255,255,255,0.12);
+      --text: #f5efe5;
+      --muted: #b8b8b8;
+      --soft: #d8c7ac;
+      --gold: #bea98b;
+      --gold2: #8f7b5d;
+      --border: rgba(190,169,139,0.28);
+      --border-strong: rgba(190,169,139,0.55);
+      --shadow: 0 24px 60px rgba(0,0,0,0.35);
+      --logo-filter: drop-shadow(0 18px 35px rgba(0,0,0,0.45));
+      --wm-opacity: 0.055;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f6f1e8;
+      --bg2: #fffaf2;
+      --bg3: #e8decd;
+      --card: rgba(255,255,255,0.82);
+      --card2: rgba(255,255,255,0.96);
+      --text: #1f2937;
+      --muted: #64748b;
+      --soft: #8f7b5d;
+      --gold: #a68b63;
+      --gold2: #c7b08a;
+      --border: rgba(166,139,99,0.24);
+      --border-strong: rgba(166,139,99,0.46);
+      --shadow: 0 24px 60px rgba(100,86,62,0.16);
+      --logo-filter: drop-shadow(0 18px 35px rgba(100,86,62,0.18));
+      --wm-opacity: 0.045;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 16px 46px;
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      background:
+        radial-gradient(circle at top center, rgba(190,169,139,0.22), transparent 38%),
+        linear-gradient(135deg, var(--bg), var(--bg2) 48%, var(--bg3));
+      color: var(--text);
+      transition: background .2s ease, color .2s ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("https://xginini-dot.github.io/jinsul/진설로고.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: min(520px, 66vw);
+      opacity: var(--wm-opacity);
+      filter: grayscale(1);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 34px;
+    }
+
+    .nav-btn, .theme-btn {
+      min-height: 42px;
+      border: 1px solid var(--border-strong);
+      background: var(--card);
+      color: var(--soft);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
+      transition: .18s ease;
+    }
+
+    .nav-btn:hover, .theme-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(190,169,139,0.18);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 4px 20px 10px;
+    }
+
+    .logo {
+      width: 280px;
+      max-width: 72%;
+      margin-bottom: 18px;
+      filter: var(--logo-filter);
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(190,169,139,0.12);
+      color: var(--soft);
+      border: 1px solid var(--border-strong);
+      letter-spacing: .04em;
+      font-weight: 900;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(190,169,139,0.12);
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(34px, 5vw, 52px);
+      font-weight: 1000;
+      letter-spacing: .06em;
+      color: var(--text);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 12px;
+    }
+
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      min-height: 100%;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 26px;
+      padding: 28px;
+      min-height: 230px;
+      background: linear-gradient(180deg, var(--card2), var(--card));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(14px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(190,169,139,0.22), transparent 45%);
+      opacity: 0;
+      transition: 0.22s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-7px);
+      border-color: var(--border-strong);
+    }
+
+    .card:hover::before { opacity: 1; }
+    .card > * { position: relative; z-index: 1; }
+
+    .icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: rgba(190,169,139,0.16);
+      border: 1px solid rgba(190,169,139,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 18px;
+    }
+
+    .card-label {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(190,169,139,0.10);
+      font-size: 11px;
+      color: var(--soft);
+      font-weight: 900;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 950;
+      margin: 0 0 10px;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0 0 14px;
+      font-weight: 600;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      padding-right: 36px;
+    }
+
+    .status {
+      margin-top: 22px;
+      font-size: 14px;
+      color: var(--soft);
+      font-weight: 950;
+    }
+
+    .arrow {
+      position: absolute;
+      right: 22px;
+      bottom: 22px;
+      font-size: 21px;
+      color: var(--gold);
+      opacity: 0.9;
+      transition: transform 0.15s ease;
+    }
+
+    .card:hover .arrow { transform: translateX(4px); }
+
+    footer {
+      margin-top: 38px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 22px 12px 36px; }
+      .topbar { margin-bottom: 24px; }
+      .nav-btn, .theme-btn { flex: 1; padding: 9px 12px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { min-height: 220px; padding: 24px; }
+      h1 { letter-spacing: .02em; }
+      .subtitle { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <button type="button" class="nav-btn" onclick="goBack()">← 뒤로가기</button>
+      <button type="button" class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 다크</button>
+    </div>
+
+    <header>
+      <img class="logo" src="https://xginini-dot.github.io/jinsul/진설로고.png" alt="JINSUL Logo">
+      <div class="badge-row">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          신경차단술 · 통합 통계 도구
+        </div>
+      </div>
+      <h1>통계 대시보드 선택</h1>
+      <p class="subtitle">
+        사용하실 프로그램에 맞는 대시보드를 선택해 주세요.<br />
+        같은 컨셉의 화면에서 <b>비트(환자별 소모통계)</b>와
+        <b>의사랑 통계</b>를 각각 별도로 분석할 수 있습니다.
+      </p>
+    </header>
+
+    <main class="grid">
+      <a href="index1.html" class="card-link">
+        <article class="card">
+          <div>
+            <div class="icon">📊</div>
+            <div class="card-label">
+              <span class="pill">비트 / 환자별 소모통계</span>
+              <span>엑셀 업로드 자동 계산</span>
+            </div>
+            <h2 class="card-title">비트 통계계산</h2>
+            <p class="card-desc">
+              비트 <b>환자별 소모통계</b> 엑셀 파일을 업로드하면<br />
+              보험유형별 · 65세 이상/미만 기준으로<br />
+              <b>신경차단술 수신자당·건당 횟수</b>를 자동 계산합니다.
+            </p>
+            <div class="card-meta">
+              <span>· 국민건강보험 / 의료급여 / 자보 구분</span>
+              <span>· 수신자당 / 건당 / 평균 주사 횟수</span>
+            </div>
+          </div>
+          <div class="status">바로가기 →</div>
+          <div class="arrow">➜</div>
+        </article>
+      </a>
+
+      <a href="index2.html" class="card-link">
+        <article class="card">
+          <div>
+            <div class="icon">📈</div>
+            <div class="card-label">
+              <span class="pill">의사랑</span>
+              <span>의사랑 통계용 버전</span>
+            </div>
+            <h2 class="card-title">의사랑 통계계산</h2>
+            <p class="card-desc">
+              의사랑에서 추출한 통계 데이터를 기반으로<br />
+              동일한 기준(보험유형 · 연령 등)으로<br />
+              <b>신경차단술 통계를 별도로 조회</b>합니다.
+            </p>
+            <div class="card-meta">
+              <span>· 의사랑 포맷에 맞는 컬럼 자동 인식</span>
+              <span>· 비트 계산 결과와 비교 분석용</span>
+            </div>
+          </div>
+          <div class="status">바로가기 →</div>
+          <div class="arrow">➜</div>
+        </article>
+      </a>
+    </main>
+
+    <footer>
+      ※ index1.html · index2.html 파일은 같은 폴더에 두고 사용하시면 됩니다.<br>
+      © JINSUL · 경험과 가치를 현실화하는 컨설팅
+    </footer>
+  </div>
+
+  <script>
+    function syncThemeButton() {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = theme === 'dark' ? '☀️ 라이트' : '🌙 다크';
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('jinsul-dashboard-theme', next);
+      syncThemeButton();
+    }
+
+    function goBack() {
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = './';
+    }
+
+    (function initTheme() {
+      const saved = localStorage.getItem('jinsul-dashboard-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      window.addEventListener('DOMContentLoaded', syncThemeButton);
+    })();
+  </script>
+</body>
+</html>
