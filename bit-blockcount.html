@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>신경차단술 수신자당 횟수 조회</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- SheetJS (엑셀 파서 + 엑셀 다운로드) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #0b1120;
+      --accent: #f97316;
+      --accent-soft: rgba(249,115,22,0.12);
+      --accent-border: rgba(249,115,22,0.4);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --table-border: #1f2937;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%);
+      color: var(--text);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0.03em;
+    }
+
+    .sub {
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      border: 1px solid #111827;
+      max-width: 98vw;
+      margin-bottom: 16px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .row > .col {
+      flex: 1 1 520px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #fed7aa;
+      font-size: 11px;
+      margin-right: 8px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid var(--table-border);
+      padding: 6px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #020617;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #020617;
+    }
+
+    tbody tr:nth-child(odd) {
+      background: #020617;
+    }
+
+    tbody tr.highlight {
+      background: #111827;
+      font-weight: 600;
+    }
+
+    .num-red {
+      color: #f97316;
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    code {
+      font-size: 11px;
+      background: #020617;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 4px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-actions button {
+      border-radius: 999px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      color: #fed7aa;
+      font-size: 11px;
+      padding: 5px 12px;
+      cursor: pointer;
+    }
+
+    .top-actions button:hover {
+      border-color: var(--accent);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 14px;
+      align-items: start;
+      margin-top: 10px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--table-border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.55);
+      overflow-x: auto;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 980px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 16px; }
+      .card { padding: 14px 12px; }
+      table { font-size: 11px; }
+      th, td { padding: 4px 5px; }
+    }
+  
+/* ===== 데스크톱 초광폭 레이아웃 보정 ===== */
+@media (min-width: 1200px) {
+  body {
+    padding: 18px 28px;
+  }
+
+  .card {
+    max-width: 98vw !important;
+    width: 98vw !important;
+  }
+
+  table {
+    width: 100% !important;
+    table-layout: auto;
+  }
+
+  th, td {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .row > .col {
+    flex: 1 1 620px !important;
+  }
+
+  #tableSummaryWrapper,
+  #tableAgeWrapper,
+  #tableComboWrapper,
+  #tableDoseComboWrapper,
+  #tableUnitPriceWrapper,
+  .extra-grid,
+  .extra-card {
+    width: 100% !important;
+    max-width: none !important;
+    overflow-x: visible !important;
+  }
+
+  .extra-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 2.1fr) minmax(420px, 0.9fr) !important;
+    gap: 18px !important;
+    align-items: start;
+  }
+}
+
+@media (min-width: 1700px) {
+  .extra-grid {
+    grid-template-columns: minmax(0, 2.3fr) minmax(480px, 0.8fr) !important;
+  }
+
+  th, td {
+    padding: 8px 14px !important;
+  }
+}
+
+
+/* ===== LA코드별 단가 리스트 가로 스크롤 제거 최적화 ===== */
+#tableUnitPriceWrapper {
+  overflow-x: visible !important;
+}
+
+#tableUnitPriceWrapper table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+#tableUnitPriceWrapper th,
+#tableUnitPriceWrapper td {
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  padding: 7px 8px !important;
+  line-height: 1.35 !important;
+  font-size: 12px !important;
+}
+
+#tableUnitPriceWrapper th:nth-child(1),
+#tableUnitPriceWrapper td:nth-child(1) {
+  width: 62px !important;
+}
+
+#tableUnitPriceWrapper th:nth-child(2),
+#tableUnitPriceWrapper td:nth-child(2) {
+  width: auto !important;
+  text-align: left !important;
+}
+
+#tableUnitPriceWrapper th:nth-child(3),
+#tableUnitPriceWrapper td:nth-child(3) {
+  width: 86px !important;
+}
+
+#tableUnitPriceWrapper th:nth-child(4),
+#tableUnitPriceWrapper td:nth-child(4) {
+  width: 72px !important;
+}
+
+#tableUnitPriceWrapper th:nth-child(5),
+#tableUnitPriceWrapper td:nth-child(5) {
+  width: 64px !important;
+}
+
+@media (min-width: 1200px) {
+  .extra-grid {
+    grid-template-columns: minmax(0, 2.45fr) minmax(520px, 0.75fr) !important;
+  }
+
+  #tableUnitPriceWrapper th,
+  #tableUnitPriceWrapper td {
+    font-size: 12px !important;
+    padding: 7px 7px !important;
+  }
+}
+
+@media (min-width: 1700px) {
+  .extra-grid {
+    grid-template-columns: minmax(0, 2.6fr) minmax(560px, 0.7fr) !important;
+  }
+}
+
+
+/* ===== 좌측 통계영역 조금 축소 + 우측 단가표 명칭칸 확대 ===== */
+@media (min-width: 1200px) {
+  .extra-grid {
+    grid-template-columns: minmax(0, 2.15fr) minmax(650px, 0.85fr) !important;
+    gap: 20px !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(2),
+  #tableUnitPriceWrapper td:nth-child(2) {
+    width: 280px !important;
+    min-width: 280px !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.45 !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(1),
+  #tableUnitPriceWrapper td:nth-child(1) {
+    width: 72px !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(3),
+  #tableUnitPriceWrapper td:nth-child(3) {
+    width: 95px !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(4),
+  #tableUnitPriceWrapper td:nth-child(4) {
+    width: 90px !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(5),
+  #tableUnitPriceWrapper td:nth-child(5) {
+    width: 70px !important;
+  }
+}
+
+@media (min-width: 1700px) {
+  .extra-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(760px, 0.95fr) !important;
+  }
+
+  #tableUnitPriceWrapper th:nth-child(2),
+  #tableUnitPriceWrapper td:nth-child(2) {
+    width: 340px !important;
+    min-width: 340px !important;
+  }
+}
+
+
+/* ===== JINSUL STANDARD DESIGN · DARK/LIGHT + BACK ===== */
+:root {
+  --brand-gold: #bea98b;
+  --brand-gold-2: #9d855f;
+  --brand-black: #111111;
+  --bg: #f4efe6;
+  --bg2: #ebe4d7;
+  --card: rgba(255,255,255,0.78);
+  --card-strong: rgba(255,255,255,0.94);
+  --accent: #bea98b;
+  --accent-soft: rgba(190,169,139,0.16);
+  --accent-border: rgba(190,169,139,0.42);
+  --text: #1f2937;
+  --muted: #6b7280;
+  --table-border: rgba(31,41,55,0.14);
+  --shadow: 0 24px 70px rgba(91,74,49,0.15);
+}
+
+html[data-theme="dark"] {
+  --bg: #080808;
+  --bg2: #201a13;
+  --card: rgba(255,255,255,0.075);
+  --card-strong: rgba(255,255,255,0.11);
+  --accent: #d8c39d;
+  --accent-soft: rgba(190,169,139,0.14);
+  --accent-border: rgba(190,169,139,0.42);
+  --text: #f5efe5;
+  --muted: #b8b1a4;
+  --table-border: rgba(190,169,139,0.22);
+  --shadow: 0 24px 70px rgba(0,0,0,0.42);
+}
+
+body {
+  min-height: 100vh !important;
+  padding: 28px 24px 48px !important;
+  background:
+    radial-gradient(circle at top center, rgba(190,169,139,0.24), transparent 38%),
+    linear-gradient(135deg, var(--bg), var(--bg2)) !important;
+  color: var(--text) !important;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("https://xginini-dot.github.io/jinsul/진설로고.png");
+  background-repeat: no-repeat;
+  background-position: center 42%;
+  background-size: min(560px, 62vw);
+  opacity: 0.045;
+  filter: grayscale(1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.jinsul-hero {
+  max-width: 1280px;
+  margin: 0 auto 22px;
+  text-align: center;
+  padding: 28px 12px 10px;
+}
+
+.jinsul-logo {
+  width: 230px;
+  max-width: 60vw;
+  height: auto;
+  object-fit: contain;
+  opacity: .86;
+  filter: drop-shadow(0 18px 35px rgba(0,0,0,.18));
+  margin-bottom: 14px;
+}
+
+html[data-theme="dark"] .jinsul-logo {
+  opacity: .9;
+  filter: drop-shadow(0 18px 35px rgba(0,0,0,.55));
+}
+
+.jinsul-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--brand-gold-2);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  margin-bottom: 12px;
+}
+
+html[data-theme="dark"] .jinsul-kicker {
+  color: #d8c39d;
+}
+
+.jinsul-hero-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 950;
+  letter-spacing: .08em;
+  color: var(--text);
+}
+
+.jinsul-hero-sub {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.card {
+  max-width: 1280px !important;
+  width: min(1280px, calc(100vw - 48px)) !important;
+  margin: 0 auto 18px !important;
+  background: linear-gradient(180deg, var(--card), rgba(255,255,255,0.42)) !important;
+  border: 1px solid var(--accent-border) !important;
+  border-radius: 26px !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(18px);
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .card {
+  background: linear-gradient(180deg, var(--card-strong), var(--card)) !important;
+}
+
+h1 {
+  color: var(--text) !important;
+  font-size: clamp(24px, 2.4vw, 34px) !important;
+  letter-spacing: -.04em !important;
+}
+
+.sub, .hint, label, .status, footer {
+  color: var(--muted) !important;
+}
+
+.badge {
+  background: var(--accent-soft) !important;
+  border: 1px solid var(--accent-border) !important;
+  color: var(--accent) !important;
+  font-weight: 900;
+}
+
+.badge-dot {
+  background: var(--accent) !important;
+}
+
+.top-actions {
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin: 16px 0 18px !important;
+}
+
+.top-actions button,
+#btn-toggle-extra {
+  min-height: 38px;
+  border-radius: 14px !important;
+  border: 1px solid var(--accent-border) !important;
+  background: var(--card-strong) !important;
+  color: var(--text) !important;
+  font-weight: 900 !important;
+  font-size: 12px !important;
+  padding: 8px 15px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.top-actions button:hover,
+#btn-toggle-extra:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+}
+
+#btn-theme-toggle {
+  background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-2)) !important;
+  color: #fff !important;
+}
+
+input[type="file"], select {
+  background: var(--card-strong) !important;
+  border: 1px solid var(--table-border) !important;
+  color: var(--text) !important;
+  min-height: 42px;
+  border-radius: 14px !important;
+}
+
+code {
+  background: var(--accent-soft) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px !important;
+  padding: 3px 6px !important;
+}
+
+.section-title {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 950 !important;
+  border-left: 5px solid var(--accent);
+  padding-left: 11px;
+  margin-top: 12px !important;
+}
+
+table {
+  background: transparent !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--table-border);
+}
+
+th, td {
+  border: 0 !important;
+  border-bottom: 1px solid var(--table-border) !important;
+  border-right: 1px solid var(--table-border) !important;
+  color: var(--text) !important;
+}
+
+th {
+  background: var(--accent-soft) !important;
+  color: var(--text) !important;
+  font-weight: 950 !important;
+}
+
+tbody tr:nth-child(even),
+tbody tr:nth-child(odd) {
+  background: rgba(255,255,255,0.22) !important;
+}
+
+html[data-theme="dark"] tbody tr:nth-child(even),
+html[data-theme="dark"] tbody tr:nth-child(odd) {
+  background: rgba(255,255,255,0.035) !important;
+}
+
+tbody tr.highlight {
+  background: var(--accent-soft) !important;
+  font-weight: 950 !important;
+}
+
+.num-red {
+  color: #f97316 !important;
+  font-weight: 950 !important;
+}
+
+.mini-card {
+  background: var(--card-strong) !important;
+  border: 1px solid var(--accent-border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 720px) {
+  body { padding: 18px 12px 36px !important; }
+  .card { width: calc(100vw - 24px) !important; border-radius: 22px !important; }
+  .jinsul-logo { width: 180px; }
+  .top-actions { justify-content: stretch !important; }
+  .top-actions button { flex: 1 1 auto; }
+}
+
+</style>
+</head>
+<body>
+
+  <section class="jinsul-hero">
+    <img class="jinsul-logo" src="https://xginini-dot.github.io/jinsul/진설로고.png" alt="JINSUL Logo">
+    <div class="jinsul-kicker">JINSUL STATISTICS SYSTEM</div>
+    <h2 class="jinsul-hero-title">BLOCK STATISTICS</h2>
+    <p class="jinsul-hero-sub">비트 환자별 소모통계 엑셀 기반 · 신경차단술 수신자당 횟수 조회</p>
+  </section>
+  <div class="card">
+    <div class="flex-between">
+      <div>
+        <div class="badge">
+          <span class="badge-dot"></span>
+          신경차단술 자동 통계
+        </div>
+        <h1>신경차단술 수신자당 횟수 조회</h1>
+        <div class="sub">
+          비트 <b>환자별 소모통계</b> 엑셀(1~2월 등)을 업로드하면<br/>
+          보험유형별 · 65세 이상/미만 수신자당 신경차단술 횟수를 계산합니다.<br/>
+          <span style="font-size:12px;color:var(--muted);">
+            ※ 동일 환자(차트번호)·동일 날짜에 여러 LA코드가 있어도 <b>1회 방문</b>으로 합산합니다.
+          </span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-align:right;">
+        LA 코드 (파일 내 실제 사용분):<br/>
+        <code id="laCodeList">-</code>
+      </div>
+    </div>
+
+    <!-- 상단 버튼: 뒤로가기 / 초기화 / 엑셀 다운로드 -->
+    <div class="top-actions">
+      <button type="button" id="btn-back">← 뒤로가기</button>
+      <button type="button" id="btn-theme-toggle">🌙 다크</button>
+      <button type="button" id="btn-reset-all">초기화</button>
+      <button type="button" id="btn-export-excel">엑셀 다운로드</button>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label for="file">환자별 소모통계 엑셀 파일 (*.xls, *.xlsx)</label>
+        <input type="file" id="file" accept=".xls,.xlsx" />
+        <div class="hint">
+          비트 <b>환자별 소모통계</b>에서 추출한 원본 그대로 올리시면 됩니다.<br/>
+          필수 컬럼(제목만 맞으면 됩니다):<br/>
+          <code>코드, 보험유형, 환자번호/차트번호, 일자, 주민번호(또는 생년월일), 총투여량 또는 (1회투여량+투여일수)</code>
+        </div>
+      </div>
+
+      <div class="col">
+        <label>조회 월 (n~m월)</label>
+        <div class="row" style="gap:8px;">
+          <div class="col">
+            <select id="monthStart" disabled></select>
+          </div>
+          <div class="col">
+            <select id="monthEnd" disabled></select>
+          </div>
+        </div>
+        <div class="hint">
+          업로드 후 선택 가능합니다. 예)<br/>
+          <code>2025-01 ~ 2025-02</code>, <code>2025-02 ~ 2025-02</code>(2월만) 등 범위 조회.
+        </div>
+      </div>
+    </div>
+
+    <div id="status" class="status">엑셀 파일을 선택하면 자동으로 분석합니다.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">① 신경차단술 요약 (보험유형별)</div>
+    <div id="tableSummaryWrapper"></div>
+
+    <div class="section-title" style="margin-top:18px;">② 65세 이상 / 65세 미만 비율 및 건당 횟수</div>
+    <div id="tableAgeWrapper"></div>
+
+    <div class="section-title" style="margin-top:18px;">③ LA코드 단독/조합 통계</div>
+    <div class="hint">
+      동일 환자(차트번호)·동일 날짜 기준으로 들어간 LA코드를 묶어 집계합니다.<br/>
+      예) 같은 날짜에 <code>LA358</code>만 있으면 <code>LA358</code> 1건, <code>LA358</code>, <code>LA272</code>가 같이 있으면 <code>LA272 + LA358</code> 1건으로 계산합니다.
+    </div>
+    <div id="tableComboWrapper"></div>
+
+    <div class="flex-between" style="margin-top:18px;">
+      <div>
+        <div class="section-title">④ 추가정보 보기</div>
+        <div class="hint">
+          환자 1명·동일 날짜 기준으로 <b>LA코드별 총투여량까지 포함한 조합</b>을 집계합니다.<br/>
+          예) <code>LA247 1.5 + LA357 1.5 = 3.0</code> 기준으로 해당조합 금액, 조합건수, 조합비율, 전체조합비용을 계산합니다.
+        </div>
+      </div>
+      <button type="button" id="btn-toggle-extra" style="border-radius:999px;border:1px solid var(--accent-border);background:var(--accent-soft);color:#fed7aa;font-size:11px;padding:6px 14px;cursor:pointer;">추가정보 보기</button>
+    </div>
+    <div id="extraInfoArea" class="detail-grid hidden">
+      <div class="mini-card">
+        <div class="section-title">조합별 투여량·금액 상세</div>
+        <div id="tableComboDoseWrapper"></div>
+      </div>
+      <div class="mini-card">
+        <div class="section-title">LA코드별 단가 리스트</div>
+        <div id="tableUnitPriceWrapper"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 설정값 =====
+    // LA코드는 LA200 ~ LA400 사이만 신경차단술로 인정
+    const LA_MIN = 200;
+    const LA_MAX = 400;
+
+    // 보험유형 표시 순서
+    const TYPE_ORDER = [
+      "총합계",
+      "국민건강보험",
+      "보호1종",
+      "보호2종",
+      "일반",
+      "자보-청구분",
+      "건보+보호"
+    ];
+
+    const statusEl = document.getElementById("status");
+    const tableSummaryWrapper = document.getElementById("tableSummaryWrapper");
+    const tableAgeWrapper = document.getElementById("tableAgeWrapper");
+    const tableComboWrapper = document.getElementById("tableComboWrapper");
+    const tableComboDoseWrapper = document.getElementById("tableComboDoseWrapper");
+    const tableUnitPriceWrapper = document.getElementById("tableUnitPriceWrapper");
+    const extraInfoArea = document.getElementById("extraInfoArea");
+    const btnToggleExtra = document.getElementById("btn-toggle-extra");
+    const fileInput = document.getElementById("file");
+    const monthStartSelect = document.getElementById("monthStart");
+    const monthEndSelect = document.getElementById("monthEnd");
+    const laCodeListEl = document.getElementById("laCodeList");
+
+    const btnBack = document.getElementById("btn-back");
+    const btnThemeToggle = document.getElementById("btn-theme-toggle");
+    const btnResetAll = document.getElementById("btn-reset-all");
+    const btnExportExcel = document.getElementById("btn-export-excel");
+
+
+    // ===== JINSUL 다크/라이트 모드 =====
+    function applyTheme(theme) {
+      const next = theme === "dark" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("jinsul-theme", next);
+      if (btnThemeToggle) {
+        btnThemeToggle.textContent = next === "dark" ? "☀️ 라이트" : "🌙 다크";
+      }
+    }
+
+    applyTheme(localStorage.getItem("jinsul-theme") || "light");
+
+    if (btnThemeToggle) {
+      btnThemeToggle.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme") || "light";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
+    }
+
+    let allRows = [];    // 전체 엑셀 데이터 (JSON)
+    let allMonths = [];  // 발견된 월 리스트 (YYYY-MM)
+
+    // 자동 컬럼 매핑 정보
+    let colMap = {
+      code: null,       // LA 코드
+      type: null,       // 보험유형
+      chart: null,      // 차트번호/환자번호
+      date: null,       // 일자
+      rrn: null,        // 주민번호/생년월일
+      totalDose: null,  // 총투여량
+      dose: null,       // 1회투여량
+      days: null,       // 투여일수
+      name: null,       // 처방명칭
+      unitPrice: null,  // 단가
+      amount: null      // 금액
+    };
+
+    // ===== 이벤트 바인딩 =====
+    fileInput.addEventListener("change", handleFile);
+    monthStartSelect.addEventListener("change", recalc);
+    monthEndSelect.addEventListener("change", recalc);
+
+    btnBack.addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // 히스토리가 없을 때는 메인 선택 화면으로
+        window.location.href = "index.html";
+      }
+    });
+
+    btnResetAll.addEventListener("click", handleResetAll);
+    btnExportExcel.addEventListener("click", exportToExcel);
+
+    btnToggleExtra.addEventListener("click", () => {
+      const isHidden = extraInfoArea.classList.toggle("hidden");
+      btnToggleExtra.textContent = isHidden ? "추가정보 보기" : "추가정보 닫기";
+    });
+
+    // ========== 기간 라벨 공통 함수 ==========
+    function getPeriodLabel(startYm, endYm) {
+      if (!startYm || !endYm || startYm === "전체" || endYm === "전체") {
+        return "신경차단술 (전체 기간)";
+      } else if (startYm === endYm) {
+        return `${startYm} 신경차단술`;
+      } else {
+        return `${startYm} ~ ${endYm} 신경차단술`;
+      }
+    }
+
+    // ========== 파일 로딩 ==========
+    function handleFile(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      statusEl.textContent = "엑셀을 읽는 중입니다...";
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = e.target.result;
+          const workbook = XLSX.read(data, {
+            type: "binary",
+            cellDates: true,
+          });
+
+          const firstSheetName = workbook.SheetNames[0];
+          const ws = workbook.Sheets[firstSheetName];
+
+          const json = XLSX.utils.sheet_to_json(ws, { defval: null });
+
+          if (!json.length) {
+            statusEl.textContent = "데이터가 비어 있습니다. 시트를 확인해 주세요.";
+            return;
+          }
+
+          allRows = json;
+          colMap = detectColumns(json);
+
+          // 업로드된 파일에서 실제 사용된 LA코드 목록 계산
+          updateLaCodeList(allRows);
+
+          allMonths = extractMonths(allRows);
+          setupMonthRange(allMonths);
+
+          recalc(); // 기본 범위로 1회 계산
+
+          statusEl.textContent =
+            `행 개수: ${json.length.toLocaleString()}건 / 월: ${allMonths.length ? allMonths.join(", ") : "알 수 없음"} | ` +
+            `코드: ${colMap.code || "-"}, 유형: ${colMap.type || "-"}, 환자번호: ${colMap.chart || "-"}, ` +
+            `일자: ${colMap.date || "-"}, 주민/생년: ${colMap.rrn || "-"}`;
+        } catch (err) {
+          console.error(err);
+          statusEl.textContent = "엑셀을 읽는 중 오류가 발생했습니다. 형식을 확인해 주세요.";
+        }
+      };
+
+      reader.readAsBinaryString(file);
+    }
+
+    // ========== 업로드된 파일의 LA코드 목록 표시 ==========
+    function updateLaCodeList(rows) {
+      const set = new Set();
+
+      for (const r of rows) {
+        const rawCode = colMap.code ? r[colMap.code] : null;
+        const code = normalizeLACode(rawCode);
+        if (!code) continue;
+        if (isLACode(code)) {
+          set.add(code);
+        }
+      }
+
+      const list = Array.from(set).sort((a,b) => a.localeCompare(b, "ko", {numeric:true}));
+      laCodeListEl.textContent = list.length ? list.join(", ") : "-";
+    }
+
+    // ========== 컬럼 자동 인식 ==========
+    function detectColumns(rows) {
+      const first = rows[0] || {};
+      const keys = Object.keys(first);
+      const map = {
+        code: null,
+        type: null,
+        chart: null,
+        date: null,
+        rrn: null,
+        totalDose: null,
+        dose: null,
+        days: null,
+        name: null,
+        unitPrice: null,
+        amount: null
+      };
+
+      keys.forEach(k => {
+        const lk = k.toLowerCase();
+
+        // 코드
+        if (!map.code && (lk.includes("코드") || lk.includes("la"))) {
+          map.code = k;
+        }
+
+        // 보험유형
+        if (!map.type && (lk.includes("유형") || lk.includes("보험") || lk.includes("급여"))) {
+          map.type = k;
+        }
+
+        // 차트번호 / 환자번호
+        if (!map.chart && (lk.includes("차트") || lk.includes("환자번호") ||
+                           lk.includes("등록번호") || lk.includes("환자"))) {
+          map.chart = k;
+        }
+
+        // 일자/날짜
+        if (!map.date && (lk.includes("일자") || lk.includes("날짜"))) {
+          map.date = k;
+        }
+
+        // 주민번호 / 생년월일
+        if (!map.rrn && (lk.includes("주민") || lk.includes("생년"))) {
+          map.rrn = k;
+        }
+
+        // 총투여량
+        if (!map.totalDose && (lk.includes("총투") || lk.includes("총 투여") ||
+                               lk.includes("총량") || lk.includes("합계"))) {
+          map.totalDose = k;
+        }
+
+        // 1회투여량
+        if (!map.dose && (lk.includes("1회") || (lk.includes("투여") && !lk.includes("총")))) {
+          map.dose = k;
+        }
+
+        // 투여일수
+        if (!map.days && lk.includes("일수")) {
+          map.days = k;
+        }
+
+        // 처방명칭
+        if (!map.name && (lk.includes("명칭") || lk.includes("처방명") || lk.includes("수가명") || lk.includes("명"))) {
+          map.name = k;
+        }
+
+        // 단가
+        if (!map.unitPrice && lk.includes("단가")) {
+          map.unitPrice = k;
+        }
+
+        // 금액
+        if (!map.amount && (lk.includes("금액") || lk.includes("비용") || lk.includes("청구액"))) {
+          map.amount = k;
+        }
+      });
+
+      // 기본값(혹시 못 잡았을 때)
+      map.code      = map.code      || "처방코드";
+      map.type      = map.type      || "유형";
+      map.chart     = map.chart     || "차트번호";
+      map.date      = map.date      || "처방일자";
+      map.rrn       = map.rrn       || "주민번호";
+      map.totalDose = map.totalDose || "총투여량";
+      map.name      = map.name      || "처방명칭";
+      map.unitPrice = map.unitPrice || "단가";
+      map.amount    = map.amount    || "금액";
+
+      return map;
+    }
+
+    // ========== 월 리스트/범위 설정 ==========
+    function extractMonths(rows) {
+      const set = new Set();
+      for (const r of rows) {
+        const date = parseDate(colMap.date ? r[colMap.date] : null);
+        if (!date) continue;
+        const ym = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`;
+        set.add(ym);
+      }
+      return Array.from(set).sort();
+    }
+
+    function setupMonthRange(months) {
+      monthStartSelect.innerHTML = "";
+      monthEndSelect.innerHTML = "";
+
+      if (!months.length) {
+        const o1 = document.createElement("option");
+        o1.value = "all";
+        o1.textContent = "전체";
+        monthStartSelect.appendChild(o1);
+
+        const o2 = document.createElement("option");
+        o2.value = "all";
+        o2.textContent = "전체";
+        monthEndSelect.appendChild(o2);
+
+        monthStartSelect.disabled = true;
+        monthEndSelect.disabled = true;
+        return;
+      }
+
+      const addOptions = (select) => {
+        const optAll = document.createElement("option");
+        optAll.value = "all";
+        optAll.textContent = "전체";
+        select.appendChild(optAll);
+
+        months.forEach(m => {
+          const o = document.createElement("option");
+          o.value = m;
+          o.textContent = m;
+          select.appendChild(o);
+        });
+      };
+
+      addOptions(monthStartSelect);
+      addOptions(monthEndSelect);
+
+      monthStartSelect.disabled = false;
+      monthEndSelect.disabled = false;
+
+      monthStartSelect.value = months[0];
+      monthEndSelect.value = months[months.length - 1];
+    }
+
+    // ========== 재계산 메인 (화면용) ==========
+    function recalc() {
+      if (!allRows.length) return;
+
+      const startKey = monthStartSelect.value || "all";
+      const endKey   = monthEndSelect.value   || "all";
+
+      const monthsSorted = [...allMonths].sort();
+      const minMonth = monthsSorted[0];
+      const maxMonth = monthsSorted[monthsSorted.length - 1];
+
+      const realStart = (startKey === "all" || !startKey) ? minMonth : startKey;
+      const realEnd   = (endKey   === "all" || !endKey)   ? maxMonth : endKey;
+
+      const useMonthFilter = Boolean(realStart && realEnd);
+
+      // 1) LA 코드 + 월 범위 필터
+      const filtered = allRows.filter(row => {
+        const codeVal = colMap.code ? row[colMap.code] : null;
+        const code = normalizeCode(codeVal);
+        if (!code || !isLACode(code)) return false;
+
+        const dateVal = colMap.date ? row[colMap.date] : null;
+        const date = parseDate(dateVal);
+        if (!date || !useMonthFilter) return true;
+
+        const ym = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`;
+        if (ym < realStart || ym > realEnd) return false;
+
+        return true;
+      });
+
+      if (!filtered.length) {
+        tableSummaryWrapper.innerHTML = "<div class='hint'>선택한 기간에 해당하는 신경차단술(LA코드) 처방이 없습니다.</div>";
+        tableAgeWrapper.innerHTML = "";
+        tableComboWrapper.innerHTML = "";
+        tableComboDoseWrapper.innerHTML = "";
+        tableUnitPriceWrapper.innerHTML = "";
+        return;
+      }
+
+      // 2) 통계 계산
+      const stats = calcStats(filtered);
+      const comboStats = calcComboStats(filtered);
+      const comboDoseStats = calcComboDoseStats(filtered);
+      const unitPriceStats = calcUnitPriceStats(filtered);
+
+      // 3) 테이블 렌더링
+      renderSummaryTable(stats, realStart || "전체", realEnd || "전체");
+      renderAgeTable(stats);
+      renderComboTable(comboStats);
+      renderComboDoseTable(comboDoseStats);
+      renderUnitPriceTable(unitPriceStats);
+    }
+
+    // ========== 실제 통계 계산 ==========
+    function calcStats(rows) {
+      const byType = {};
+
+      function ensureType(type) {
+        if (!byType[type]) {
+          byType[type] = {
+            type,
+            visitKeys: new Set(),
+            patientKeys: new Set(),
+            totalDose: 0,
+            ageGroups: {
+              "65+": { visitKeys: new Set(), totalDose: 0 },
+              "<65": { visitKeys: new Set(), totalDose: 0 }
+            }
+          };
+        }
+        return byType[type];
+      }
+
+      for (const r of rows) {
+        const typeRaw = (colMap.type ? r[colMap.type] : (r["유형"] || r["보험유형"] || "")).toString().trim();
+        const type = typeRaw || "기타";
+        const stat = ensureType(type);
+
+        const chart = (colMap.chart ? r[colMap.chart] : (r["차트번호"] || r["등록번호"] || "")).toString().trim();
+        const dateVal = colMap.date ? r[colMap.date] : (r["처방일자"] || r["진료일자"]);
+        const date = parseDate(dateVal);
+
+        const visitKey = chart && date
+          ? `${chart}|${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`
+          : `${chart}|${dateVal || ""}`;
+
+        const totalDoseVal = colMap.totalDose ? r[colMap.totalDose] : r["총투여량"];
+        const doseVal      = colMap.dose      ? r[colMap.dose]      : r["투여량"];
+        const daysVal      = colMap.days      ? r[colMap.days]      : r["투여일수"];
+
+        let dose =
+          toNumber(totalDoseVal) ||
+          (toNumber(doseVal) * (toNumber(daysVal) || 1)) ||
+          0;
+
+        if (chart) stat.patientKeys.add(chart);
+        if (visitKey) stat.visitKeys.add(visitKey);
+        stat.totalDose += dose;
+
+        const rrnRaw = colMap.rrn ? r[colMap.rrn] : (r["주민번호"] || r["생년월일"] || "");
+        const rrn = (rrnRaw || "").toString();
+        const birthDate = parseBirthDate(rrn);
+        const age = (birthDate && date) ? calcAge(birthDate, date) : null;
+
+        if (age !== null) {
+          const groupKey = age >= 65 ? "65+" : "<65";
+          const g = stat.ageGroups[groupKey];
+          if (visitKey) g.visitKeys.add(visitKey);
+          g.totalDose += dose;
+        }
+      }
+
+      const result = {};
+
+      Object.keys(byType).forEach(type => {
+        result[type] = finalizeTypeStat(byType[type]);
+      });
+
+      // 총합계
+      const total = {
+        type: "총합계",
+        visitCount: 0,
+        patientCount: 0,
+        totalDose: 0,
+        perVisit: 0,
+        perPatient: 0,
+        avgInjection: 0,
+        ageGroups: {
+          "65+": { visitCount: 0, totalDose: 0 },
+          "<65": { visitCount: 0, totalDose: 0 }
+        }
+      };
+
+      for (const t of Object.keys(result)) {
+        const s = result[t];
+        total.visitCount += s.visitCount;
+        total.patientCount += s.patientCount;
+        total.totalDose += s.totalDose;
+        for (const g of ["65+","<65"]) {
+          total.ageGroups[g].visitCount += s.ageGroups[g].visitCount;
+          total.ageGroups[g].totalDose += s.ageGroups[g].totalDose;
+        }
+      }
+
+      total.perVisit = total.visitCount ? total.totalDose / total.visitCount : 0;
+      total.perPatient = total.patientCount ? total.totalDose / total.patientCount : 0;
+      total.avgInjection = total.patientCount ? total.visitCount / total.patientCount : 0;
+
+      result["총합계"] = total;
+
+      // 건보+보호
+      const gbpTypes = ["국민건강보험","보호1종","보호2종"];
+      const gbp = {
+        type: "건보+보호",
+        visitCount: 0,
+        patientCount: 0,
+        totalDose: 0,
+        perVisit: 0,
+        perPatient: 0,
+        avgInjection: 0,
+        ageGroups: {
+          "65+": { visitCount: 0, totalDose: 0 },
+          "<65": { visitCount: 0, totalDose: 0 }
+        }
+      };
+
+      for (const t of gbpTypes) {
+        const s = result[t];
+        if (!s) continue;
+        gbp.visitCount += s.visitCount;
+        gbp.patientCount += s.patientCount;
+        gbp.totalDose += s.totalDose;
+        for (const g of ["65+","<65"]) {
+          gbp.ageGroups[g].visitCount += s.ageGroups[g].visitCount;
+          gbp.ageGroups[g].totalDose += s.ageGroups[g].totalDose;
+        }
+      }
+
+      gbp.perVisit = gbp.visitCount ? gbp.totalDose / gbp.visitCount : 0;
+      gbp.perPatient = gbp.patientCount ? gbp.totalDose / gbp.patientCount : 0;
+      gbp.avgInjection = gbp.patientCount ? gbp.visitCount / gbp.patientCount : 0;
+      result["건보+보호"] = gbp;
+
+      return result;
+    }
+
+    function finalizeTypeStat(stat) {
+      const visitCount = stat.visitKeys.size;
+      const patientCount = stat.patientKeys.size;
+
+      const perVisit = visitCount ? stat.totalDose / visitCount : 0;
+      const perPatient = patientCount ? stat.totalDose / patientCount : 0;
+      const avgInjection = patientCount ? visitCount / patientCount : 0;
+
+      const ag = {};
+      for (const k of ["65+","<65"]) {
+        const g = stat.ageGroups[k];
+        ag[k] = {
+          visitCount: g.visitKeys.size,
+          totalDose: g.totalDose
+        };
+      }
+
+      return {
+        type: stat.type,
+        visitCount,
+        patientCount,
+        totalDose: stat.totalDose,
+        perVisit,
+        perPatient,
+        avgInjection,
+        ageGroups: ag
+      };
+    }
+
+    // ========== 요약 테이블 렌더링 ==========
+    function renderSummaryTable(stats, startYm, endYm) {
+      const rows = [];
+      for (const type of TYPE_ORDER) {
+        if (!stats[type]) continue;
+        rows.push(stats[type]);
+      }
+
+      const periodLabel = getPeriodLabel(startYm, endYm);
+
+      let html = "<table>";
+      html += "<thead><tr>";
+      html += `<th>${periodLabel}</th>`;
+      html += "<th>주사 환자수<br/>(방문수)</th>";
+      html += "<th>주사 총투</th>";
+      html += "<th>건당 횟수</th>";
+      html += "<th>환자수</th>";
+      html += "<th>수신자당 횟수</th>";
+      html += "<th>평균주사<br/>(방문/환자)</th>";
+      html += "</tr></thead><tbody>";
+
+      for (const r of rows) {
+        const isTotal = r.type === "총합계";
+        const isGB = r.type === "건보+보호";
+
+        html += `<tr class="${isTotal || isGB ? "highlight" : ""}">`;
+        html += `<td>${r.type}</td>`;
+        html += `<td>${formatInt(r.visitCount)}</td>`;
+        html += `<td>${formatNumber(r.totalDose)}</td>`;
+        html += `<td class="num-red">${formatNumber(r.perVisit)}</td>`;
+        html += `<td>${formatInt(r.patientCount)}</td>`;
+        html += `<td class="num-red">${formatNumber(r.perPatient)}</td>`;
+        html += `<td>${formatNumber(r.avgInjection)}</td>`;
+        html += "</tr>";
+      }
+
+      html += "</tbody></table>";
+      tableSummaryWrapper.innerHTML = html;
+    }
+
+    // ========== 연령대 테이블 렌더링 ==========
+    function renderAgeTable(stats) {
+      const targetTypes = ["국민건강보험","보호1종","보호2종","일반","자보-청구분"];
+
+      let html = "<table>";
+      html += "<thead><tr>";
+      html += "<th>신경차단술 / 유형</th>";
+      html += "<th>65세이상 비율</th>";
+      html += "<th>65세미만 비율</th>";
+      html += "<th>65세이상 건당 횟수</th>";
+      html += "<th>65세미만 건당 횟수</th>";
+      html += "</tr></thead><tbody>";
+
+      for (const type of targetTypes) {
+        const s = stats[type];
+        if (!s) continue;
+
+        const g65 = s.ageGroups["65+"] || { visitCount: 0, totalDose: 0 };
+        const gU  = s.ageGroups["<65"] || { visitCount: 0, totalDose: 0 };
+
+        const totalVisit = g65.visitCount + gU.visitCount;
+
+        const pct65 = totalVisit ? (g65.visitCount / totalVisit * 100) : 0;
+        const pctU  = totalVisit ? (gU.visitCount  / totalVisit * 100) : 0;
+
+        const perVisit65 = g65.visitCount ? g65.totalDose / g65.visitCount : 0;
+        const perVisitU  = gU.visitCount  ? gU.totalDose  / gU.visitCount  : 0;
+
+        html += "<tr>";
+        html += `<td>${type}</td>`;
+        html += `<td>${pct65.toFixed(2)}%</td>`;
+        html += `<td>${pctU.toFixed(2)}%</td>`;
+        html += `<td>${formatNumber(perVisit65)}</td>`;
+        html += `<td>${formatNumber(perVisitU)}</td>`;
+        html += "</tr>";
+      }
+
+      html += "</tbody></table>";
+      tableAgeWrapper.innerHTML = html;
+    }
+
+
+    // ========== LA코드 단독/조합 통계 계산 ==========
+    function calcComboStats(rows) {
+      const visitMap = new Map();
+
+      for (const r of rows) {
+        const codeVal = colMap.code ? r[colMap.code] : null;
+        const code = normalizeLACode(codeVal);
+        if (!code || !isLACode(code)) continue;
+
+        const chart = (colMap.chart ? r[colMap.chart] : (r["차트번호"] || r["등록번호"] || "")).toString().trim();
+        const dateVal = colMap.date ? r[colMap.date] : (r["처방일자"] || r["진료일자"]);
+        const date = parseDate(dateVal);
+
+        if (!chart || !date) continue;
+
+        const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+        const visitKey = `${chart}|${dateKey}`;
+
+        if (!visitMap.has(visitKey)) {
+          visitMap.set(visitKey, {
+            chart,
+            dateKey,
+            codes: new Set()
+          });
+        }
+
+        visitMap.get(visitKey).codes.add(code);
+      }
+
+      const comboMap = new Map();
+      let totalVisits = 0;
+      let singleVisits = 0;
+      let multiVisits = 0;
+
+      for (const v of visitMap.values()) {
+        const codes = Array.from(v.codes).sort((a,b) => a.localeCompare(b, "ko", {numeric:true}));
+        if (!codes.length) continue;
+
+        totalVisits += 1;
+        if (codes.length === 1) singleVisits += 1;
+        if (codes.length >= 2) multiVisits += 1;
+
+        // 단독 LA코드도 포함: LA358 단독이면 "LA358", 복합이면 "LA272 + LA358"
+        const comboKey = codes.join(" + ");
+
+        if (!comboMap.has(comboKey)) {
+          comboMap.set(comboKey, {
+            combo: comboKey,
+            count: 0,
+            codeCount: codes.length
+          });
+        }
+
+        comboMap.get(comboKey).count += 1;
+      }
+
+      const rowsOut = Array.from(comboMap.values())
+        .sort((a,b) => {
+          if (b.count !== a.count) return b.count - a.count;
+          if (a.codeCount !== b.codeCount) return a.codeCount - b.codeCount;
+          return a.combo.localeCompare(b.combo, "ko", {numeric:true});
+        })
+        .map((r, idx) => ({
+          rank: idx + 1,
+          combo: r.combo,
+          count: r.count,
+          codeCount: r.codeCount,
+          typeLabel: r.codeCount === 1 ? "단독" : "조합",
+          pctOfAllVisits: totalVisits ? (r.count / totalVisits * 100) : 0
+        }));
+
+      return {
+        totalVisits,
+        singleVisits,
+        multiVisits,
+        rows: rowsOut
+      };
+    }
+
+    // ========== LA코드 단독/조합 테이블 렌더링 ==========
+    function renderComboTable(comboStats) {
+      if (!comboStats || !comboStats.rows.length) {
+        tableComboWrapper.innerHTML =
+          "<div class='hint'>선택한 기간에는 동일 환자·동일 날짜 기준 LA코드 처방이 없습니다.</div>";
+        return;
+      }
+
+      let html = "<table>";
+      html += "<thead><tr>";
+      html += "<th>순위</th>";
+      html += "<th>구분</th>";
+      html += "<th>LA코드 단독/조합</th>";
+      html += "<th>건수</th>";
+      html += "<th>전체 LA 방문 대비</th>";
+      html += "</tr></thead><tbody>";
+
+      comboStats.rows.forEach(r => {
+        html += "<tr>";
+        html += `<td>${r.rank}</td>`;
+        html += `<td>${r.typeLabel}</td>`;
+        html += `<td>${r.combo}</td>`;
+        html += `<td>${formatInt(r.count)}</td>`;
+        html += `<td class="num-red">${r.pctOfAllVisits.toFixed(2)}%</td>`;
+        html += "</tr>";
+      });
+
+      html += "<tr class='highlight'>";
+      html += "<td colspan='3'>전체 LA 방문 합계</td>";
+      html += `<td>${formatInt(comboStats.totalVisits)}</td>`;
+      html += "<td>100.00%</td>";
+      html += "</tr>";
+
+      html += "<tr class='highlight'>";
+      html += "<td colspan='3'>단독 LA 방문 합계</td>";
+      html += `<td>${formatInt(comboStats.singleVisits)}</td>`;
+      html += `<td>${comboStats.totalVisits ? (comboStats.singleVisits / comboStats.totalVisits * 100).toFixed(2) : "0.00"}%</td>`;
+      html += "</tr>";
+
+      html += "<tr class='highlight'>";
+      html += "<td colspan='3'>2개 이상 조합 LA 방문 합계</td>";
+      html += `<td>${formatInt(comboStats.multiVisits)}</td>`;
+      html += `<td>${comboStats.totalVisits ? (comboStats.multiVisits / comboStats.totalVisits * 100).toFixed(2) : "0.00"}%</td>`;
+      html += "</tr>";
+
+      html += "</tbody></table>";
+      tableComboWrapper.innerHTML = html;
+    }
+
+
+
+
+    // ========== 추가정보: 투여량 포함 조합 통계 계산 ==========
+    function calcComboDoseStats(rows) {
+      const visitMap = new Map();
+
+      for (const r of rows) {
+        const code = normalizeLACode(colMap.code ? r[colMap.code] : null);
+        if (!code || !isLACode(code)) continue;
+
+        const chart = (colMap.chart ? r[colMap.chart] : (r["차트번호"] || r["등록번호"] || "")).toString().trim();
+        const dateVal = colMap.date ? r[colMap.date] : (r["처방일자"] || r["진료일자"]);
+        const date = parseDate(dateVal);
+        if (!chart || !date) continue;
+
+        const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+        const visitKey = `${chart}|${dateKey}`;
+
+        if (!visitMap.has(visitKey)) {
+          visitMap.set(visitKey, { chart, dateKey, codeMap: new Map(), amount: 0 });
+        }
+
+        const v = visitMap.get(visitKey);
+        const totalDoseVal = colMap.totalDose ? r[colMap.totalDose] : r["총투여량"];
+        const doseVal      = colMap.dose      ? r[colMap.dose]      : r["투여량"];
+        const daysVal      = colMap.days      ? r[colMap.days]      : r["투여일수"];
+        const dose = toNumber(totalDoseVal) || (toNumber(doseVal) * (toNumber(daysVal) || 1)) || 0;
+        const unitPrice = toNumber(colMap.unitPrice ? r[colMap.unitPrice] : r["단가"]);
+        const amountRaw = toNumber(colMap.amount ? r[colMap.amount] : r["금액"]);
+        const amount = amountRaw || (unitPrice && dose ? unitPrice * dose : 0);
+        const name = (colMap.name ? r[colMap.name] : r["처방명칭"] || "").toString().trim();
+
+        if (!v.codeMap.has(code)) {
+          v.codeMap.set(code, { code, name, dose: 0, amount: 0 });
+        }
+        const c = v.codeMap.get(code);
+        if (!c.name && name) c.name = name;
+        c.dose += dose;
+        c.amount += amount;
+        v.amount += amount;
+      }
+
+      const comboMap = new Map();
+      let totalVisits = 0;
+      let totalAmount = 0;
+
+      for (const v of visitMap.values()) {
+        const parts = Array.from(v.codeMap.values()).sort((a,b) => a.code.localeCompare(b.code, "ko", {numeric:true}));
+        if (!parts.length) continue;
+        totalVisits += 1;
+        totalAmount += v.amount;
+
+        const comboExpr = parts.map(p => `${p.code} ${formatDose(p.dose)}`).join(" + ");
+        const totalDose = parts.reduce((sum, p) => sum + p.dose, 0);
+        const key = `${comboExpr} = ${formatDose(totalDose)}`;
+
+        if (!comboMap.has(key)) {
+          comboMap.set(key, { combo: comboExpr, totalDose, count: 0, amountSum: 0, codeCount: parts.length });
+        }
+        const item = comboMap.get(key);
+        item.count += 1;
+        item.amountSum += v.amount;
+      }
+
+      const rowsOut = Array.from(comboMap.values())
+        .sort((a,b) => {
+          if (b.count !== a.count) return b.count - a.count;
+          if (b.amountSum !== a.amountSum) return b.amountSum - a.amountSum;
+          return a.combo.localeCompare(b.combo, "ko", {numeric:true});
+        })
+        .map((r, idx) => ({
+          rank: idx + 1,
+          combo: r.combo,
+          totalDose: r.totalDose,
+          avgAmount: r.count ? r.amountSum / r.count : 0,
+          count: r.count,
+          pct: totalVisits ? r.count / totalVisits * 100 : 0,
+          amountSum: r.amountSum,
+          codeCount: r.codeCount
+        }));
+
+      return { totalVisits, totalAmount, rows: rowsOut };
+    }
+
+    // ========== 추가정보: LA코드별 단가 리스트 ==========
+    function calcUnitPriceStats(rows) {
+      const map = new Map();
+
+      for (const r of rows) {
+        const code = normalizeLACode(colMap.code ? r[colMap.code] : null);
+        if (!code || !isLACode(code)) continue;
+
+        const name = (colMap.name ? r[colMap.name] : r["처방명칭"] || "").toString().trim();
+        const totalDoseVal = colMap.totalDose ? r[colMap.totalDose] : r["총투여량"];
+        const doseVal      = colMap.dose      ? r[colMap.dose]      : r["투여량"];
+        const daysVal      = colMap.days      ? r[colMap.days]      : r["투여일수"];
+        const dose = toNumber(totalDoseVal) || (toNumber(doseVal) * (toNumber(daysVal) || 1)) || 0;
+        const unitPrice = toNumber(colMap.unitPrice ? r[colMap.unitPrice] : r["단가"]);
+        const amountRaw = toNumber(colMap.amount ? r[colMap.amount] : r["금액"]);
+        const amount = amountRaw || (unitPrice && dose ? unitPrice * dose : 0);
+
+        if (!map.has(code)) {
+          map.set(code, { code, name, rowCount: 0, unitPriceSum: 0, unitPriceCount: 0, doseSum: 0, amountSum: 0 });
+        }
+        const item = map.get(code);
+        if (!item.name && name) item.name = name;
+        item.rowCount += 1;
+        item.doseSum += dose;
+        item.amountSum += amount;
+        if (unitPrice) {
+          item.unitPriceSum += unitPrice;
+          item.unitPriceCount += 1;
+        }
+      }
+
+      return Array.from(map.values())
+        .map(r => ({
+          code: r.code,
+          name: r.name,
+          rowCount: r.rowCount,
+          avgUnitPrice: r.unitPriceCount ? r.unitPriceSum / r.unitPriceCount : 0,
+          avgDose: r.rowCount ? r.doseSum / r.rowCount : 0,
+          avgAmount: r.rowCount ? r.amountSum / r.rowCount : 0,
+          amountSum: r.amountSum
+        }))
+        .sort((a,b) => a.code.localeCompare(b.code, "ko", {numeric:true}));
+    }
+
+    function renderComboDoseTable(comboDoseStats) {
+      if (!comboDoseStats || !comboDoseStats.rows.length) {
+        tableComboDoseWrapper.innerHTML = "<div class='hint'>선택한 기간에는 투여량 포함 조합 데이터가 없습니다.</div>";
+        return;
+      }
+
+      let html = "<table>";
+      html += "<thead><tr>";
+      html += "<th>순위</th>";
+      html += "<th>명칭 총투여량 + 명칭 총투여량</th>";
+      html += "<th>총투여량합</th>";
+      html += "<th>해당조합 금액<br/>(1건 평균)</th>";
+      html += "<th>조합건수</th>";
+      html += "<th>조합비율</th>";
+      html += "<th>전체조합비용</th>";
+      html += "</tr></thead><tbody>";
+
+      comboDoseStats.rows.forEach(r => {
+        html += "<tr>";
+        html += `<td>${r.rank}</td>`;
+        html += `<td>${r.combo}</td>`;
+        html += `<td class="num-red">${formatDose(r.totalDose)}</td>`;
+        html += `<td>${formatWon(r.avgAmount)}</td>`;
+        html += `<td>${formatInt(r.count)}</td>`;
+        html += `<td class="num-red">${r.pct.toFixed(2)}%</td>`;
+        html += `<td>${formatWon(r.amountSum)}</td>`;
+        html += "</tr>";
+      });
+
+      html += "<tr class='highlight'>";
+      html += "<td colspan='4'>전체 조합 합계</td>";
+      html += `<td>${formatInt(comboDoseStats.totalVisits)}</td>`;
+      html += "<td>100.00%</td>";
+      html += `<td>${formatWon(comboDoseStats.totalAmount)}</td>`;
+      html += "</tr>";
+      html += "</tbody></table>";
+      tableComboDoseWrapper.innerHTML = html;
+    }
+
+    function renderUnitPriceTable(unitRows) {
+      if (!unitRows || !unitRows.length) {
+        tableUnitPriceWrapper.innerHTML = "<div class='hint'>단가 데이터를 확인할 수 없습니다.</div>";
+        return;
+      }
+
+      let html = "<table>";
+      html += "<thead><tr>";
+      html += "<th>LA코드</th>";
+      html += "<th>처방명칭</th>";
+      html += "<th>단가</th>";
+      html += "<th>평균<br/>총투여량</th>";
+      html += "<th>건수</th>";
+      html += "</tr></thead><tbody>";
+
+      unitRows.forEach(r => {
+        html += "<tr>";
+        html += `<td>${r.code}</td>`;
+        html += `<td style="text-align:left;white-space:normal;min-width:140px;">${escapeHtml(r.name || "-")}</td>`;
+        html += `<td>${formatWon(r.avgUnitPrice)}</td>`;
+        html += `<td>${formatDose(r.avgDose)}</td>`;
+        html += `<td>${formatInt(r.rowCount)}</td>`;
+        html += "</tr>";
+      });
+
+      html += "</tbody></table>";
+      tableUnitPriceWrapper.innerHTML = html;
+    }
+
+
+    // ========== 엑셀 다운로드 (현재 필터 기준) ==========
+    function exportToExcel() {
+      if (!allRows.length) {
+        alert("엑셀 데이터가 없습니다. 먼저 파일을 업로드해 주세요.");
+        return;
+      }
+
+      const startKey = monthStartSelect.value || "all";
+      const endKey   = monthEndSelect.value   || "all";
+
+      const monthsSorted = [...allMonths].sort();
+      const minMonth = monthsSorted[0];
+      const maxMonth = monthsSorted[monthsSorted.length - 1];
+
+      const realStart = (startKey === "all" || !startKey) ? minMonth : startKey;
+      const realEnd   = (endKey   === "all" || !endKey)   ? maxMonth : endKey;
+
+      const useMonthFilter = Boolean(realStart && realEnd);
+
+      const filtered = allRows.filter(row => {
+        const codeVal = colMap.code ? row[colMap.code] : null;
+        const code = normalizeCode(codeVal);
+        if (!code || !isLACode(code)) return false;
+
+        const dateVal = colMap.date ? row[colMap.date] : null;
+        const date = parseDate(dateVal);
+        if (!date || !useMonthFilter) return true;
+
+        const ym = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`;
+        if (ym < realStart || ym > realEnd) return false;
+
+        return true;
+      });
+
+      if (!filtered.length) {
+        alert("선택된 기간에 해당하는 신경차단술 데이터가 없어 엑셀로 내보낼 수 없습니다.");
+        return;
+      }
+
+      const stats = calcStats(filtered);
+      const comboStats = calcComboStats(filtered);
+      const comboDoseStats = calcComboDoseStats(filtered);
+      const unitPriceStats = calcUnitPriceStats(filtered);
+      const wb = XLSX.utils.book_new();
+
+      const startLabel = realStart || "전체";
+      const endLabel = realEnd || "전체";
+      const periodLabel = getPeriodLabel(startLabel, endLabel);
+
+      // ① 전체 요약 시트
+      const sheetOverall = [];
+      sheetOverall.push([periodLabel]);
+      sheetOverall.push([]);
+      sheetOverall.push([
+        "신경차단술 / 유형",
+        "주사 환자수(방문수)",
+        "주사 총투",
+        "건당 횟수",
+        "환자수",
+        "수신자당 횟수",
+        "평균주사(방문/환자)",
+      ]);
+
+      const rows = [];
+      for (const type of TYPE_ORDER) {
+        if (!stats[type]) continue;
+        rows.push(stats[type]);
+      }
+
+      rows.forEach(r => {
+        sheetOverall.push([
+          r.type,
+          r.visitCount,
+          round2(r.totalDose),
+          round2(r.perVisit),
+          r.patientCount,
+          round2(r.perPatient),
+          round2(r.avgInjection),
+        ]);
+      });
+
+      const wsOverall = XLSX.utils.aoa_to_sheet(sheetOverall);
+      XLSX.utils.book_append_sheet(wb, wsOverall, "전체요약");
+
+      // ② 연령별 시트
+      const targetTypes = ["국민건강보험","보호1종","보호2종","일반","자보-청구분"];
+      const sheetAge = [];
+      sheetAge.push([periodLabel]);
+      sheetAge.push([]);
+      sheetAge.push([
+        "신경차단술 / 유형",
+        "65세이상 비율(%)",
+        "65세미만 비율(%)",
+        "65세이상 건당 횟수",
+        "65세미만 건당 횟수",
+      ]);
+
+      targetTypes.forEach(type => {
+        const s = stats[type];
+        if (!s) return;
+
+        const g65 = s.ageGroups["65+"] || { visitCount: 0, totalDose: 0 };
+        const gU  = s.ageGroups["<65"] || { visitCount: 0, totalDose: 0 };
+
+        const totalVisit = g65.visitCount + gU.visitCount;
+
+        const pct65 = totalVisit ? (g65.visitCount / totalVisit * 100) : 0;
+        const pctU  = totalVisit ? (gU.visitCount  / totalVisit * 100) : 0;
+
+        const perVisit65 = g65.visitCount ? g65.totalDose / g65.visitCount : 0;
+        const perVisitU  = gU.visitCount  ? gU.totalDose  / gU.visitCount  : 0;
+
+        sheetAge.push([
+          type,
+          round2(pct65),
+          round2(pctU),
+          round2(perVisit65),
+          round2(perVisitU),
+        ]);
+      });
+
+      const wsAge = XLSX.utils.aoa_to_sheet(sheetAge);
+      XLSX.utils.book_append_sheet(wb, wsAge, "연령별");
+
+      // ③ LA코드 단독/조합 시트
+      const sheetCombo = [];
+      sheetCombo.push([periodLabel]);
+      sheetCombo.push([]);
+      sheetCombo.push(["전체 LA 방문수", comboStats.totalVisits]);
+      sheetCombo.push(["단독 LA 방문수", comboStats.singleVisits]);
+      sheetCombo.push(["2개 이상 조합 LA 방문수", comboStats.multiVisits]);
+      sheetCombo.push(["단독 LA 방문 비율(%)", round2(comboStats.totalVisits ? comboStats.singleVisits / comboStats.totalVisits * 100 : 0)]);
+      sheetCombo.push(["2개 이상 조합 LA 방문 비율(%)", round2(comboStats.totalVisits ? comboStats.multiVisits / comboStats.totalVisits * 100 : 0)]);
+      sheetCombo.push([]);
+      sheetCombo.push([
+        "순위",
+        "구분",
+        "LA코드 단독/조합",
+        "건수",
+        "전체 LA 방문 대비(%)"
+      ]);
+
+      comboStats.rows.forEach(r => {
+        sheetCombo.push([
+          r.rank,
+          r.typeLabel,
+          r.combo,
+          r.count,
+          round2(r.pctOfAllVisits)
+        ]);
+      });
+
+      const wsCombo = XLSX.utils.aoa_to_sheet(sheetCombo);
+      XLSX.utils.book_append_sheet(wb, wsCombo, "LA코드조합");
+
+      // ④ 추가정보: 투여량 포함 조합 상세 시트
+      const sheetComboDose = [];
+      sheetComboDose.push([periodLabel]);
+      sheetComboDose.push([]);
+      sheetComboDose.push(["전체 조합건수", comboDoseStats.totalVisits]);
+      sheetComboDose.push(["전체조합비용", round2(comboDoseStats.totalAmount)]);
+      sheetComboDose.push([]);
+      sheetComboDose.push(["순위", "명칭 총투여량 + 명칭 총투여량", "총투여량합", "해당조합 금액(1건 평균)", "조합건수", "조합비율(%)", "전체조합비용"]);
+      comboDoseStats.rows.forEach(r => {
+        sheetComboDose.push([r.rank, r.combo, round2(r.totalDose), round2(r.avgAmount), r.count, round2(r.pct), round2(r.amountSum)]);
+      });
+      const wsComboDose = XLSX.utils.aoa_to_sheet(sheetComboDose);
+      XLSX.utils.book_append_sheet(wb, wsComboDose, "조합투여량금액");
+
+      // ⑤ LA코드별 단가 시트
+      const sheetUnit = [];
+      sheetUnit.push([periodLabel]);
+      sheetUnit.push([]);
+      sheetUnit.push(["LA코드", "처방명칭", "단가", "평균 총투여량", "건수", "평균 금액", "금액 합계"]);
+      unitPriceStats.forEach(r => {
+        sheetUnit.push([r.code, r.name, round2(r.avgUnitPrice), round2(r.avgDose), r.rowCount, round2(r.avgAmount), round2(r.amountSum)]);
+      });
+      const wsUnit = XLSX.utils.aoa_to_sheet(sheetUnit);
+      XLSX.utils.book_append_sheet(wb, wsUnit, "LA코드별단가");
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const filename = `신경차단술_수신자당_통계_${yyyy}${mm}${dd}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+    }
+
+    // ========== 전체 초기화 ==========
+    function handleResetAll() {
+      allRows = [];
+      allMonths = [];
+
+      fileInput.value = "";
+
+      monthStartSelect.innerHTML = "";
+      monthEndSelect.innerHTML = "";
+      monthStartSelect.disabled = true;
+      monthEndSelect.disabled = true;
+
+      tableSummaryWrapper.innerHTML = "";
+      tableAgeWrapper.innerHTML = "";
+      tableComboWrapper.innerHTML = "";
+      tableComboDoseWrapper.innerHTML = "";
+      tableUnitPriceWrapper.innerHTML = "";
+      extraInfoArea.classList.add("hidden");
+      btnToggleExtra.textContent = "추가정보 보기";
+
+      laCodeListEl.textContent = "-";
+      statusEl.textContent = "엑셀 파일을 선택하면 자동으로 분석합니다.";
+    }
+
+    // ========== 유틸 ==========
+    function normalizeCode(code) {
+      if (!code) return "";
+      return code.toString().trim().toUpperCase();
+    }
+
+    // LA코드 표시용 정규화: LA35900처럼 뒤에 세부자리가 붙어도 LA359로 통일
+    function normalizeLACode(code) {
+      const c = normalizeCode(code);
+      if (!c.startsWith("LA")) return "";
+      const match = c.slice(2).match(/\d+/);
+      if (!match) return c;
+      const num3 = match[0].slice(0, 3);
+      return `LA${num3}`;
+    }
+
+    // LA200 ~ LA400 여부 판단
+    function isLACode(code) {
+      const c = normalizeCode(code);
+      if (!c.startsWith("LA")) return false;
+
+      // 'LA35900' 같은 경우 숫자 부분에서 앞 3자리만 사용
+      const match = c.slice(2).match(/\d+/);
+      if (!match) return false;
+
+      const num3 = match[0].slice(0,3);   // "35900" -> "359"
+      const n = parseInt(num3, 10);
+      if (isNaN(n)) return false;
+
+      return n >= LA_MIN && n <= LA_MAX;
+    }
+
+    function toNumber(val) {
+      if (val === null || val === undefined || val === "") return 0;
+      if (typeof val === "number") return val;
+      const s = val.toString().replace(/,/g,"").trim();
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // 날짜 인식 (여러 형식 대응)
+    function parseDate(v) {
+      if (!v && v !== 0) return null;
+
+      if (v instanceof Date) return v;
+
+      if (typeof v === "number") {
+        const utc_days  = Math.floor(v - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
+      }
+
+      let s = v.toString().trim();
+      if (!s) return null;
+
+      if (s.includes(" ")) {
+        s = s.split(" ")[0];
+      }
+
+      let m = s.replace(/\./g,"-").replace(/\//g,"-")
+               .match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) {
+        return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+      }
+
+      m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+      if (m) {
+        return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+      }
+
+      m = s.replace(/\./g,"-").replace(/\//g,"-")
+           .match(/^(\d{2})-(\d{1,2})-(\d{1,2})$/);
+      if (m) {
+        const yy = Number(m[1]);
+        const year = yy >= 50 ? 1900 + yy : 2000 + yy;
+        return new Date(year, Number(m[2])-1, Number(m[3]));
+      }
+
+      const d = new Date(s.replace(/\./g,"-").replace(/\//g,"-"));
+      if (!isNaN(d.getTime())) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      return null;
+    }
+
+    function parseBirthDate(rrn) {
+      if (!rrn) return null;
+      const s = rrn.toString().replace(/[^0-9]/g,"");
+      if (s.length < 7) return null;
+
+      const yy = Number(s.slice(0,2));
+      const mm = Number(s.slice(2,4));
+      const dd = Number(s.slice(4,6));
+      const code = Number(s.charAt(6));
+
+      let century;
+      if ([1,2,5,6].includes(code)) century = 1900;
+      else if ([3,4,7,8].includes(code)) century = 2000;
+      else century = 1900;
+
+      const year = century + yy;
+      if (!year || !mm || !dd) return null;
+
+      return new Date(year, mm-1, dd);
+    }
+
+    function calcAge(birth, ref) {
+      if (!birth || !ref) return null;
+      let age = ref.getFullYear() - birth.getFullYear();
+      const m = ref.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && ref.getDate() < birth.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function formatDose(n) {
+      if (!isFinite(n)) return "0.0";
+      const rounded = Math.round(n * 100) / 100;
+      return rounded.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+    }
+
+    function formatWon(n) {
+      if (!isFinite(n)) return "0원";
+      return `${Math.round(n).toLocaleString()}원`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatNumber(n) {
+      if (!isFinite(n)) return "0.00";
+      return n.toFixed(2);
+    }
+
+    function round2(n) {
+      if (!isFinite(n)) return 0;
+      return Math.round(n * 100) / 100;
+    }
+
+    function formatInt(n) {
+      if (!n) return "0";
+      return Number(n).toLocaleString();
+    }
+  </script>
+</body>
+</html>
