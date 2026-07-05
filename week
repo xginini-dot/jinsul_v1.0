@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>JINSUL · 통계 계산기 선택</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top center, rgba(190,169,139,0.22), transparent 38%),
+    linear-gradient(135deg, #080808, #161616 45%, #2a241d);
+  color: #fff;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("jinsul-logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(720px, 78vw);
+  opacity: 0.055;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+.logo {
+  width: 250px;
+  max-width: 70%;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 18px 35px rgba(0,0,0,0.45));
+}
+
+.badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid rgba(190,169,139,0.45);
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #c9b89c;
+  margin-bottom: 18px;
+}
+
+h1 {
+  margin: 0 0 14px;
+  font-size: 42px;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.sub {
+  margin: 0;
+  color: #b9b9b9;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.sec-title {
+  margin: 0 0 18px;
+  font-size: 18px;
+  color: #f5efe5;
+  font-weight: 800;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 34px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  min-height: 230px;
+  padding: 30px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.055));
+  border: 1px solid rgba(190,169,139,0.26);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  transition: 0.22s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(190,169,139,0.22), transparent 45%);
+  opacity: 0;
+  transition: 0.22s ease;
+}
+
+.card:hover {
+  transform: translateY(-7px);
+  border-color: rgba(190,169,139,0.62);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: rgba(190,169,139,0.16);
+  border: 1px solid rgba(190,169,139,0.35);
+  color: #d4bd95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.card h3 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  color: #f5efe5;
+}
+
+.card p {
+  margin: 0 0 26px;
+  color: #b8b8b8;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.btn {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(190,169,139,0.42);
+  background: rgba(190,169,139,0.14);
+  color: #e8d8bd;
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  background: rgba(190,169,139,0.28);
+  color: #fff;
+}
+
+footer {
+  margin-top: 54px;
+  text-align: center;
+  font-size: 13px;
+  color: #8d8d8d;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .logo {
+    width: 210px;
+  }
+}
+</style>
+</head>
+
+<body>
+  <main class="wrap">
+
+    <section class="header">
+      <img src="jinsul-logo.png" alt="JINSUL" class="logo" />
+      <br>
+      <div class="badge">JINSUL STATISTICS SYSTEM</div>
+      <h1>통계 계산기 선택</h1>
+      <p class="sub">
+        진설 내부 통계 분석 시스템입니다.<br>
+        병원별 엑셀 데이터를 업로드하여 주요 지표를 자동 계산합니다.
+      </p>
+    </section>
+
+    <h2 class="sec-title">통계 계산기</h2>
+
+    <section class="grid">
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+            <path d="M4 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 19H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 17V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 17V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 17V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>비트 통계 계산기</h3>
+        <p>외래 엑셀/CSV 업로드로 초·재진, 주사, 내원 지표를 자동 계산합니다.</p>
+        <a class="btn" href="bitchart.html">비트 계산기 열기 →</a>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+            <path d="M4 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 19H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 17V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 17V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 17V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M19 6l-3 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>의사랑 통계 계산기</h3>
+        <p>진료실 다중 파일 + 주사(b) + 내원(v) 통합 분석, 연령·회차 분포를 제공합니다.</p>
+        <a class="btn" href="ysarangchart.html">의사랑 계산기 열기 →</a>
+      </div>
+    </section>
+
+    <h2 class="sec-title">1회 내원 확인</h2>
+
+    <section class="grid">
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>비트 · 1회 내원 확인</h3>
+        <p>비트 데이터에서 1회 내원 대상자를 확인하고 재내원 관리에 활용합니다.</p>
+        <a class="btn" href="bit-1visit.html">비트 1회 내원 열기 →</a>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>의사랑 · 1회 내원 확인</h3>
+        <p>의사랑 데이터에서 1회 내원 대상자를 확인하고 재내원 관리에 활용합니다.</p>
+        <a class="btn" href="ysarang-1visit.html">의사랑 1회 내원 열기 →</a>
+      </div>
+    </section>
+
+    <footer>
+      © JINSUL. Internal use only.
+    </footer>
+
+  </main>
+</body>
+</html>
