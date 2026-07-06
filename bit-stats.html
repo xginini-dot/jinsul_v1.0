@@ -545,10 +545,16 @@
     </div>
 
     <div class="kpi-grid" id="kpiSection" style="display:none;margin-top:18px">
+      <div class="kpi"><small>총환자수</small><strong id="kpiTotalPatients">-</strong><span>차트번호 고유수</span></div>
+      <div class="kpi"><small>총내원수</small><strong id="kpiTotalVisits">-</strong><span id="kpiAvgVisitPerPatient">전체 내원건수</span></div>
       <div class="kpi"><small>전체 초진</small><strong id="kpiFirst">-</strong><span>신환 + 90일초진</span></div>
       <div class="kpi"><small>초진 주사처방률</small><strong id="kpiInjRate">-</strong><span>초진일 기준</span></div>
       <div class="kpi"><small>초진 평균 내원</small><strong id="kpiVisitAvg">-</strong><span>평균 내원횟수</span></div>
       <div class="kpi"><small>초진 재내원율</small><strong id="kpiRevisit">-</strong><span>2회 이상 내원</span></div>
+      <div class="kpi"><small>재진 환자수</small><strong id="kpiReturn">-</strong><span>신환 제외 환자 기준</span></div>
+      <div class="kpi"><small>재진</small><strong id="kpiReturnRows">-</strong><span>신환 제외 내원 기록 수</span></div>
+      <div class="kpi"><small>재진 주사처방률</small><strong id="kpiReturnInjRate">-</strong><span>재진 차트 기준</span></div>
+      <div class="kpi"><small>재진 평균 내원</small><strong id="kpiReturnVisitAvg">-</strong><span>평균 내원횟수</span></div>
     </div>
 
     <div class="card" id="chartCard" style="display:none">
@@ -998,8 +1004,41 @@
 
     const result=[];
     function makeStat(rows, label, ageGroup="전체"){
-      const 초진 = rows.filter(r=>["신환","90일초진"].includes(r[col['초재']]));
-      const 초진차트=[...new Set(초진.map(r=>r[col['차트']]))];
+      const 초진 = rows.filter(r=>["신환","90일초진"].includes(String(r[col['초재']]||'').trim()));
+      const 초진차트=[...new Set(초진.map(r=>r[col['차트']]).filter(Boolean))];
+
+      // 재진 통계: 신환/90일초진을 제외한 나머지 기록을 재진으로 계산합니다.
+      const 재진 = rows.filter(r=>{
+        const v=String(r[col['초재']]||'').trim();
+        return v && !['신환','90일초진'].includes(v);
+      });
+      const 재진차트=[...new Set(재진.map(r=>r[col['차트']]).filter(Boolean))];
+      const 재진주사 = 재진.filter(r=>(r[col['마취']]||'').includes('●'));
+      const 재진주사차트=[...new Set(재진주사.map(r=>r[col['차트']]).filter(Boolean))];
+      const 재진기록 = rows.filter(r=>재진차트.includes(r[col['차트']]));
+      const 재진내원횟수={}, 재진주사횟수={};
+      재진기록.forEach(r=>{
+        const id=r[col['차트']];
+        if(!id) return;
+        재진내원횟수[id]=(재진내원횟수[id]||0)+1;
+        if((r[col['마취']]||'').includes('●')) 재진주사횟수[id]=(재진주사횟수[id]||0)+1;
+      });
+      const 평균재진내원 = Object.keys(재진내원횟수).length
+        ? (Object.values(재진내원횟수).reduce((a,b)=>a+b,0)/Object.keys(재진내원횟수).length).toFixed(2) : 0;
+      const 평균재진주사 = Object.keys(재진주사횟수).length
+        ? (Object.values(재진주사횟수).reduce((a,b)=>a+b,0)/Object.keys(재진주사횟수).length).toFixed(2) : 0;
+      const returnVisitRatio = (n,op="eq")=>{
+        const denom=Object.keys(재진내원횟수).length; if(!denom) return 0;
+        const arr=Object.values(재진내원횟수);
+        const num=op==="ge" ? arr.filter(v=>v>=n).length : arr.filter(v=>v===n).length;
+        return Math.round((num/denom)*100);
+      };
+      const returnInjRatio = (n,op="eq")=>{
+        const denom=Object.keys(재진주사횟수).length; if(!denom) return 0;
+        const arr=Object.values(재진주사횟수);
+        const num=op==="ge" ? arr.filter(v=>v>=n).length : arr.filter(v=>v===n).length;
+        return Math.round((num/denom)*100);
+      };
 
       const 주사 = 초진.filter(r=>(r[col['마취']]||'').includes('●'));
       const 주사차트=[...new Set(주사.map(r=>r[col['차트']]))];
@@ -1057,11 +1096,27 @@
       const adultInj = adultFirst.filter(r=>(r[col['마취']]||'').includes('●'));
       const adultRate = adultFirstCharts.length ? Math.round((adultInj.length/adultFirstCharts.length)*100)+'%' : '-';
 
+      // 전체 통계: 총환자수는 차트번호 고유수, 총내원수는 전체 내원 기록 수입니다.
+      const 총환자차트 = [...new Set(rows.map(r=>r[col['차트']]).filter(Boolean))];
+      const 총환자수 = 총환자차트.length;
+      const 총내원수 = rows.length;
+      const 환자당평균내원 = 총환자수 ? (총내원수 / 총환자수).toFixed(2) : 0;
+
       result.push({
         "구분": label,
         "연령대": ageGroup,
+        "총환자수": 총환자수,
+        "총내원수": 총내원수,
+        "환자당 평균 내원횟수": 환자당평균내원,
         "초진": 초진차트.length,
         "초진주사": 주사.length,
+        "재진 환자수": 재진차트.length,
+        "재진": 재진.length,
+        "재진 주사차트": 재진주사차트.length,
+        "재진 주사건수": 재진주사.length,
+        "재진 주사처방률": `${재진차트.length ? Math.round((재진주사차트.length/재진차트.length)*100) : 0}%`,
+        "재진 평균 내원횟수": 평균재진내원,
+        "재진 평균 주사횟수": 평균재진주사,
         "초진 주사 재진율": injRevisitRate,
         "초진 주사 평균 횟수": 평균주사,
         "초진 주사 평균 내원 횟수": 평균내원,
@@ -1080,6 +1135,14 @@
         "6회 내원 비율": `${visitRatio(6)}%`,
         "7회 내원 비율": `${visitRatio(7)}%`,
         "8회 이상 내원 비율": `${visitRatio(8,"ge")}%`,
+
+        "재진 1회 내원 비율": `${returnVisitRatio(1)}%`,
+        "재진 2회 내원 비율": `${returnVisitRatio(2)}%`,
+        "재진 3회 내원 비율": `${returnVisitRatio(3)}%`,
+        "재진 4회 이상 내원 비율": `${returnVisitRatio(4,"ge")}%`,
+        "재진 1회 주사 비율": `${returnInjRatio(1)}%`,
+        "재진 2회 주사 비율": `${returnInjRatio(2)}%`,
+        "재진 3회 이상 주사 비율": `${returnInjRatio(3,"ge")}%`,
 
         "1회 주사 비율": `${injRatio(1)}%`,
         "2회 주사 비율": `${injRatio(2)}%`,
@@ -1133,7 +1196,8 @@
       return (ai===-1)-(bi===-1) || ai-bi || a["구분"].localeCompare(b["구분"]);
     });
     const cols=[
-      "구분","초진","초진주사","초진 주사처방률",
+      "구분","총환자수","총내원수","환자당 평균 내원횟수","초진","초진주사","초진 주사처방률",
+      "재진 환자수","재진",
       "초진 주사 평균 횟수","초진 주사 평균 내원 횟수",
       "초진 주사 재진율",
       "(18세▲)초진","(18세▲)초진주사","(18세▲)초진주사처방률",
@@ -1146,7 +1210,7 @@
     const roomRows = rows.filter(r=>/진료실$/.test(r["구분"]) && r["구분"]!=="전체");
     if(roomRows.length){
       const avgRow = {"구분":"진료실 평균(균등)"};
-      const countCols = new Set(["초진","초진주사","(18세▲)초진","(18세▲)초진주사","특정 키워드 포함 메모 수"]);
+      const countCols = new Set(["총환자수","총내원수","초진","초진주사","재진 환자수","재진","(18세▲)초진","(18세▲)초진주사","특정 키워드 포함 메모 수"]);
       cols.forEach(c=>{
         if(c==="구분") return;
         if(countCols.has(c)){ avgRow[c] = "-"; return; }
@@ -1189,7 +1253,8 @@
     if(!result.length){ document.getElementById('output').innerHTML=""; return; }
 
     const desired=[
-      "초진","초진주사","초진 주사처방률",
+      "총환자수","총내원수","환자당 평균 내원횟수","초진","초진주사","초진 주사처방률",
+      "재진 환자수","재진",
       "초진 주사 평균 횟수","초진 주사 평균 내원 횟수",
       "초진 주사 재진율",
       "(18세▲)초진","(18세▲)초진주사","(18세▲)초진주사처방률",
@@ -1323,10 +1388,19 @@
     const kpi=document.getElementById('kpiSection');
     if(overall && kpi){
       kpi.style.display='grid';
+      document.getElementById('kpiTotalPatients').textContent=formatCell(overall['총환자수']);
+      document.getElementById('kpiTotalVisits').textContent=formatCell(overall['총내원수']);
+      const avgVisit = overall['환자당 평균 내원횟수'];
+      const avgEl = document.getElementById('kpiAvgVisitPerPatient');
+      if(avgEl) avgEl.textContent = `환자당 평균 ${formatCell(avgVisit)}회`;
       document.getElementById('kpiFirst').textContent=formatCell(overall['초진']);
       document.getElementById('kpiInjRate').textContent=formatCell(overall['초진 주사처방률']);
       document.getElementById('kpiVisitAvg').textContent=formatCell(overall['초진 평균 내원횟수']);
       document.getElementById('kpiRevisit').textContent=formatCell(overall['초진 재내원율']);
+      document.getElementById('kpiReturn').textContent=formatCell(overall['재진 환자수']);
+      document.getElementById('kpiReturnRows').textContent=formatCell(overall['재진']);
+      document.getElementById('kpiReturnInjRate').textContent=formatCell(overall['재진 주사처방률']);
+      document.getElementById('kpiReturnVisitAvg').textContent=formatCell(overall['재진 평균 내원횟수']);
     }
     const rows=(result||[]).filter(r=>r['연령대']==='전체' && r['구분']!=='전체' && r['구분']!=='진료실 평균(균등)');
     const chart=document.getElementById('chartCard'), box=document.getElementById('chartBars');
