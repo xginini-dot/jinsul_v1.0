@@ -667,6 +667,86 @@
     }
 
 
+    // 전체 내원 파일 기준 상세 집계(진료실/연령대별)
+    // 총환자수 = 차트번호 고유수, 총내원수 = 기간 내 전체 내원 행 수
+    // 파일에 진료실/나이(또는 생년월일) 컬럼이 있을 때 연령대별 총계에 사용합니다.
+    function buildTotalVisitStatsDetailedByHeader(data, idHeaderCandidates, dateHeaderCandidates, startDate='', endDate='') {
+      const detail = { byRoomBand: new Map(), hasRoom: false, hasAge: false };
+      if (!data || !data.length) return detail;
+
+      let headerRow = null, headerIdx = -1;
+      for (let i=0;i<Math.min(15, data.length);i++){
+        const row = data[i] || [];
+        const joined = row.map(x=>String(x||'')).join('');
+        if (/(차트|챠트|ID|아이디)/i.test(joined) || /(진료일|내원일|방문일|일자|수납일)/.test(joined)) {
+          headerRow = row; headerIdx = i; break;
+        }
+      }
+      if (!headerRow) headerRow = data[0], headerIdx = 0;
+
+      const headersLower = headerRow.map(h => String(h||'').toLowerCase());
+      const findIdx = (cands) => {
+        for (const c of cands) {
+          const idx = headersLower.findIndex(h => h.includes(c));
+          if (idx !== -1) return idx;
+        }
+        return -1;
+      };
+
+      const idIdx   = findIdx(idHeaderCandidates.map(s=>s.toLowerCase()));
+      const dateIdx = findIdx(dateHeaderCandidates.map(s=>s.toLowerCase()));
+      const roomIdx = findIdx(['진료실','진료과','의사','담당의','진료의','doctor','room']);
+      const ageIdx  = findIdx(['나이','연령','age']);
+      const rrnIdx  = findIdx(['주민','생년','생일','생년월일','생년월','rrn','등록번호']);
+      if (idIdx === -1 || dateIdx === -1) return detail;
+      detail.hasRoom = roomIdx !== -1;
+      detail.hasAge = ageIdx !== -1 || rrnIdx !== -1;
+
+      const normalizeRoom = (v) => {
+        const raw = String(v||'').trim();
+        if (!raw) return '전체';
+        const m = raw.match(/(\d+)\s*진료실/);
+        if (m) return `${parseInt(m[1],10)}진료실`;
+        const n = raw.match(/^(\d+)$/);
+        if (n) return `${parseInt(n[1],10)}진료실`;
+        return raw;
+      };
+      const add = (room, band, id) => {
+        const key = `${room}|||${band}`;
+        if (!detail.byRoomBand.has(key)) detail.byRoomBand.set(key, { patients:new Set(), visits:0 });
+        const obj = detail.byRoomBand.get(key);
+        obj.patients.add(id);
+        obj.visits += 1;
+      };
+
+      data.slice(headerIdx+1).forEach(r=>{
+        const id = r[idIdx]?.toString().trim();
+        const date = excelDateToISO(r[dateIdx]);
+        if (!id || !date) return;
+        if (!isDateInRange(date, startDate, endDate)) return;
+
+        let age = null;
+        if (ageIdx !== -1) {
+          const n = Number(String(r[ageIdx]||'').replace(/[^0-9.]/g,''));
+          if (!isNaN(n) && n >= 0 && n <= 120) age = n;
+        }
+        if ((age === null || isNaN(age)) && rrnIdx !== -1) {
+          const rrnRaw = String(r[rrnIdx]||'').trim();
+          if (rrnRaw && rrnRaw.includes('-')) age = calculateAge(rrnRaw);
+          else if (rrnRaw) age = parseAgeFromBirthish(rrnRaw);
+        }
+        if (age === null || isNaN(age) || age < 0 || age > 120) return;
+        const band = getAgeBand(age);
+        const room = detail.hasRoom ? normalizeRoom(r[roomIdx]) : '전체';
+        add(room, band, id);
+        add(room, '전체', id);
+        add('전체', band, id);
+        add('전체', '전체', id);
+      });
+      return detail;
+    }
+
+
     // 차트번호+날짜 기준 집계: 초진 당일 주사 여부 판정용
     // 같은 환자·같은 날짜에 주사 처방이 여러 줄 있어도 1회 방문으로 계산
     function buildCountMapByIdDateHeader(data, idHeaderCandidates, dateHeaderCandidates, startDate='', endDate='') {
@@ -777,7 +857,7 @@
     }
 
 // 🔁 기존 computeAgeBandStats 를 이걸로 교체
-function computeAgeBandStats(merged){
+function computeAgeBandStats(merged, totalVisitDetail=null){
   // 방별로 모으기
   const byRoom = {};
   merged.forEach(r => {
@@ -800,6 +880,7 @@ function computeAgeBandStats(merged){
   // 공통 계산 헬퍼
   const toPercent = (num, den) => den ? Math.round((num/den)*100)+'%' : '0%';
   const average = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const getTotalDetail = (room, band) => totalVisitDetail?.byRoomBand?.get(`${room}|||${band}`) || null;
 
   function pushBandRows(label, arr){
     // 각 연령대 행들 먼저
@@ -817,8 +898,12 @@ function computeAgeBandStats(merged){
       const avgInj = injN ? average(inj.map(x=>x.injTotal)) : 0;
       const avgVisit = average(a.map(x=>x.visit));
       const revisit2p = a.filter(x=>x.visit>=2).length;
-      const totalVisitCount = a.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
-      const revisitPatientCount = a.filter(x=>(Number(x.visit)||0)>=2).length;
+      const fallbackTotalVisitCount = a.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
+      const detail = getTotalDetail(label, band);
+      const totalPatientCount = detail ? detail.patients.size : a.length;
+      const totalVisitCount = detail ? detail.visits : fallbackTotalVisitCount;
+      const firstIds = new Set(a.map(x=>x.id));
+      const revisitPatientCount = detail ? [...detail.patients].filter(id=>!firstIds.has(id)).length : a.filter(x=>(Number(x.visit)||0)>=2).length;
       const revisitVisitCount = Math.max(0, totalVisitCount - a.length);
 
       const cnt = (n)=>inj.filter(x=> n===8 ? x.injTotal>=8 : x.injTotal===n).length;
@@ -827,9 +912,9 @@ function computeAgeBandStats(merged){
       rows.push({
         '진료실': label,
         '연령대': band,
-        '총환자수': a.length,
+        '총환자수': totalPatientCount,
         '총내원수': totalVisitCount,
-        '환자당 평균 내원횟수': a.length ? (totalVisitCount / a.length).toFixed(2) : '-',
+        '환자당 평균 내원횟수': totalPatientCount ? (totalVisitCount / totalPatientCount).toFixed(2) : '-',
         '재진 환자수': revisitPatientCount,
         '재진': revisitVisitCount,
         '초진환자수': a.length,
@@ -856,8 +941,12 @@ function computeAgeBandStats(merged){
       const avgInjAll = injAllN ? average(injAll.map(x=>x.injTotal)) : 0;
       const avgVisitAll = average(arr.map(x=>x.visit));
       const revisit2pAll = arr.filter(x=>x.visit>=2).length;
-      const totalVisitCountAll = arr.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
-      const revisitPatientCountAll = arr.filter(x=>(Number(x.visit)||0)>=2).length;
+      const fallbackTotalVisitCountAll = arr.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
+      const detailAll = getTotalDetail(label, '전체');
+      const totalPatientCountAll = detailAll ? detailAll.patients.size : arr.length;
+      const totalVisitCountAll = detailAll ? detailAll.visits : fallbackTotalVisitCountAll;
+      const firstIdsAll = new Set(arr.map(x=>x.id));
+      const revisitPatientCountAll = detailAll ? [...detailAll.patients].filter(id=>!firstIdsAll.has(id)).length : arr.filter(x=>(Number(x.visit)||0)>=2).length;
       const revisitVisitCountAll = Math.max(0, totalVisitCountAll - arr.length);
 
       const cntA = (n)=>injAll.filter(x=> n===8 ? x.injTotal>=8 : x.injTotal===n).length;
@@ -866,9 +955,9 @@ function computeAgeBandStats(merged){
       rows.push({
         '진료실': label,
         '연령대': '전체',
-        '총환자수': arr.length,
+        '총환자수': totalPatientCountAll,
         '총내원수': totalVisitCountAll,
-        '환자당 평균 내원횟수': arr.length ? (totalVisitCountAll / arr.length).toFixed(2) : '-',
+        '환자당 평균 내원횟수': totalPatientCountAll ? (totalVisitCountAll / totalPatientCountAll).toFixed(2) : '-',
         '재진 환자수': revisitPatientCountAll,
         '재진': revisitVisitCountAll,
         '초진환자수': arr.length,
@@ -1082,6 +1171,12 @@ function computeAgeBandStats(merged){
             ['진료일','내원일','방문일','일자','수납일'],
             startDate, endDate)
         : { totalPatients: clinicRows.length, totalVisits: 0, patientIds: new Set(clinicRows.map(r=>r.id)) };
+      const totalVisitDetail = fileMap.v
+        ? buildTotalVisitStatsDetailedByHeader(fileMap.v,
+            ['차트','챠트','id','아이디'],
+            ['진료일','내원일','방문일','일자','수납일'],
+            startDate, endDate)
+        : null;
 
       const merged = clinicRows.map(r=>({
         id:r.id, age:r.age, room:r.room, firstDate:r.firstDate,
@@ -1101,7 +1196,7 @@ function computeAgeBandStats(merged){
       }
 
       const stats = computeStats(merged);
-      const byAge = computeAgeBandStats(merged);
+      const byAge = computeAgeBandStats(merged, totalVisitDetail);
       const overallRow = stats.find(s=>s['구분']==='전체');
       if (overallRow) {
         const firstPatientCount = overallRow['초진환자수'] || 0;
