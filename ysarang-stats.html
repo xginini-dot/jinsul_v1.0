@@ -13,7 +13,7 @@
     .card{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:26px;padding:22px;box-shadow:var(--shadow);margin-top:18px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(190,169,139,.16),transparent 44%);opacity:.8;pointer-events:none}.card>*{position:relative;z-index:1}.card-title{margin:0 0 16px;font-size:19px;font-weight:850;color:#f5efe5;display:flex;align-items:center;justify-content:space-between;gap:10px}.control-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}.control-head h2{margin:0;font-size:20px;color:#f5efe5}.control-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
     .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr 1fr auto}.date-grid{display:grid;gap:14px;grid-template-columns:1fr 1fr auto;align-items:end;margin-top:14px}.right{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}label{display:block;font-size:12px;color:#c7b99f;margin-bottom:6px;line-height:1.45}.field-box{padding:16px;border:1px solid rgba(190,169,139,.20);background:rgba(255,255,255,.045);border-radius:18px;height:100%}input[type=file],input[type=date]{width:100%;height:42px;padding:10px 12px;border-radius:13px;border:1px dashed rgba(190,169,139,.45);background:rgba(255,255,255,.08);color:#f8f3ea;outline:none}input[type=date]{border-style:solid;color-scheme:dark}input::file-selector-button{border:0;border-radius:10px;background:rgba(190,169,139,.22);color:#fff;padding:7px 10px;margin-right:10px;font-weight:800;cursor:pointer}
     button,.btn-mini{height:40px;border-radius:13px;border:1px solid rgba(190,169,139,.44);background:rgba(190,169,139,.15);color:#eadcc3;font-weight:850;cursor:pointer;padding:0 14px;transition:.18s ease;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}button:hover,.btn-mini:hover{background:rgba(190,169,139,.28);color:#fff;transform:translateY(-1px)}button:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(135deg,rgba(190,169,139,.34),rgba(190,169,139,.16));border-color:rgba(232,216,189,.65);color:#fff}.ghost{background:rgba(255,255,255,.05)}.hint{color:var(--muted);font-size:12px;margin:10px 0 0;line-height:1.55}.upload-body.is-collapsed{display:none}
-    .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px}.metric{padding:18px;border-radius:22px;border:1px solid rgba(190,169,139,.26);background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.055));box-shadow:0 16px 34px rgba(0,0,0,.20);backdrop-filter:blur(12px)}.metric h3{margin:0;font-size:12px;color:#c7b99f}.metric p{margin:8px 0 0;font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px}.table-card{overflow:hidden}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}.metric{padding:18px;border-radius:22px;border:1px solid rgba(190,169,139,.26);background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.055));box-shadow:0 16px 34px rgba(0,0,0,.20);backdrop-filter:blur(12px)}.metric h3{margin:0;font-size:12px;color:#c7b99f}.metric p{margin:8px 0 0;font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px}.table-card{overflow:hidden}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     #summaryOutput,#output,#byAgeOutput{width:100%;overflow:auto;border-radius:18px;border:1px solid rgba(190,169,139,.24);background:rgba(255,255,255,.045)}
     table{width:100%;max-width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;background:transparent;border:0;border-radius:18px;overflow:hidden}table.summary-table,table.age-table{min-width:0;width:100%}th,td{border-bottom:1px solid rgba(190,169,139,.18);border-right:1px solid rgba(190,169,139,.10);padding:9px 5px;text-align:center;word-break:keep-all;overflow-wrap:anywhere;font-size:10.5px;color:#eee;vertical-align:middle}th{position:sticky;top:0;background:linear-gradient(180deg,rgba(190,169,139,.34),rgba(190,169,139,.20));z-index:1;color:#fff;font-weight:850;line-height:1.25;white-space:normal}td{white-space:normal;line-height:1.28}td:first-child,th:first-child{font-weight:900;color:#f2ddbd}tbody tr:hover td{background:rgba(190,169,139,.10)}tbody tr:last-child td{border-bottom:0}th:last-child,td:last-child{border-right:0}.dist-merged{display:none}.compact .dist-col{display:none}.compact .dist-merged{display:table-cell;white-space:normal;text-align:left}
     .w-room{width:100px;min-width:100px}.w-age{width:92px;min-width:92px}.w-count{width:94px;min-width:94px}.w-rate{width:108px;min-width:108px}.w-avg{width:116px;min-width:116px}.w-dist{width:78px;min-width:78px}.w-memo{width:110px;min-width:110px}
@@ -437,13 +437,7 @@
 
     <!-- 상단 요약 지표 -->
     <div class="summary" id="summary" style="display:none">
-      <div class="metric"><h3>총환자수</h3><p id="m-total-patients">-</p></div>
-      <div class="metric"><h3>총내원수</h3><p id="m-total-visits">-</p><small id="m-visit-per-patient" style="display:block;margin-top:8px;color:#d8c7ac;font-size:12px;font-weight:800">-</small></div>
       <div class="metric"><h3>전체 초진환자수</h3><p id="m-total">-</p></div>
-      <div class="metric"><h3>재진 환자수</h3><p id="m-revisit-patients">-</p></div>
-      <div class="metric"><h3>재진</h3><p id="m-revisit-visits">-</p></div>
-      <div class="metric"><h3>재진 주사처방률</h3><p id="m-revisit-inj-rate">-</p></div>
-      <div class="metric"><h3>재진 평균 내원</h3><p id="m-revisit-visit-avg">-</p></div>
       <div class="metric"><h3>초진 주사처방률</h3><p id="m-inj-rate">-</p></div>
       <div class="metric"><h3>초진 평균 내원횟수</h3><p id="m-visit-avg">-</p></div>
       <div class="metric"><h3>재내원율(2회 이상)</h3><p id="m-revisit">-</p></div>
@@ -625,128 +619,6 @@
 
 
 
-    // 총 환자 파일 기준 전체 환자수/내원수 집계
-    // 총환자수 = 차트번호 고유수, 총내원수 = 기간 내 전체 내원 행 수
-    function buildTotalVisitStatsByHeader(data, idHeaderCandidates, dateHeaderCandidates, startDate='', endDate='') {
-      const stats = { totalPatients: 0, totalVisits: 0, patientIds: new Set() };
-      if (!data || !data.length) return stats;
-
-      let headerRow = null, headerIdx = -1;
-      for (let i=0;i<Math.min(15, data.length);i++){
-        const row = data[i] || [];
-        const joined = row.map(x=>String(x||'')).join('');
-        if (/(차트|챠트|ID|아이디)/i.test(joined) || /(진료일|내원일|방문일|일자|수납일)/.test(joined)) {
-          headerRow = row; headerIdx = i; break;
-        }
-      }
-      if (!headerRow) headerRow = data[0], headerIdx = 0;
-
-      const headersLower = headerRow.map(h => String(h||'').toLowerCase());
-      const findIdx = (cands) => {
-        for (const c of cands) {
-          const idx = headersLower.findIndex(h => h.includes(c));
-          if (idx !== -1) return idx;
-        }
-        return -1;
-      };
-
-      const idIdx   = findIdx(idHeaderCandidates.map(s=>s.toLowerCase()));
-      const dateIdx = findIdx(dateHeaderCandidates.map(s=>s.toLowerCase()));
-      if (idIdx === -1 || dateIdx === -1) return stats;
-
-      data.slice(headerIdx+1).forEach(r=>{
-        const id = r[idIdx]?.toString().trim();
-        const date = excelDateToISO(r[dateIdx]);
-        if (!id || !date) return;
-        if (!isDateInRange(date, startDate, endDate)) return;
-        stats.patientIds.add(id);
-        stats.totalVisits += 1;
-      });
-      stats.totalPatients = stats.patientIds.size;
-      return stats;
-    }
-
-
-    // 전체 내원 파일 기준 상세 집계(진료실/연령대별)
-    // 총환자수 = 차트번호 고유수, 총내원수 = 기간 내 전체 내원 행 수
-    // 파일에 진료실/나이(또는 생년월일) 컬럼이 있을 때 연령대별 총계에 사용합니다.
-    function buildTotalVisitStatsDetailedByHeader(data, idHeaderCandidates, dateHeaderCandidates, startDate='', endDate='') {
-      const detail = { byRoomBand: new Map(), hasRoom: false, hasAge: false };
-      if (!data || !data.length) return detail;
-
-      let headerRow = null, headerIdx = -1;
-      for (let i=0;i<Math.min(15, data.length);i++){
-        const row = data[i] || [];
-        const joined = row.map(x=>String(x||'')).join('');
-        if (/(차트|챠트|ID|아이디)/i.test(joined) || /(진료일|내원일|방문일|일자|수납일)/.test(joined)) {
-          headerRow = row; headerIdx = i; break;
-        }
-      }
-      if (!headerRow) headerRow = data[0], headerIdx = 0;
-
-      const headersLower = headerRow.map(h => String(h||'').toLowerCase());
-      const findIdx = (cands) => {
-        for (const c of cands) {
-          const idx = headersLower.findIndex(h => h.includes(c));
-          if (idx !== -1) return idx;
-        }
-        return -1;
-      };
-
-      const idIdx   = findIdx(idHeaderCandidates.map(s=>s.toLowerCase()));
-      const dateIdx = findIdx(dateHeaderCandidates.map(s=>s.toLowerCase()));
-      const roomIdx = findIdx(['진료실','진료과','의사','담당의','진료의','doctor','room']);
-      const ageIdx  = findIdx(['나이','연령','age']);
-      const rrnIdx  = findIdx(['주민','생년','생일','생년월일','생년월','rrn','등록번호']);
-      if (idIdx === -1 || dateIdx === -1) return detail;
-      detail.hasRoom = roomIdx !== -1;
-      detail.hasAge = ageIdx !== -1 || rrnIdx !== -1;
-
-      const normalizeRoom = (v) => {
-        const raw = String(v||'').trim();
-        if (!raw) return '전체';
-        const m = raw.match(/(\d+)\s*진료실/);
-        if (m) return `${parseInt(m[1],10)}진료실`;
-        const n = raw.match(/^(\d+)$/);
-        if (n) return `${parseInt(n[1],10)}진료실`;
-        return raw;
-      };
-      const add = (room, band, id) => {
-        const key = `${room}|||${band}`;
-        if (!detail.byRoomBand.has(key)) detail.byRoomBand.set(key, { patients:new Set(), visits:0 });
-        const obj = detail.byRoomBand.get(key);
-        obj.patients.add(id);
-        obj.visits += 1;
-      };
-
-      data.slice(headerIdx+1).forEach(r=>{
-        const id = r[idIdx]?.toString().trim();
-        const date = excelDateToISO(r[dateIdx]);
-        if (!id || !date) return;
-        if (!isDateInRange(date, startDate, endDate)) return;
-
-        let age = null;
-        if (ageIdx !== -1) {
-          const n = Number(String(r[ageIdx]||'').replace(/[^0-9.]/g,''));
-          if (!isNaN(n) && n >= 0 && n <= 120) age = n;
-        }
-        if ((age === null || isNaN(age)) && rrnIdx !== -1) {
-          const rrnRaw = String(r[rrnIdx]||'').trim();
-          if (rrnRaw && rrnRaw.includes('-')) age = calculateAge(rrnRaw);
-          else if (rrnRaw) age = parseAgeFromBirthish(rrnRaw);
-        }
-        if (age === null || isNaN(age) || age < 0 || age > 120) return;
-        const band = getAgeBand(age);
-        const room = detail.hasRoom ? normalizeRoom(r[roomIdx]) : '전체';
-        add(room, band, id);
-        add(room, '전체', id);
-        add('전체', band, id);
-        add('전체', '전체', id);
-      });
-      return detail;
-    }
-
-
     // 차트번호+날짜 기준 집계: 초진 당일 주사 여부 판정용
     // 같은 환자·같은 날짜에 주사 처방이 여러 줄 있어도 1회 방문으로 계산
     function buildCountMapByIdDateHeader(data, idHeaderCandidates, dateHeaderCandidates, startDate='', endDate='') {
@@ -826,11 +698,7 @@
         const revisit2pInj = inj.filter(r=>r.visit>=2).length;
         result.push({
           '구분':label,
-          '총환자수':'-',
-          '총내원수':'-',
           '초진환자수':total.length,
-          '재진 환자수':'-',
-          '재진':'-',
           '초진 주사환자수':inj.length,
           '초진 주사처방률':toPercent(inj.length,total.length),
           '초진 주사치료 평균 주사횟수':inj.length?avgInj.toFixed(2):'-',
@@ -857,7 +725,7 @@
     }
 
 // 🔁 기존 computeAgeBandStats 를 이걸로 교체
-function computeAgeBandStats(merged, totalVisitDetail=null){
+function computeAgeBandStats(merged){
   // 방별로 모으기
   const byRoom = {};
   merged.forEach(r => {
@@ -880,7 +748,6 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
   // 공통 계산 헬퍼
   const toPercent = (num, den) => den ? Math.round((num/den)*100)+'%' : '0%';
   const average = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
-  const getTotalDetail = (room, band) => totalVisitDetail?.byRoomBand?.get(`${room}|||${band}`) || null;
 
   function pushBandRows(label, arr){
     // 각 연령대 행들 먼저
@@ -898,13 +765,6 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       const avgInj = injN ? average(inj.map(x=>x.injTotal)) : 0;
       const avgVisit = average(a.map(x=>x.visit));
       const revisit2p = a.filter(x=>x.visit>=2).length;
-      const fallbackTotalVisitCount = a.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
-      const detail = getTotalDetail(label, band);
-      const totalPatientCount = detail ? detail.patients.size : a.length;
-      const totalVisitCount = detail ? detail.visits : fallbackTotalVisitCount;
-      const firstIds = new Set(a.map(x=>x.id));
-      const revisitPatientCount = detail ? [...detail.patients].filter(id=>!firstIds.has(id)).length : a.filter(x=>(Number(x.visit)||0)>=2).length;
-      const revisitVisitCount = Math.max(0, totalVisitCount - a.length);
 
       const cnt = (n)=>inj.filter(x=> n===8 ? x.injTotal>=8 : x.injTotal===n).length;
       const rate = (n)=>toPercent(cnt(n), injN);
@@ -912,11 +772,6 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       rows.push({
         '진료실': label,
         '연령대': band,
-        '총환자수': totalPatientCount,
-        '총내원수': totalVisitCount,
-        '환자당 평균 내원횟수': totalPatientCount ? (totalVisitCount / totalPatientCount).toFixed(2) : '-',
-        '재진 환자수': revisitPatientCount,
-        '재진': revisitVisitCount,
         '초진환자수': a.length,
         '초진 주사환자수': injN,
         '초진 주사처방률': toPercent(injN, a.length),
@@ -941,13 +796,6 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       const avgInjAll = injAllN ? average(injAll.map(x=>x.injTotal)) : 0;
       const avgVisitAll = average(arr.map(x=>x.visit));
       const revisit2pAll = arr.filter(x=>x.visit>=2).length;
-      const fallbackTotalVisitCountAll = arr.reduce((sum,x)=>sum + (Number(x.visit)||0), 0);
-      const detailAll = getTotalDetail(label, '전체');
-      const totalPatientCountAll = detailAll ? detailAll.patients.size : arr.length;
-      const totalVisitCountAll = detailAll ? detailAll.visits : fallbackTotalVisitCountAll;
-      const firstIdsAll = new Set(arr.map(x=>x.id));
-      const revisitPatientCountAll = detailAll ? [...detailAll.patients].filter(id=>!firstIdsAll.has(id)).length : arr.filter(x=>(Number(x.visit)||0)>=2).length;
-      const revisitVisitCountAll = Math.max(0, totalVisitCountAll - arr.length);
 
       const cntA = (n)=>injAll.filter(x=> n===8 ? x.injTotal>=8 : x.injTotal===n).length;
       const rateA = (n)=>toPercent(cntA(n), injAllN);
@@ -955,11 +803,6 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       rows.push({
         '진료실': label,
         '연령대': '전체',
-        '총환자수': totalPatientCountAll,
-        '총내원수': totalVisitCountAll,
-        '환자당 평균 내원횟수': totalPatientCountAll ? (totalVisitCountAll / totalPatientCountAll).toFixed(2) : '-',
-        '재진 환자수': revisitPatientCountAll,
-        '재진': revisitVisitCountAll,
         '초진환자수': arr.length,
         '초진 주사환자수': injAllN,
         '초진 주사처방률': toPercent(injAllN, arr.length),
@@ -1001,7 +844,7 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       if (/평균|내원횟수/.test(h)) return 'w-avg';
       if (/%|률|비율/.test(h)) return 'w-rate';
       if (/^[1-8]회|8회|주사 1회|2회|3회|4회|5회|6회|7회/.test(h)) return 'w-dist';
-      if (/수$|환자수|초진|초진주사|총내원수|재진$/.test(h)) return 'w-count';
+      if (/수$|환자수|초진|초진주사/.test(h)) return 'w-count';
       return '';
     }
     function colGroup(headers){
@@ -1156,27 +999,12 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
             ['진료일','내원일','방문일','일자','수납일'],
             startDate, endDate)
         : {};
-      const totalInjVisits = Object.values(bTotalMap).reduce((sum, v) => sum + (Number(v)||0), 0);
-
       const vMap = fileMap.v
         ? buildCountMapByHeader(fileMap.v,
             ['차트','챠트','id','아이디'],
             ['진료일','내원일','방문일','일자','수납일'],
             startDate, endDate)
         : {};
-
-      const totalVisitStats = fileMap.v
-        ? buildTotalVisitStatsByHeader(fileMap.v,
-            ['차트','챠트','id','아이디'],
-            ['진료일','내원일','방문일','일자','수납일'],
-            startDate, endDate)
-        : { totalPatients: clinicRows.length, totalVisits: 0, patientIds: new Set(clinicRows.map(r=>r.id)) };
-      const totalVisitDetail = fileMap.v
-        ? buildTotalVisitStatsDetailedByHeader(fileMap.v,
-            ['차트','챠트','id','아이디'],
-            ['진료일','내원일','방문일','일자','수납일'],
-            startDate, endDate)
-        : null;
 
       const merged = clinicRows.map(r=>({
         id:r.id, age:r.age, room:r.room, firstDate:r.firstDate,
@@ -1196,28 +1024,7 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       }
 
       const stats = computeStats(merged);
-      const byAge = computeAgeBandStats(merged, totalVisitDetail);
-      const overallRow = stats.find(s=>s['구분']==='전체');
-      if (overallRow) {
-        const firstPatientCount = overallRow['초진환자수'] || 0;
-        const totalPatients = totalVisitStats.totalPatients || firstPatientCount;
-        const totalVisits = totalVisitStats.totalVisits || merged.reduce((sum, r) => sum + (Number(r.visit)||0), 0) || firstPatientCount;
-        const firstPatientIds = new Set(merged.map(r=>r.id));
-        let revisitPatientCount = Math.max(0, totalPatients - firstPatientCount);
-        if (totalVisitStats.patientIds && totalVisitStats.patientIds.size) {
-          revisitPatientCount = [...totalVisitStats.patientIds].filter(id => !firstPatientIds.has(id)).length;
-        }
-        const revisitVisits = Math.max(0, totalVisits - firstPatientCount);
-        overallRow['총환자수'] = totalPatients;
-        overallRow['총내원수'] = totalVisits;
-        const firstDayInjVisits = merged.reduce((sum, r) => sum + ((Number(r.firstDayInj)||0) > 0 ? 1 : 0), 0);
-        const revisitInjVisits = Math.max(0, totalInjVisits - firstDayInjVisits);
-        overallRow['재진 환자수'] = revisitPatientCount;
-        overallRow['재진'] = revisitVisits;
-        overallRow['재진 주사처방률'] = revisitVisits ? toPercent(revisitInjVisits, revisitVisits) : '-';
-        overallRow['재진 평균 내원'] = revisitPatientCount ? (revisitVisits / revisitPatientCount).toFixed(2) : '-';
-        overallRow['환자당 평균 내원횟수'] = totalPatients ? (totalVisits / totalPatients).toFixed(2) : '-';
-      }
+      const byAge = computeAgeBandStats(merged);
       window.__latestStats = stats;
       window.__latestByAge = byAge;
       renderCharts(stats);
@@ -1225,14 +1032,7 @@ function computeAgeBandStats(merged, totalVisitDetail=null){
       const overall = stats.find(s=>s['구분']==='전체');
       if (overall){
         $('#summary').style.display='grid';
-        $('#m-total-patients').textContent=fmt(overall['총환자수']);
-        $('#m-total-visits').textContent=fmt(overall['총내원수']);
-        $('#m-visit-per-patient').textContent = overall['환자당 평균 내원횟수'] && overall['환자당 평균 내원횟수'] !== '-' ? `환자당 평균 내원횟수 ${overall['환자당 평균 내원횟수']}회` : '-';
         $('#m-total').textContent=fmt(overall['초진환자수']);
-        $('#m-revisit-patients').textContent=fmt(overall['재진 환자수']);
-        $('#m-revisit-visits').textContent=fmt(overall['재진']);
-        $('#m-revisit-inj-rate').textContent=fmt(overall['재진 주사처방률']);
-        $('#m-revisit-visit-avg').textContent=fmt(overall['재진 평균 내원']);
         $('#m-inj-rate').textContent=fmt(overall['초진 주사처방률']);
         $('#m-visit-avg').textContent=fmt(overall['초진 평균 내원횟수']);
         $('#m-revisit').textContent=fmt(overall['초진 재내원율']);
