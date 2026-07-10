@@ -607,14 +607,133 @@
     .fabAI{position:fixed;right:14px;bottom:14px;z-index:2500;}
     @media (max-width: 820px){ .rightDrawer{width:92vw;} }
 
+
+
+/* =========================================================
+   JINSUL PORTAL BRAND / THEME LAYER
+   기존 환자 구분 색상(--c-new, --c-conv, --c-90, --c-ret)은 변경하지 않습니다.
+   ========================================================= */
+:root{
+  --app-bg:#eef3f9;
+  --surface:#ffffff;
+  --surface-soft:#f7f9fc;
+  --surface-strong:#eef3f8;
+  --ink:#172033;
+  --ink-soft:#64748b;
+  --line:#dce4ee;
+  --header-bg:rgba(255,255,255,.94);
+  --modal-bg:#ffffff;
+  --control-bg:#ffffff;
+  --hover-bg:#f1f5f9;
+  --brand-navy:#102a43;
+  --brand-blue:#2563eb;
+  --brand-gold:#c89b3c;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --app-bg:#09111f;
+  --surface:#111c2d;
+  --surface-soft:#162235;
+  --surface-strong:#1d2a40;
+  --ink:#e8eef8;
+  --ink-soft:#9fb0c7;
+  --line:#2b3b52;
+  --header-bg:rgba(13,24,40,.95);
+  --modal-bg:#111c2d;
+  --control-bg:#17243a;
+  --hover-bg:#20304a;
+  --brand-navy:#e9f1fb;
+  color-scheme:dark;
+}
+html,body{background:var(--app-bg)!important;color:var(--ink)!important;}
+.sidebar{
+  background:linear-gradient(180deg,var(--surface-soft),var(--app-bg))!important;
+  color:var(--ink)!important;
+  border-right:1px solid var(--line)!important;
+  box-shadow:8px 0 28px rgba(15,23,42,.10)!important;
+}
+.sidebarHeader{
+  min-height:78px;padding:12px 14px!important;background:var(--header-bg)!important;
+  border-bottom:1px solid var(--line)!important;backdrop-filter:blur(14px);
+}
+.brandWrap{display:flex;align-items:center;gap:10px;min-width:0;}
+.brandLogo{width:42px;height:42px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 4px 8px rgba(15,23,42,.12));}
+.brand{font-size:16px!important;font-weight:900;color:var(--brand-navy)!important;letter-spacing:.2px;line-height:1.15;}
+.brandSub{font-size:10px;color:var(--ink-soft);margin-top:4px;white-space:nowrap;}
+.headerActions{display:flex;align-items:center;gap:6px;}
+.headerIconBtn{
+  width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:var(--control-bg);
+  color:var(--ink);cursor:pointer;font-size:17px;font-weight:800;display:grid;place-items:center;
+  box-shadow:0 4px 12px rgba(15,23,42,.08);transition:.2s ease;
+}
+.headerIconBtn:hover{transform:translateY(-1px);background:var(--hover-bg);border-color:#93a4ba;}
+.themeBtn{font-size:15px;}
+.section,.ai-section{
+  background:var(--surface)!important;border:1px solid var(--line)!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.07)!important;color:var(--ink)!important;
+  backdrop-filter:none!important;
+}
+.sectionTitle{
+  background:none!important;-webkit-background-clip:initial!important;-webkit-text-fill-color:initial!important;
+  color:var(--ink)!important;
+}
+.sectionTitle::before{background:linear-gradient(180deg,var(--brand-blue),var(--brand-gold))!important;}
+.uploadBox,.statGrid,.statItem,.input-box,.miniInput,.aiTextarea,.aiOutput,
+.search-btn,.btn.outline,.chip,.chipBtn,select{
+  background:var(--control-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
+.uploadBox{background:var(--surface-soft)!important;}
+.statGrid{background:var(--surface-soft)!important;}
+.statLabel,.muted,.brandSub,#searchStatus{color:var(--ink-soft)!important;}
+.statValue,.row,.input-box::placeholder,.miniInput::placeholder,.aiTextarea::placeholder{color:var(--ink)!important;}
+.row{border-bottom-color:var(--line)!important;}
+.search-btn.active{background:rgba(37,99,235,.12)!important;color:#3b82f6!important;border-color:#3b82f6!important;}
+.btn.primary{background:linear-gradient(135deg,#1d4ed8,#3b82f6)!important;box-shadow:0 8px 18px rgba(37,99,235,.28)!important;}
+.btn.purple,#btnRouteOpt{background:linear-gradient(135deg,#6941c6,#8b5cf6)!important;box-shadow:0 8px 18px rgba(124,58,237,.26)!important;}
+.sidebar > div:last-child{background:var(--surface)!important;border-top-color:var(--line)!important;color:var(--ink-soft)!important;}
+#mapLegend,.map-type-group,.vertical-toolbar,.info,.info-overlay{
+  background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
+.map-type-btn,.v-tool-btn{background:var(--control-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;}
+.map-type-btn:hover,.v-tool-btn:hover{background:var(--hover-bg)!important;}
+.map-type-btn.active,.v-tool-btn.active{background:#2563eb!important;color:white!important;}
+.v-tool-btn .lbl{color:var(--ink-soft)!important;}
+.v-tool-btn.active .lbl{color:white!important;}
+.modalPanel,.rightDrawer{background:var(--modal-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;}
+.drawerHeader,.drawerFooter,.modalHeader{background:var(--header-bg)!important;border-color:var(--line)!important;color:var(--ink)!important;}
+.drawerTitle{background:none!important;-webkit-text-fill-color:initial!important;color:var(--ink)!important;}
+.tabBar,.tabBtn,table.miniTable td{border-color:var(--line)!important;}
+.tabBtn{background:var(--control-bg)!important;color:var(--ink)!important;}
+.tabBtn.active{background:#2563eb!important;color:white!important;border-color:#2563eb!important;}
+table.miniTable th{background:var(--surface-strong)!important;color:var(--ink)!important;}
+table.miniTable td{color:var(--ink)!important;}
+.result-item{border-color:var(--line)!important;}.result-item:hover{background:var(--hover-bg)!important;}
+.result-item .addr{color:var(--ink-soft)!important;}
+details{background:var(--surface-soft)!important;border-color:var(--line)!important;color:var(--ink)!important;}
+#roadviewModal{border-color:var(--line)!important;}
+.sidebarBody{scrollbar-color:#8393a8 transparent;}
+@media(max-width:760px){
+  .app{display:block;overflow:auto;}.sidebar{width:100%;min-width:0;height:auto;max-height:52vh;}
+  .mapArea{height:48vh;}.brandSub{display:none;}.sidebarHeader{min-height:64px;}
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <div class="sidebar">
 <div class="sidebarHeader">
-<div class="brand">JINSUL MAP v3.1.7</div>
-<div style="font-size:11px;color:#868e96;">v3.1.7</div>
+  <div class="brandWrap">
+    <img class="brandLogo" src="https://raw.githubusercontent.com/jinsul-lab/openteam/main/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL 로고" onerror="this.style.display='none'">
+    <div>
+      <div class="brand">JINSUL MAP</div>
+      <div class="brandSub">환자 분포 · 지역 통계 분석</div>
+    </div>
+  </div>
+  <div class="headerActions">
+    <button type="button" class="headerIconBtn" id="btnBack" title="뒤로가기" aria-label="뒤로가기">←</button>
+    <button type="button" class="headerIconBtn themeBtn" id="btnTheme" title="다크/라이트 전환" aria-label="다크/라이트 전환">🌙</button>
+  </div>
 </div>
 <div class="sidebarBody">
 <div class="section">
@@ -4386,6 +4505,50 @@ function initAIPanel(){
 }
 
 setTimeout(initAIPanel, 0);
+
+
+/* ===== JINSUL 상단 뒤로가기 / 다크·라이트 ===== */
+(function initJinsulShell(){
+  const THEME_KEY = 'jinsul_map_theme';
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('btnTheme');
+  const backBtn = document.getElementById('btnBack');
+
+  function applyTheme(theme){
+    const next = theme === 'dark' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    if(themeBtn){
+      themeBtn.textContent = next === 'dark' ? '☀️' : '🌙';
+      themeBtn.title = next === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
+      themeBtn.setAttribute('aria-label', themeBtn.title);
+    }
+    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+    setTimeout(()=>{
+      try{ if(window.map && kakao?.maps?.event) kakao.maps.event.trigger(map,'resize'); }catch(e){}
+      try{ if(typeof resizeAllStatCharts === 'function') resizeAllStatCharts(); }catch(e){}
+    },80);
+  }
+
+  let saved = 'light';
+  try{ saved = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){}
+  applyTheme(saved);
+
+  if(themeBtn){
+    themeBtn.addEventListener('click',()=>{
+      applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  }
+  if(backBtn){
+    backBtn.addEventListener('click',()=>{
+      const portal = 'https://xginini-dot.github.io/jinsul/';
+      if(document.referrer && document.referrer !== location.href){
+        try{ history.back(); return; }catch(e){}
+      }
+      location.href = portal;
+    });
+  }
+})();
+
 </script>
 </body>
 </html>
