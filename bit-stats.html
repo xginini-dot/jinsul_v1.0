@@ -617,7 +617,7 @@
     </div>
   </div>
 
-  <div id="loadingOverlay"><div class="loader-card"><div class="spinner"></div><strong>통계 계산 중입니다</strong><p style="color:#b8b8b8;margin:8px 0 0;font-size:13px">파일을 읽고 주요 지표를 정리하고 있습니다.</p></div></div>
+  <div id="loadingOverlay"><div class="loader-card"><div class="spinner"></div><strong>통계 계산 중입니다</strong><p style="color:#b8b8b8;margin:8px 0 0;font-size:13px">대용량 파일을 최적화하여 분석하고 있습니다. 잠시만 기다려주세요.</p></div></div>
 
   <div id="oneshotModal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal">
@@ -1231,50 +1231,65 @@
     const roomValue=row=>roomCol ? String(row[roomCol] ?? '').trim() : '';
 
     /*
-      요약 통계의 초진 수와 완전히 같은 기준을 사용합니다.
-      - 전체: 신환·90일초진 행의 고유 차트번호
-      - 진료실별: 해당 진료실 신환·90일초진 행의 고유 차트번호
-      주민번호는 초진 수를 합치거나 줄이는 용도로 사용하지 않고,
-      초진 이후 차트번호가 누락된 후속 내원을 연결하는 보조키로만 사용합니다.
+      대용량 성능 개선:
+      이전 방식은 초진 환자 한 명마다 전체 행을 다시 순회하여
+      환자 수 × 전체 행 수만큼 계산했습니다.
+      이제 전체 행을 한 번만 훑어 차트번호/주민번호 인덱스를 만든 뒤,
+      각 환자는 자신의 기록만 조회합니다.
     */
-    const seedRows=rows.filter(r=>{
-      if(!isFirstType(r[typeCol])) return false;
-      if(roomFilter!==null && roomValue(r)!==roomFilter) return false;
-      return !!normalizePatientToken(r[chartCol]);
-    });
+    const itemsByChart=new Map();
+    const blankChartItemsByRrn=new Map();
+    const seedByChart=new Map();
 
-    const seedCharts=[...new Set(seedRows.map(r=>normalizePatientToken(r[chartCol])).filter(Boolean))];
+    for(let index=0; index<rows.length; index++){
+      const row=rows[index];
+      const chart=normalizePatientToken(row[chartCol]);
+      const rrn=rrnCol ? normalizePatientToken(row[rrnCol]) : '';
+      const item={row,index};
+
+      if(chart){
+        if(!itemsByChart.has(chart)) itemsByChart.set(chart,[]);
+        itemsByChart.get(chart).push(item);
+      }else if(rrn){
+        // 차트번호가 비어 있는 후속 기록만 주민번호 보조 매칭에 사용
+        if(!blankChartItemsByRrn.has(rrn)) blankChartItemsByRrn.set(rrn,[]);
+        blankChartItemsByRrn.get(rrn).push(item);
+      }
+
+      if(chart && isFirstType(row[typeCol]) && (roomFilter===null || roomValue(row)===roomFilter)){
+        if(!seedByChart.has(chart)) seedByChart.set(chart,[]);
+        seedByChart.get(chart).push(item);
+      }
+    }
+
     const cohorts=[];
-
-    seedCharts.forEach(chart=>{
-      const chartFirstRows=seedRows
-        .map((r,index)=>({row:r,index}))
-        .filter(x=>normalizePatientToken(x.row[chartCol])===chart);
-      if(!chartFirstRows.length) return;
-
-      // 이 차트번호의 초진행에서 확인되는 주민번호를 후속 내원 연결용으로만 사용합니다.
-      const seedRrns=new Set(chartFirstRows
-        .map(x=>rrnCol ? normalizePatientToken(x.row[rrnCol]) : '')
-        .filter(Boolean));
-
-      const matchedItems=[];
-      rows.forEach((r,index)=>{
-        const rowChart=normalizePatientToken(r[chartCol]);
-        const rowRrn=rrnCol ? normalizePatientToken(r[rrnCol]) : '';
-        if(rowChart===chart || (!rowChart && rowRrn && seedRrns.has(rowRrn))){
-          matchedItems.push({row:r,index});
+    for(const [chart, chartFirstRows] of seedByChart){
+      const seedRrns=new Set();
+      if(rrnCol){
+        for(const x of chartFirstRows){
+          const rrn=normalizePatientToken(x.row[rrnCol]);
+          if(rrn) seedRrns.add(rrn);
         }
-      });
+      }
+
+      const matchedItems=(itemsByChart.get(chart)||[]).slice();
+      for(const rrn of seedRrns){
+        const extras=blankChartItemsByRrn.get(rrn);
+        if(extras && extras.length) matchedItems.push(...extras);
+      }
 
       // 같은 날짜에 여러 처방 행이 있으면 1회 내원으로 묶습니다.
       const byVisit=new Map();
-      matchedItems.forEach(x=>{
+      for(const x of matchedItems){
         const d=dateCol ? normalizeVisitDate(x.row[dateCol]) : '';
         const key=d || `ROW-${String(x.index).padStart(10,'0')}`;
-        if(!byVisit.has(key)) byVisit.set(key,{date:d,index:x.index,inj:false,isSeedFirst:false,room:''});
-        const v=byVisit.get(key);
-        v.index=Math.min(v.index,x.index);
-        v.inj=v.inj || normalizeInjectionMark(x.row[injCol]);
+        let v=byVisit.get(key);
+        if(!v){
+          v={date:d,index:x.index,inj:false,isSeedFirst:false,room:''};
+          byVisit.set(key,v);
+        }
+        if(x.index<v.index) v.index=x.index;
+        if(normalizeInjectionMark(x.row[injCol])) v.inj=true;
 
         const sameChart=normalizePatientToken(x.row[chartCol])===chart;
         const sameRoom=roomFilter===null || roomValue(x.row)===roomFilter;
@@ -1282,7 +1297,7 @@
           v.isSeedFirst=true;
           if(!v.room) v.room=roomValue(x.row);
         }
-      });
+      }
 
       let visits=[...byVisit.values()].sort((a,b)=>{
         if(a.date && b.date && a.date!==b.date) return a.date.localeCompare(b.date);
@@ -1292,9 +1307,9 @@
       });
 
       const startIndex=visits.findIndex(v=>v.isSeedFirst);
-      if(startIndex<0) return;
+      if(startIndex<0) continue;
       visits=visits.slice(startIndex);
-      if(!visits.length) return;
+      if(!visits.length) continue;
 
       const firstVisit=visits[0];
       const firstInjectionIndex=visits.findIndex(v=>v.inj);
@@ -1307,7 +1322,7 @@
         totalVisits:visits.length,
         everInjected:firstInjectionIndex>=0
       });
-    });
+    }
 
     return cohorts;
   }
@@ -1554,6 +1569,7 @@
 
 
   /* ================= 기능 강화 UI ================= */
+  function nextPaint(){ return new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0))); }
   function setLoading(on){
     const el=document.getElementById('loadingOverlay');
     if(el) el.classList.toggle('show', !!on);
@@ -1666,6 +1682,7 @@
     setLoading(true);
 
     try{
+      await nextPaint();
       let rawData=[];
       const isCSV=/\.csv$/i.test(file.name);
       if(isCSV){
@@ -1681,6 +1698,7 @@
       }
       state.rawData = rawData;
       state.keyword = keyword;
+      await nextPaint();
       parseData(rawData, keyword);
     }catch(err){
       console.error(err);
