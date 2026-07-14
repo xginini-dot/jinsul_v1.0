@@ -1218,61 +1218,80 @@
     return String(value ?? '').replace(/\s/g,'').includes('●');
   }
 
-  function buildFirstInjectionCohorts(rows, col){
-    if(!col || !col['초재'] || !col['마취'] || (!col['차트'] && !col['주민번호'])) return [];
-    const chartCol=col['차트'] || null;
+  function buildFirstInjectionCohorts(rows, col, roomFilter=null){
+    if(!col || !col['초재'] || !col['차트'] || !col['마취']) return [];
+    const chartCol=col['차트'];
     const rrnCol=col['주민번호'] || null;
     const typeCol=col['초재'];
     const injCol=col['마취'];
     const dateCol=col['내원일'] || null;
     const roomCol=col['과'] || null;
 
-    // 차트번호·주민번호 중 하나라도 일치하면 동일 환자로 통합합니다.
-    const parent=rows.map((_,i)=>i);
-    const find=i=>{ while(parent[i]!==i){ parent[i]=parent[parent[i]]; i=parent[i]; } return i; };
-    const union=(a,b)=>{ a=find(a); b=find(b); if(a!==b) parent[b]=a; };
-    const chartOwner=new Map(), rrnOwner=new Map();
-    rows.forEach((r,index)=>{
-      const chart=chartCol ? normalizePatientToken(r[chartCol]) : '';
-      const rrn=rrnCol ? normalizePatientToken(r[rrnCol]) : '';
-      if(chart){ chartOwner.has(chart) ? union(index,chartOwner.get(chart)) : chartOwner.set(chart,index); }
-      if(rrn){ rrnOwner.has(rrn) ? union(index,rrnOwner.get(rrn)) : rrnOwner.set(rrn,index); }
+    const isFirstType=value=>['신환','90일초진'].includes(String(value ?? '').trim());
+    const roomValue=row=>roomCol ? String(row[roomCol] ?? '').trim() : '';
+
+    /*
+      요약 통계의 초진 수와 완전히 같은 기준을 사용합니다.
+      - 전체: 신환·90일초진 행의 고유 차트번호
+      - 진료실별: 해당 진료실 신환·90일초진 행의 고유 차트번호
+      주민번호는 초진 수를 합치거나 줄이는 용도로 사용하지 않고,
+      초진 이후 차트번호가 누락된 후속 내원을 연결하는 보조키로만 사용합니다.
+    */
+    const seedRows=rows.filter(r=>{
+      if(!isFirstType(r[typeCol])) return false;
+      if(roomFilter!==null && roomValue(r)!==roomFilter) return false;
+      return !!normalizePatientToken(r[chartCol]);
     });
 
-    const groups=new Map();
-    rows.forEach((r,index)=>{
-      const chart=chartCol ? normalizePatientToken(r[chartCol]) : '';
-      const rrn=rrnCol ? normalizePatientToken(r[rrnCol]) : '';
-      if(!chart && !rrn) return;
-      const root=find(index);
-      if(!groups.has(root)) groups.set(root,[]);
-      groups.get(root).push({row:r,index});
-    });
-
+    const seedCharts=[...new Set(seedRows.map(r=>normalizePatientToken(r[chartCol])).filter(Boolean))];
     const cohorts=[];
-    groups.forEach(items=>{
-      // 한 날짜의 여러 처방 행을 1회 내원으로 묶습니다.
-      const byVisit=new Map();
-      items.forEach(x=>{
-        const d=dateCol ? normalizeVisitDate(x.row[dateCol]) : '';
-        const key=d || `ROW-${String(x.index).padStart(10,'0')}`;
-        if(!byVisit.has(key)) byVisit.set(key,{date:d,index:x.index,inj:false,isFirst:false,room:''});
-        const v=byVisit.get(key);
-        v.index=Math.min(v.index,x.index);
-        v.inj = v.inj || normalizeInjectionMark(x.row[injCol]);
-        const t=String(x.row[typeCol] ?? '').trim();
-        if(['신환','90일초진'].includes(t)){
-          v.isFirst=true;
-          if(!v.room && roomCol) v.room=String(x.row[roomCol] ?? '').trim();
+
+    seedCharts.forEach(chart=>{
+      const chartFirstRows=seedRows
+        .map((r,index)=>({row:r,index}))
+        .filter(x=>normalizePatientToken(x.row[chartCol])===chart);
+      if(!chartFirstRows.length) return;
+
+      // 이 차트번호의 초진행에서 확인되는 주민번호를 후속 내원 연결용으로만 사용합니다.
+      const seedRrns=new Set(chartFirstRows
+        .map(x=>rrnCol ? normalizePatientToken(x.row[rrnCol]) : '')
+        .filter(Boolean));
+
+      const matchedItems=[];
+      rows.forEach((r,index)=>{
+        const rowChart=normalizePatientToken(r[chartCol]);
+        const rowRrn=rrnCol ? normalizePatientToken(r[rrnCol]) : '';
+        if(rowChart===chart || (!rowChart && rowRrn && seedRrns.has(rowRrn))){
+          matchedItems.push({row:r,index});
         }
       });
+
+      // 같은 날짜에 여러 처방 행이 있으면 1회 내원으로 묶습니다.
+      const byVisit=new Map();
+      matchedItems.forEach(x=>{
+        const d=dateCol ? normalizeVisitDate(x.row[dateCol]) : '';
+        const key=d || `ROW-${String(x.index).padStart(10,'0')}`;
+        if(!byVisit.has(key)) byVisit.set(key,{date:d,index:x.index,inj:false,isSeedFirst:false,room:''});
+        const v=byVisit.get(key);
+        v.index=Math.min(v.index,x.index);
+        v.inj=v.inj || normalizeInjectionMark(x.row[injCol]);
+
+        const sameChart=normalizePatientToken(x.row[chartCol])===chart;
+        const sameRoom=roomFilter===null || roomValue(x.row)===roomFilter;
+        if(sameChart && sameRoom && isFirstType(x.row[typeCol])){
+          v.isSeedFirst=true;
+          if(!v.room) v.room=roomValue(x.row);
+        }
+      });
+
       let visits=[...byVisit.values()].sort((a,b)=>{
         if(a.date && b.date && a.date!==b.date) return a.date.localeCompare(b.date);
         if(a.date && !b.date) return -1;
         if(!a.date && b.date) return 1;
         return a.index-b.index;
       });
-      const startIndex=visits.findIndex(v=>v.isFirst);
+
+      const startIndex=visits.findIndex(v=>v.isSeedFirst);
       if(startIndex<0) return;
       visits=visits.slice(startIndex);
       if(!visits.length) return;
@@ -1280,7 +1299,8 @@
       const firstVisit=visits[0];
       const firstInjectionIndex=visits.findIndex(v=>v.inj);
       cohorts.push({
-        room:firstVisit.room || '미입력',
+        chart,
+        room:roomFilter!==null ? roomFilter : (firstVisit.room || '미입력'),
         firstDayInjection:firstVisit.inj,
         noInjectionOnFirst:!firstVisit.inj,
         firstInjectionNth:firstInjectionIndex>=0 ? firstInjectionIndex+1 : null,
@@ -1288,6 +1308,7 @@
         everInjected:firstInjectionIndex>=0
       });
     });
+
     return cohorts;
   }
 
@@ -1315,12 +1336,20 @@
     const box=document.getElementById('firstInjectionOutput');
     const card=document.getElementById('firstInjectionCard');
     if(!box || !card) return;
-    const cohorts=buildFirstInjectionCohorts(rows,col);
-    if(!cohorts.length){ box.innerHTML=''; card.style.display='none'; return; }
+    const overallCohorts=buildFirstInjectionCohorts(rows,col,null);
+    if(!overallCohorts.length){ box.innerHTML=''; card.style.display='none'; return; }
 
-    const summaries=[summarizeFirstInjection(cohorts,'전체')];
-    const rooms=[...new Set(cohorts.map(x=>x.room).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
-    rooms.forEach(room=>summaries.push(summarizeFirstInjection(cohorts.filter(x=>x.room===room),room)));
+    // 진료실 목록도 요약 통계와 같은 원본 행 기준으로 생성합니다.
+    const rooms=col['과'] ? [...new Set(rows
+      .filter(r=>['신환','90일초진'].includes(String(r[col['초재']] ?? '').trim()))
+      .map(r=>String(r[col['과']] ?? '').trim())
+      .filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})) : [];
+
+    const summaries=[summarizeFirstInjection(overallCohorts,'전체')];
+    rooms.forEach(room=>{
+      const roomCohorts=buildFirstInjectionCohorts(rows,col,room);
+      summaries.push(summarizeFirstInjection(roomCohorts,room));
+    });
 
     const headers=['구분','표시','전체 초진','초진 당일 주사','초진 당일 비주사','2회차 최초주사','3회차 최초주사','4회차 최초주사','5회차 최초주사','6회차 최초주사','7회차 최초주사','8회차 이상','기간 내 미주사','(초진) Total 주사'];
     const body=summaries.map(s=>{
