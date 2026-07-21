@@ -1411,6 +1411,151 @@
             body.light #output .group-adult { background: linear-gradient(180deg,#e5e0f1,#d4cce5)!important; color:#443b62!important; }
             body.light #output .group-performance { background: linear-gradient(180deg,#dcebdc,#c8ddc8)!important; color:#304b30!important; }
             body.light #output .group-distribution { background: linear-gradient(180deg,#eee1c8,#dfcfac)!important; color:#55421f!important; }
+
+
+            /* ===== 2026-07 Light / Dark readability reinforcement ===== */
+            /* Inline dark color used by chart titles must be overridden in light mode. */
+            body.light #chartCard .chart-grid h4,
+            body.light #chartCard h4[style] {
+                color: #253142 !important;
+                font-weight: 900 !important;
+                text-shadow: none !important;
+            }
+
+            /* KPI cards */
+            body.light .metric {
+                background: linear-gradient(180deg,#ffffff,#fbfaf7) !important;
+                border-color: #d9ccb9 !important;
+                box-shadow: 0 12px 28px rgba(76,61,42,.12) !important;
+            }
+            body.light .metric h3 {
+                color: #465365 !important;
+                font-weight: 900 !important;
+            }
+            body.light .metric p {
+                color: #111827 !important;
+                text-shadow: none !important;
+            }
+            body.light .metric small {
+                color: #725a38 !important;
+                font-weight: 850 !important;
+            }
+
+            /* Bar charts */
+            body.light .bar-label {
+                color: #3f4856 !important;
+                font-weight: 750 !important;
+            }
+            body.light .bar-value {
+                color: #202938 !important;
+                font-weight: 900 !important;
+                text-shadow: none !important;
+            }
+            body.light .bar-track {
+                background: #eee9e1 !important;
+                border-color: #d9d0c4 !important;
+            }
+            body.light .bar-fill {
+                background: linear-gradient(90deg,#b9aa92,#79684d) !important;
+            }
+            body.light .empty-chart {
+                color: #5b6472 !important;
+            }
+
+            /* General card headings and descriptive copy */
+            body.light .card-title,
+            body.light .control-head h2,
+            body.light .field-title,
+            body.light .conversion-note strong {
+                color: #1f2937 !important;
+            }
+            body.light .control-head p,
+            body.light .hint,
+            body.light .conversion-note,
+            body.light p.sub {
+                color: #586273 !important;
+            }
+
+            /* Standard table header/body contrast */
+            body.light th {
+                background: linear-gradient(180deg,#e9e0d2,#ddd1bf) !important;
+                color: #2f3947 !important;
+                font-weight: 900 !important;
+                text-shadow: none !important;
+            }
+            body.light td {
+                color: #222b37 !important;
+                background-color: rgba(255,255,255,.82);
+            }
+            body.light td:first-child,
+            body.light th:first-child {
+                color: #44351f !important;
+            }
+            body.light tbody tr:first-child td {
+                background: #f4efe7 !important;
+                color: #17202d !important;
+            }
+
+            /* Summary group headers: stronger contrast in light mode */
+            body.light #output .group-basic {
+                background: linear-gradient(180deg,#d3e3f4,#bdd2e8) !important;
+                color: #1f3b59 !important;
+            }
+            body.light #output .group-injection {
+                background: linear-gradient(180deg,#f0d9cf,#dfbfae) !important;
+                color: #5b3023 !important;
+            }
+            body.light #output .group-adult {
+                background: linear-gradient(180deg,#e3ddf4,#cec4e9) !important;
+                color: #403267 !important;
+            }
+            body.light #output .group-performance {
+                background: linear-gradient(180deg,#d9ecd9,#bfdbbf) !important;
+                color: #294c2d !important;
+            }
+            body.light #output .group-distribution {
+                background: linear-gradient(180deg,#f1e4c5,#dfc994) !important;
+                color: #5d4615 !important;
+            }
+            body.light #output .summary-group-head th {
+                font-weight: 950 !important;
+                text-shadow: none !important;
+                border-bottom-color: rgba(68,53,31,.22) !important;
+            }
+            body.light #output .summary-column-head th {
+                background: linear-gradient(180deg,#eee7dc,#e2d8c9) !important;
+                color: #2f3947 !important;
+            }
+
+            /* Upload/date controls */
+            body.light .upload-zone {
+                background: #fffdfa !important;
+            }
+            body.light .upload-main {
+                color: #202938 !important;
+            }
+            body.light .upload-sub,
+            body.light .upload-name,
+            body.light label {
+                color: #5d6470 !important;
+            }
+
+            /* Dark mode reinforcement for the same elements */
+            body:not(.light) #chartCard .chart-grid h4,
+            body:not(.light) #chartCard h4[style] {
+                color: #f5efe5 !important;
+            }
+            body:not(.light) .bar-label {
+                color: #e8d8bd !important;
+            }
+            body:not(.light) .bar-value {
+                color: #ffffff !important;
+            }
+            body:not(.light) .metric h3,
+            body:not(.light) .metric small {
+                color: #d5c5aa !important;
+            }
+
         </style>
     </head>
     <body>
