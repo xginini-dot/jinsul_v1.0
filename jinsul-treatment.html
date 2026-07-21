@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
     <head>
@@ -1671,7 +1672,9 @@ body.theme-light .metric{
                     <div class="brand-title">
                         <h1>치료 유형 조합 통계 리포트</h1>
                         <p>
-                            총내원·주사치료·도수치료·체외충격파 파일을 업로드하면<br>동일 날짜 동일 환자 1명 기준으로 정리해 보고용 통계를 산정합니다.
+                            총내원·주사치료·도수치료·체외충격파 파일을 업로드하면<br>
+비트/의사랑 형식을 자동 판별하고 동일 날짜 동일 환자 1명 기준으로 정리합니다.<br>
+비트 처방내역은 각 업로드 파일이 이미 분류된 것으로 보고 처방명·코드를 다시 필터링하지 않습니다.
                         </p>
                     </div>
                 </div>
@@ -1910,12 +1913,37 @@ body.theme-light .metric{
                 return -1;
             }
             function detectFormat(headers, hi) {
-                const hs = headers.map(cleanHeader).join('|');
-                if (hs.includes('처방코드') && hs.includes('처방명칭') && hs.includes('처방일자'))
-                    return '비트 처방내역';
-                if (hi > 0 || hs.includes('s/a') || hs.includes('초/재') || hs.includes('작업일') || hs.includes('접수메모'))
-                    return '비트 내원';
-                return '의사랑·비트';
+                const hs = headers.map(cleanHeader);
+                const joined = hs.join('|');
+
+                const isBitPrescription =
+                    hs.includes('처방코드') &&
+                    hs.includes('처방명칭') &&
+                    hs.includes('차트번호') &&
+                    hs.includes('성명') &&
+                    hs.includes('처방일자');
+
+                const isBitVisit =
+                    (hs.includes('챠트번호') || hs.includes('차트번호')) &&
+                    (hs.includes('수진자명') || hs.includes('성명')) &&
+                    hs.includes('내원일') &&
+                    (hs.includes('s/a') || hs.includes('초/재') || hi > 0);
+
+                if (isBitPrescription) return '비트 처방내역(분류완료)';
+                if (isBitVisit) return '비트 총내원';
+                if (joined.includes('처방') || joined.includes('진료일') || joined.includes('접수일'))
+                    return '의사랑';
+                return '자동인식';
+            }
+
+            function isBitPrescriptionFormat(fmt) {
+                return fmt.startsWith('비트 처방내역');
+            }
+
+            function rawCell(row, c) {
+                if (!row || c < 0 || c >= row.length) return '';
+                const v = row[c];
+                return (v === undefined || v === null) ? '' : v;
             }
             function safeCell(row, c) {
                 if (!row || c < 0 || c >= row.length)
@@ -2064,7 +2092,7 @@ body.theme-light .metric{
                                 skipped++;
                                 continue;
                             }
-                            const rawDate = safeCell(rowR, cDate);
+                            const rawDate = rawCell(rowR, cDate);
                             const txtDate = safeCell(rowT, cDate);
                             let date = excelDateToISO(rawDate) || excelDateToISO(txtDate);
                             const chart = cleanChart(safeCell(rowT, cChart) || safeCell(rowR, cChart));
@@ -2088,11 +2116,17 @@ body.theme-light .metric{
                                 pkey,
                                 dkey,
                                 source: file.name,
-                                format: fmt
+                                format: fmt,
+                                sourceMode: isBitPrescriptionFormat(fmt)
+                                    ? '업로드 파일 분류 그대로 사용'
+                                    : '비트/의사랑 자동 인식'
                             });
                             added++;
                         }
-                        debug.push(`${file.name}/${sn}: ${added.toLocaleString()}건 인식${skipped ? ` / 제외 ${skipped.toLocaleString()}행` : ''}${sampleSkip.length ? ` / 제외예시 ${sampleSkip.join(' ; ')}` : ''}`);
+                        const policy = isBitPrescriptionFormat(fmt) && kind !== 'total'
+                            ? ' / 비트 분류완료 파일: 처방명·코드 재필터링 없이 전체 유효행 사용'
+                            : '';
+                        debug.push(`${file.name}/${sn}: ${added.toLocaleString()}건 인식${policy}${skipped ? ` / 제외 ${skipped.toLocaleString()}행` : ''}${sampleSkip.length ? ` / 제외예시 ${sampleSkip.join(' ; ')}` : ''}`);
                     }
                 }
                 const map = new Map();
@@ -2109,7 +2143,11 @@ body.theme-light .metric{
                 const files = document.getElementById(id).files;
                 state[key] = await parseFiles(files, key);
                 const fmt = [...state.formats[key]].join('·') || '자동인식';
-                document.getElementById(countId).textContent = `파일 ${files.length}개 · ${fmt} 양식 · 동일환자+동일날짜 중복정리 후 ${state[key].length.toLocaleString()}건`;
+                const modeText = [...state.formats[key]].some(isBitPrescriptionFormat) && key !== 'total'
+                    ? ' · 업로드 파일 분류 그대로 집계'
+                    : ' · 형식 자동 판별';
+                document.getElementById(countId).textContent =
+                    `파일 ${files.length}개 · ${fmt} 양식${modeText} · 동일환자+동일날짜 중복정리 후 ${state[key].length.toLocaleString()}건`;
                 autoDates();
             }
             function autoDates() {
