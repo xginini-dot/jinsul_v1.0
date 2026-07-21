@@ -618,6 +618,298 @@
     body.light-mode #summaryOutput tbody tr.summary-average-row td{background:#faf7f2!important}
 
   </style>
+
+<style id="jinsul-shared-design-v2">
+/* =========================================================
+   JINSUL 공통 디자인 v2
+   계산식·엑셀 인식 로직은 변경하지 않고 시각 디자인만 통일
+   ========================================================= */
+:root{
+  --ui-page:#11100f;
+  --ui-card:rgba(38,36,33,.92);
+  --ui-card-soft:rgba(255,255,255,.055);
+  --ui-border:rgba(211,190,157,.30);
+  --ui-heading:#fffaf1;
+  --ui-body:#eee8df;
+  --ui-muted:#c2b8aa;
+  --ui-accent:#c5aa7d;
+  --ui-accent-dark:#816942;
+}
+
+body:not(.light-mode){
+  background:
+    radial-gradient(circle at 18% 0%,rgba(197,170,125,.18),transparent 32%),
+    radial-gradient(circle at 90% 12%,rgba(133,105,65,.13),transparent 28%),
+    linear-gradient(145deg,#11100f 0%,#1a1917 48%,#26221d 100%) !important;
+  color:var(--ui-body);
+}
+body:not(.light-mode) .card,
+body:not(.light-mode) .kpi,
+body:not(.light-mode) .upload-card{
+  border-color:var(--ui-border) !important;
+}
+body:not(.light-mode) .card{
+  background:linear-gradient(180deg,rgba(48,46,42,.93),rgba(29,28,26,.94)) !important;
+}
+body:not(.light-mode) .kpi{
+  background:linear-gradient(180deg,rgba(58,55,50,.90),rgba(38,36,33,.94)) !important;
+}
+body:not(.light-mode) .section-head h2,
+body:not(.light-mode) .card-title,
+body:not(.light-mode) .upload-title,
+body:not(.light-mode) .bar-label,
+body:not(.light-mode) .bar-value{
+  color:var(--ui-heading) !important;
+  opacity:1 !important;
+}
+body:not(.light-mode) .section-head p,
+body:not(.light-mode) .upload-desc,
+body:not(.light-mode) .file-name,
+body:not(.light-mode) label{
+  color:var(--ui-muted) !important;
+  opacity:1 !important;
+}
+
+/* 라이트모드 기본 팔레트 */
+body.light-mode{
+  --ui-page:#f6f2eb;
+  --ui-card:#ffffff;
+  --ui-card-soft:#fbfaf7;
+  --ui-border:#ddd1c0;
+  --ui-heading:#172033;
+  --ui-body:#283344;
+  --ui-muted:#5d6878;
+  --ui-accent:#866a45;
+  --ui-accent-dark:#5f472b;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(190,169,139,.15),transparent 32%),
+    radial-gradient(circle at 90% 12%,rgba(190,169,139,.09),transparent 28%),
+    linear-gradient(145deg,#f5f0e8 0%,#fbfaf7 48%,#eee5d8 100%) !important;
+  color:var(--ui-body) !important;
+}
+body.light-mode::after{opacity:.18 !important}
+body.light-mode .wm img{opacity:.018 !important}
+body.light-mode .card{
+  background:#fff !important;
+  border-color:var(--ui-border) !important;
+  box-shadow:0 18px 48px rgba(74,56,34,.12) !important;
+}
+body.light-mode .card::before{
+  background:linear-gradient(135deg,rgba(190,169,139,.085),transparent 44%) !important;
+  opacity:.6 !important;
+}
+body.light-mode .section-head h2,
+body.light-mode .card-title,
+body.light-mode h1,
+body.light-mode .modal-title{
+  color:var(--ui-heading) !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+}
+body.light-mode .section-head p,
+body.light-mode p.sub,
+body.light-mode .upload-desc,
+body.light-mode .file-name,
+body.light-mode label,
+body.light-mode #dateRangeStatus,
+body.light-mode #oneshotMeta,
+body.light-mode .card p[style]{
+  color:var(--ui-muted) !important;
+  opacity:1 !important;
+}
+
+/* 업로드 영역 */
+body.light-mode .upload-card{
+  background:#fff !important;
+  border-color:#ddd1c0 !important;
+  box-shadow:0 10px 26px rgba(74,56,34,.07) !important;
+}
+body.light-mode .upload-title{color:#60492d !important}
+body.light-mode .upload-drop{
+  background:#fbfaf7 !important;
+  color:#283344 !important;
+  border-color:#c9b99f !important;
+}
+body.light-mode .upload-drop:hover{background:#f2eadf !important}
+body.light-mode .upload-btn{
+  color:#fff !important;
+  background:linear-gradient(180deg,#92734b,#6f5434) !important;
+}
+
+/* KPI 카드 */
+body.light-mode .kpi{
+  background:#fff !important;
+  border-color:#ddd1c0 !important;
+  box-shadow:0 12px 30px rgba(74,56,34,.10) !important;
+}
+body.light-mode .kpi small{
+  color:#596577 !important;
+  font-weight:800 !important;
+  opacity:1 !important;
+}
+body.light-mode .kpi strong{
+  color:#111827 !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+}
+body.light-mode .kpi span{
+  color:#715638 !important;
+  font-weight:800 !important;
+  opacity:1 !important;
+}
+
+/* 자동 막대그래프: 라이트모드에서 제목·수치가 사라지는 문제 보정 */
+body.light-mode #chartCard .section-head h2,
+body.light-mode #chartCard .section-head p,
+body.light-mode #chartCard .bar-label,
+body.light-mode #chartCard .bar-value,
+body.light-mode #chartBars .bar-label,
+body.light-mode #chartBars .bar-value{
+  color:#273346 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  text-shadow:none !important;
+}
+body.light-mode #chartCard .section-head p{color:#627083 !important}
+body.light-mode .bar-track{
+  background:#e9e3da !important;
+  border:1px solid #ddd4c7 !important;
+}
+body.light-mode .bar-fill{
+  background:linear-gradient(90deg,#c9bba5 0%,#8b744f 100%) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+body:not(.light-mode) .bar-track{
+  background:rgba(255,255,255,.10) !important;
+  border:1px solid rgba(211,190,157,.13) !important;
+}
+body:not(.light-mode) .bar-fill{
+  background:linear-gradient(90deg,#a89576,#d8c7ac) !important;
+}
+
+/* 표 기본 가독성 */
+body.light-mode #summaryOutput,
+body.light-mode #output,
+body.light-mode #oneshotTable,
+body.light-mode #firstInjectionOutput{
+  background:#fff !important;
+  border-color:#d8d0c5 !important;
+}
+body.light-mode table th{
+  color:#3b2e21 !important;
+  background:linear-gradient(180deg,#eee7dd,#dfd4c5) !important;
+  border-color:#cbbda9 !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+}
+body.light-mode table td{
+  color:#202a3a !important;
+  background:#fff !important;
+  border-color:#e8e1d8 !important;
+  opacity:1 !important;
+}
+body.light-mode table tbody tr:nth-child(even) td{background:#fbfaf8 !important}
+body.light-mode table tbody tr:hover td{background:#f2ece3 !important}
+body.light-mode table td:first-child,
+body.light-mode table th:first-child{color:#5d4529 !important}
+
+/* 요약표 그룹 헤더: 각 그룹마다 충분한 대비 확보 */
+body.light-mode #summaryOutput thead tr.summary-group-row th{
+  border-bottom:1px solid rgba(73,57,37,.22) !important;
+  font-weight:900 !important;
+  opacity:1 !important;
+}
+body.light-mode #summaryOutput .group-label{
+  background:linear-gradient(180deg,#d5c6ae,#c2ae8e) !important;
+  color:#3f2f1d !important;
+}
+body.light-mode #summaryOutput .group-first{
+  background:linear-gradient(180deg,#dbe8f6,#c9dcf0) !important;
+  color:#203f60 !important;
+}
+body.light-mode #summaryOutput .group-return{
+  background:linear-gradient(180deg,#e8def4,#d7c8e9) !important;
+  color:#493567 !important;
+}
+body.light-mode #summaryOutput .group-total{
+  background:linear-gradient(180deg,#dceee6,#c8e0d5) !important;
+  color:#244b3c !important;
+}
+body.light-mode #summaryOutput .group-injection{
+  background:linear-gradient(180deg,#f5e0d2,#e8cdb9) !important;
+  color:#6b3a20 !important;
+}
+body.light-mode #summaryOutput .group-adult{
+  background:linear-gradient(180deg,#e6e0f7,#d4cbed) !important;
+  color:#493e82 !important;
+}
+body.light-mode #summaryOutput .group-performance{
+  background:linear-gradient(180deg,#dcede0,#c9e0cd) !important;
+  color:#285c32 !important;
+}
+body.light-mode #summaryOutput .group-distribution{
+  background:linear-gradient(180deg,#f2e8c8,#e5d6a9) !important;
+  color:#66531b !important;
+}
+body.light-mode #summaryOutput .group-etc{
+  background:linear-gradient(180deg,#e9dfd4,#dacbbc) !important;
+  color:#4c3927 !important;
+}
+body.light-mode #summaryOutput tbody tr.summary-total-row td{
+  background:#f1ebe2 !important;
+  color:#172033 !important;
+  font-weight:900 !important;
+}
+body.light-mode #summaryOutput tbody tr.summary-average-row td{
+  background:#faf7f2 !important;
+}
+
+/* 다크모드 그룹 헤더도 과도하게 어둡지 않도록 보정 */
+body:not(.light-mode) #summaryOutput thead tr.summary-group-row th{
+  color:#fffaf1 !important;
+  opacity:1 !important;
+  font-weight:900 !important;
+}
+body:not(.light-mode) #summaryOutput .group-first{background:linear-gradient(180deg,#34506d,#293f56)!important}
+body:not(.light-mode) #summaryOutput .group-return{background:linear-gradient(180deg,#544367,#413451)!important}
+body:not(.light-mode) #summaryOutput .group-total{background:linear-gradient(180deg,#365849,#294439)!important}
+body:not(.light-mode) #summaryOutput .group-injection{background:linear-gradient(180deg,#694a38,#51392b)!important}
+body:not(.light-mode) #summaryOutput .group-adult{background:linear-gradient(180deg,#5a5378,#443f5c)!important}
+body:not(.light-mode) #summaryOutput .group-performance{background:linear-gradient(180deg,#42644a,#344f3a)!important}
+body:not(.light-mode) #summaryOutput .group-distribution{background:linear-gradient(180deg,#695d38,#51482d)!important}
+
+/* 버튼·입력 */
+body.light-mode button,
+body.light-mode .jinsulFloatingBtn{
+  color:#49361f !important;
+  background:#fff !important;
+  border-color:#cbb99d !important;
+  opacity:1 !important;
+}
+body.light-mode button:hover:not(:disabled),
+body.light-mode .jinsulFloatingBtn:hover{
+  color:#241b12 !important;
+  background:#f0e8dc !important;
+  border-color:#98764d !important;
+}
+body.light-mode input[type=text],
+body.light-mode input[type=date],
+body.light-mode input[type=file]{
+  color:#172033 !important;
+  background:#faf9f6 !important;
+  border-color:#cfd4dc !important;
+}
+
+/* 모바일에서도 카드와 텍스트 대비 유지 */
+@media(max-width:980px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:1fr !important}
+  .bar-row{grid-template-columns:88px minmax(120px,1fr) 52px !important}
+}
+</style>
+
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
