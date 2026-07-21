@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -574,6 +575,48 @@
     body.light-mode .jinsulFloatingBtn{background:#fff;color:#3d2e1e;border-color:#cdbb9f;box-shadow:0 9px 22px rgba(66,50,30,.14)}
     body.light-mode .jinsulFloatingBtn:hover{background:#f0e8dc;color:#1f2937}
 
+  
+
+    /* ===== 의사랑 통계와 동일한 요약표 그룹 UI ===== */
+    #summaryOutput table{min-width:2350px}
+    #summaryOutput thead tr.summary-group-row th{
+      position:sticky;
+      top:0;
+      z-index:4;
+      padding:10px 8px;
+      font-size:12px;
+      letter-spacing:-.02em;
+      border-bottom:1px solid rgba(190,169,139,.32);
+    }
+    #summaryOutput thead tr.summary-column-row th{
+      top:38px;
+      z-index:3;
+      font-size:11px;
+      line-height:1.35;
+    }
+    #summaryOutput .group-label{background:linear-gradient(180deg,rgba(126,105,76,.46),rgba(92,74,51,.34))!important}
+    #summaryOutput .group-first{background:linear-gradient(180deg,rgba(111,144,190,.34),rgba(75,103,142,.24))!important}
+    #summaryOutput .group-return{background:linear-gradient(180deg,rgba(142,117,184,.34),rgba(99,76,140,.24))!important}
+    #summaryOutput .group-total{background:linear-gradient(180deg,rgba(95,151,135,.34),rgba(60,111,98,.24))!important}
+    #summaryOutput .group-injection{background:linear-gradient(180deg,rgba(190,132,99,.38),rgba(145,91,63,.26))!important}
+    #summaryOutput .group-adult{background:linear-gradient(180deg,rgba(173,145,82,.38),rgba(128,103,51,.26))!important}
+    #summaryOutput .group-performance{background:linear-gradient(180deg,rgba(103,147,174,.34),rgba(65,105,131,.24))!important}
+    #summaryOutput .group-distribution{background:linear-gradient(180deg,rgba(130,130,130,.34),rgba(83,83,83,.24))!important}
+    #summaryOutput .group-etc{background:linear-gradient(180deg,rgba(128,111,93,.34),rgba(88,73,58,.24))!important}
+    #summaryOutput tbody tr.summary-total-row td{font-weight:900;background:rgba(190,169,139,.12)}
+    #summaryOutput tbody tr.summary-average-row td{font-weight:800;background:rgba(255,255,255,.045)}
+    body.light-mode #summaryOutput .group-label{background:linear-gradient(180deg,#d8c8b0,#c8b495)!important}
+    body.light-mode #summaryOutput .group-first{background:linear-gradient(180deg,#dce7f4,#cbdced)!important;color:#243b55!important}
+    body.light-mode #summaryOutput .group-return{background:linear-gradient(180deg,#e5ddf1,#d7cbe8)!important;color:#42345d!important}
+    body.light-mode #summaryOutput .group-total{background:linear-gradient(180deg,#dcece6,#c9dfd7)!important;color:#24493f!important}
+    body.light-mode #summaryOutput .group-injection{background:linear-gradient(180deg,#f1dfd2,#e5cbbb)!important;color:#663b25!important}
+    body.light-mode #summaryOutput .group-adult{background:linear-gradient(180deg,#eee5c9,#e0d3aa)!important;color:#5d4b19!important}
+    body.light-mode #summaryOutput .group-performance{background:linear-gradient(180deg,#dce9ee,#c9dce4)!important;color:#294957!important}
+    body.light-mode #summaryOutput .group-distribution{background:linear-gradient(180deg,#e7e7e7,#d8d8d8)!important;color:#343434!important}
+    body.light-mode #summaryOutput .group-etc{background:linear-gradient(180deg,#e7ddd2,#d9cab9)!important;color:#4f3e2d!important}
+    body.light-mode #summaryOutput tbody tr.summary-total-row td{background:#f3ede4!important}
+    body.light-mode #summaryOutput tbody tr.summary-average-row td{background:#faf7f2!important}
+
   </style>
 </head>
 <body>
@@ -709,7 +752,10 @@
 
     <div class="card table-card" id="summaryCard">
       <div class="section-head">
-        <h2>📊 요약 통계</h2>
+        <div>
+          <h2>📊 요약 통계</h2>
+          <p>의사랑 통계와 동일한 순서와 그룹으로 초진·재진·전체 환자 지표를 확인합니다.</p>
+        </div>
         <div class="table-actions no-print">
           <button class="secondary mini-btn" onclick="copyTable('summaryOutput')" type="button">표 복사</button>
           <button class="secondary mini-btn" onclick="downloadTableXlsx('summaryOutput','비트_요약통계.xlsx')" type="button">엑셀 다운로드</button>
@@ -1506,58 +1552,94 @@
   function renderSummaryTable(allRows){
     const rows = allRows.filter(r=>r["연령대"]==="전체");
     if(!rows.length){ document.getElementById('summaryOutput').innerHTML=""; return; }
+
     const orderRooms=["1진료실","2진료실","3진료실","4진료실","5진료실","6진료실","7진료실","8진료실","9진료실","10진료실","전체"];
     rows.sort((a,b)=>{
       const ai=orderRooms.indexOf(a["구분"]); const bi=orderRooms.indexOf(b["구분"]);
-      return (ai===-1)-(bi===-1) || ai-bi || a["구분"].localeCompare(b["구분"]);
+      return (ai===-1)-(bi===-1) || ai-bi || a["구분"].localeCompare(b["구분"], 'ko', {numeric:true});
     });
-    const cols=[
-      "구분","총환자수","총내원수","환자당 평균 내원횟수","초진","초진주사","초진 주사처방률",
-      "재진 환자수","재진",
-      "초진 주사 평균 횟수","초진 주사 평균 내원 횟수",
-      "초진 주사 재진율",
-      "(18세▲)초진","(18세▲)초진주사","(18세▲)초진주사처방률",
-      "초진 평균 내원횟수","초진 재내원율",
-      "1회 내원 비율","2회 내원 비율","3회 내원 비율","4회 내원 비율",
-      "5회 내원 비율","6회 내원 비율","7회 내원 비율","8회 이상 내원 비율",
-      "특정 키워드 포함 메모 수"
-    ].filter(c=>c in rows[0]);
-    // ✅ 진료실 평균(균등): 진료실별 지표를 동일 가중치로 평균낸 보조 "전체"
+
+    // 의사랑 통계와 동일한 열 순서
+    const columnDefs=[
+      {key:"구분", label:"구분", group:"label"},
+      {key:"초진", label:"초진환자수", group:"first"},
+      {key:"초진주사", label:"초진 주사환자수", group:"first"},
+      {key:"초진 주사처방률", label:"초진 주사처방률", group:"first"},
+      {key:"재진 환자수", label:"재진환자수", group:"return"},
+      {key:"재진", label:"재진", group:"return"},
+      {key:"총환자수", label:"총환자수", group:"total"},
+      {key:"총내원수", label:"총내원수", group:"total"},
+      {key:"초진 주사 평균 횟수", label:"초진 주사치료 평균 주사횟수", group:"injection"},
+      {key:"초진 주사 평균 내원 횟수", label:"초진 주사치료 평균 내원횟수", group:"injection"},
+      {key:"초진 주사 재진율", label:"초진 주사환자 재진률(2회 이상)", group:"injection"},
+      {key:"(18세▲)초진", label:"(18세▲)초진환자수", group:"adult"},
+      {key:"(18세▲)초진주사", label:"(18세▲)초진 주사수", group:"adult"},
+      {key:"(18세▲)초진주사처방률", label:"(18세▲)초진 주사처방률", group:"adult"},
+      {key:"초진 평균 내원횟수", label:"초진 평균 내원횟수", group:"performance"},
+      {key:"초진 재내원율", label:"초진 재내원율", group:"performance"},
+      {key:"1회 내원 비율", label:"1회 내원율", group:"distribution"},
+      {key:"2회 내원 비율", label:"2회 내원율", group:"distribution"},
+      {key:"3회 내원 비율", label:"3회 내원율", group:"distribution"},
+      {key:"4회 내원 비율", label:"4회 내원율", group:"distribution"},
+      {key:"5회 내원 비율", label:"5회 내원율", group:"distribution"},
+      {key:"6회 내원 비율", label:"6회 내원율", group:"distribution"},
+      {key:"7회 내원 비율", label:"7회 내원율", group:"distribution"},
+      {key:"8회 이상 내원 비율", label:"8회 이상 내원율", group:"distribution"},
+      {key:"특정 키워드 포함 메모 수", label:"특정 키워드 포함 메모 수", group:"etc"}
+    ].filter(c=>rows.some(r=>c.key in r));
+
+    // 진료실 평균(균등)은 기존 계산방식을 그대로 유지
     const roomRows = rows.filter(r=>/진료실$/.test(r["구분"]) && r["구분"]!=="전체");
     if(roomRows.length){
       const avgRow = {"구분":"진료실 평균(균등)"};
       const countCols = new Set(["총환자수","총내원수","초진","초진주사","재진 환자수","재진","(18세▲)초진","(18세▲)초진주사","특정 키워드 포함 메모 수"]);
-      cols.forEach(c=>{
-        if(c==="구분") return;
-        if(countCols.has(c)){ avgRow[c] = "-"; return; }
-        const raw = roomRows.map(r=>r[c]).filter(v=>v!==undefined && v!==null && v!=="" && v!=="-");
-        if(!raw.length){ avgRow[c] = "-"; return; }
-
-        // % 형태
+      columnDefs.forEach(c=>{
+        if(c.key==="구분") return;
+        if(countCols.has(c.key)){ avgRow[c.key] = "-"; return; }
+        const raw = roomRows.map(r=>r[c.key]).filter(v=>v!==undefined && v!==null && v!=="" && v!=="-");
+        if(!raw.length){ avgRow[c.key] = "-"; return; }
         const hasPct = raw.some(v=>typeof v==="string" && v.includes("%"));
         if(hasPct){
-          const nums = raw.map(v=>parseFloat(String(v).replace("%",""))).filter(n=>!isNaN(n));
-          if(!nums.length){ avgRow[c] = "-"; return; }
-          const mean = nums.reduce((a,b)=>a+b,0) / nums.length;
-          avgRow[c] = Math.round(mean) + "%";
-          return;
+          const nums=raw.map(v=>parseFloat(String(v).replace("%",""))).filter(n=>!isNaN(n));
+          avgRow[c.key]=nums.length ? Math.round(nums.reduce((a,b)=>a+b,0)/nums.length)+"%" : "-";
+        }else{
+          const nums=raw.map(v=>parseFloat(String(v))).filter(n=>!isNaN(n));
+          if(!nums.length){ avgRow[c.key]="-"; return; }
+          const mean=nums.reduce((a,b)=>a+b,0)/nums.length;
+          avgRow[c.key]=c.label.includes("평균") ? mean.toFixed(2) : String(Math.round(mean));
         }
-
-        // 숫자(평균/횟수 등)
-        const nums = raw.map(v=>parseFloat(String(v))).filter(n=>!isNaN(n));
-        if(!nums.length){ avgRow[c] = "-"; return; }
-        const mean = nums.reduce((a,b)=>a+b,0) / nums.length;
-        const needTwoDecimal = c.includes("평균");
-        avgRow[c] = needTwoDecimal ? mean.toFixed(2) : String(Math.round(mean));
       });
-
-      const totalIdx = rows.findIndex(r=>r["구분"]==="전체");
-      if(totalIdx >= 0) rows.splice(totalIdx+1, 0, avgRow);
-      else rows.push(avgRow);
+      const totalIdx=rows.findIndex(r=>r["구분"]==="전체");
+      if(totalIdx>=0) rows.splice(totalIdx+1,0,avgRow); else rows.push(avgRow);
     }
-    let thead='<tr>'+cols.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-    let tbody=rows.map(r=>'<tr>'+cols.map(c=>`<td>${formatCell(r[c])}</td>`).join('')+'</tr>').join('');
-    document.getElementById('summaryOutput').innerHTML=`<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+
+    const groupMeta={
+      first:{label:"초진 현황", cls:"group-first"},
+      return:{label:"재진 현황", cls:"group-return"},
+      total:{label:"전체 환자 현황", cls:"group-total"},
+      injection:{label:"초진 주사치료", cls:"group-injection"},
+      adult:{label:"18세 이상", cls:"group-adult"},
+      performance:{label:"초진 성과", cls:"group-performance"},
+      distribution:{label:"초진 내원분포", cls:"group-distribution"},
+      etc:{label:"기타", cls:"group-etc"}
+    };
+
+    const groupOrder=["first","return","total","injection","adult","performance","distribution","etc"];
+    let groupHead='<tr class="summary-group-row"><th rowspan="2" class="group-label">구분</th>';
+    groupOrder.forEach(g=>{
+      const count=columnDefs.filter(c=>c.group===g).length;
+      if(count) groupHead+=`<th colspan="${count}" class="${groupMeta[g].cls}">${groupMeta[g].label}</th>`;
+    });
+    groupHead+='</tr>';
+
+    const secondCols=columnDefs.filter(c=>c.key!=="구분");
+    const columnHead='<tr class="summary-column-row">'+secondCols.map(c=>`<th>${c.label}</th>`).join('')+'</tr>';
+    const tbody=rows.map(r=>{
+      const rowClass=r["구분"]==="전체" ? 'summary-total-row' : (r["구분"]==="진료실 평균(균등)" ? 'summary-average-row' : '');
+      return `<tr class="${rowClass}"><td>${formatCell(r["구분"])}</td>`+secondCols.map(c=>`<td>${formatCell(r[c.key])}</td>`).join('')+'</tr>';
+    }).join('');
+
+    document.getElementById('summaryOutput').innerHTML=`<table><thead>${groupHead}${columnHead}</thead><tbody>${tbody}</tbody></table>`;
   }
 
   function renderAgeTable(result){
