@@ -279,6 +279,13 @@ h1 {
   transition: 0.2s ease;
 }
 
+.btn-group{
+    margin-top:auto;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+  
 body.light .btn{
   color:#7b664d;
 }
@@ -372,7 +379,15 @@ footer {
         </div>
         <h3>의사랑 통계 계산기</h3>
         <p>진료실 다중 파일 + 주사(b) + 내원(v) 통합 분석, 연령·회차 분포를 제공합니다.</p>
-        <a class="btn" href="ysarang-stats.html">의사랑 계산기 열기 →</a>
+        <div class="btn-group">
+    <a class="btn" href="ysarang-stats.html">
+        의사랑 계산기 열기(기존) →
+    </a>
+
+    <a class="btn" href="ysarang-stats2.html">
+        의사랑 계산기 열기(외래) →
+    </a>
+</div>
       </div>
     </section>
 
