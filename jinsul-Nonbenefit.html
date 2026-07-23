@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <title>JINSUL 리푸스 월별·주별 통계</title>
+        <title>JINSUL 리푸스 월별·주별·일별 통계</title>
         <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         <style>
             :root {
@@ -1201,7 +1201,7 @@ body[data-theme="dark"] .topLogo{
         <div class="topBar">
             <div class="topBarInner">
                 <img class="topLogo" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL logo">
-                <div class="topTitle">LIPUS MONTHLY DASHBOARD</div>
+                <div class="topTitle">LIPUS DAILY · WEEKLY · MONTHLY DASHBOARD</div>
             </div>
         </div>
         <div class="wrap">
@@ -1209,10 +1209,10 @@ body[data-theme="dark"] .topLogo{
                 <img class="heroWatermark" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="" aria-hidden="true">
                 <div class="brand">
                     <div>
-                        <span class="badge">JINSUL · LIPUS MONTHLY DASHBOARD</span>
-                        <h1>월별 신환 · 재진 · 매출 통계</h1>
+                        <span class="badge">JINSUL · LIPUS DAILY · WEEKLY · MONTHLY DASHBOARD</span>
+                        <h1>월별 · 주별 · 일별 신환 · 재진 · 매출 통계</h1>
                         <p>
-                            경험과 가치를 현실화 하는 컨설팅<br>엑셀 업로드 후 2개월 기준 신환 재산정, 월별 매출 및 신환별 치료 횟수 분포를 확인합니다.
+                            경험과 가치를 현실화 하는 컨설팅<br>엑셀 업로드 후 2개월 기준 신환 재산정, 월별·주별·일별 매출 및 신환별 치료 횟수 분포를 확인합니다.
                         
                         </p>
                     </div>
@@ -1227,7 +1227,7 @@ body[data-theme="dark"] .topLogo{
                         <div class="uploadIcon">▣</div>
                         <div>
                             <h2>엑셀 파일 업로드</h2>
-                            <p>월별·주별 신환·재진·매출 통계를 계산할 원본 파일을 선택해주세요.</p>
+                            <p>월별·주별·일별 신환·재진·매출 통계를 계산할 원본 파일을 선택해주세요.</p>
                         </div>
                     </div>
                     <span class="uploadBadge">필수 컬럼 자동 인식</span>
@@ -1297,6 +1297,7 @@ body[data-theme="dark"] .topLogo{
                 <div class="tabs">
                     <button class="tab active" onclick="showTab('monthly',this)">월별 요약</button>
                     <button class="tab" onclick="showTab('weekly',this)">주별 요약</button>
+                    <button class="tab" onclick="showTab('daily',this)">일별 요약</button>
                     <button class="tab" onclick="showTab('dist',this)">신환 치료횟수 분포</button>
                     <button class="tab" onclick="showTab('episodes',this)">신환 상세</button>
                     <button class="tab" onclick="showTab('raw',this)">정리 데이터</button>
@@ -1328,6 +1329,21 @@ body[data-theme="dark"] .topLogo{
                         <div id="weeklyChart" class="chart"></div>
                         <div class="scroll">
                             <table id="weeklyTable"></table>
+                        </div>
+                    </div>
+                </section>
+                <section id="daily" class="section">
+                    <div class="card">
+                        <div class="tools">
+                            <div>
+                                <h2>일별 신환·재진·매출</h2>
+                                <p class="small">각 진료일 기준으로 신환, 재진, 총치료건수, 총투여량과 예상 매출을 집계합니다. 신환 평균 치료횟수와 치료간격은 해당 날짜에 시작된 신환 에피소드 기준입니다.</p>
+                            </div>
+                            <button class="ghost" onclick="downloadCSV('daily')">CSV 다운로드</button>
+                        </div>
+                        <div id="dailyChart" class="chart"></div>
+                        <div class="scroll">
+                            <table id="dailyTable"></table>
                         </div>
                     </div>
                 </section>
@@ -1385,6 +1401,7 @@ body[data-theme="dark"] .topLogo{
             let STORE = {
                 monthly: [],
                 weekly: [],
+                daily: [],
                 dist: [],
                 episodes: [],
                 raw: []
@@ -1611,6 +1628,7 @@ body[data-theme="dark"] .topLogo{
                             raw.push({
                                 월: ym(v.date),
                                 주: getWeekRange(v.date, weekStart).label,
+                                일: ymd(v.date),
                                 내원일: ymd(v.date),
                                 차트번호: v.chart,
                                 수진자명: v.name,
@@ -1750,8 +1768,56 @@ body[data-theme="dark"] .topLogo{
                         };
                     }
                     );
+                    const dayMap = new Map();
+                    function dget(d) {
+                        if (!dayMap.has(d))
+                            dayMap.set(d, {
+                                일: d,
+                                신환: 0,
+                                재진: 0,
+                                총치료건수: 0,
+                                총투여량: 0,
+                                매출: 0,
+                                신환평균치료횟수: 0,
+                                신환평균치료간격: 0,
+                                간격산출대상: 0
+                            });
+                        return dayMap.get(d);
+                    }
+                    raw.forEach(r => {
+                        const d = dget(r.일);
+                        d.총치료건수++;
+                        d.총투여량 += Number(r.총투여량) || 0;
+                        d.매출 += Number(r.총투여량 || 0) * unit;
+                        if (r.구분 === '재진') d.재진++;
+                    });
+                    episodes.forEach(e => {
+                        dget(ymd(e.startDate)).신환++;
+                    });
+                    const epByDay = {};
+                    episodes.forEach(e => {
+                        (epByDay[ymd(e.startDate)] ||= []).push(e);
+                    });
+                    Object.keys(epByDay).forEach(d => {
+                        const list = epByDay[d];
+                        const dd = dget(d);
+                        dd.신환평균치료횟수 = list.reduce((sum, e) => sum + e.visitCount, 0) / list.length;
+                        const intervalList = list.filter(e => e.avgInterval !== null);
+                        dd.간격산출대상 = intervalList.length;
+                        dd.신환평균치료간격 = intervalList.length ? intervalList.reduce((sum, e) => sum + e.avgInterval, 0) / intervalList.length : null;
+                    });
+                    const daily = [...dayMap.values()].sort((a, b) => a.일.localeCompare(b.일)).map(d => {
+                        const list = epByDay[d.일] || [];
+                        const converted = list.filter(e => e.visitCount >= 2).length;
+                        return {
+                            ...d,
+                            재진율: d.신환 ? converted / d.신환 * 100 : 0,
+                            건당평균매출: d.총치료건수 ? d.매출 / d.총치료건수 : 0
+                        };
+                    });
                     STORE.monthly = monthly;
                     STORE.weekly = weekly;
+                    STORE.daily = daily;
                     STORE.dist = dist;
                     STORE.episodes = episodes.map(e => ({
                         신환월: e.startMonth,
@@ -1795,6 +1861,13 @@ body[data-theme="dark"] .topLogo{
                     신환평균치료횟수: v => Number(v || 0).toFixed(2),
                     신환평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일'
                 });
+                makeTable('dailyTable', STORE.daily, ['일', '신환', '재진', '총치료건수', '재진율', '총투여량', '매출', '건당평균매출', '신환평균치료횟수', '신환평균치료간격', '간격산출대상'], {
+                    재진율: fmtP,
+                    매출: fmtW,
+                    건당평균매출: fmtW,
+                    신환평균치료횟수: v => Number(v || 0).toFixed(2),
+                    신환평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일'
+                });
                 let countCols = ['월', '신환'];
                 for (let i = 1; i <= 7; i++)
                     countCols.push(i + '회');
@@ -1828,6 +1901,8 @@ body[data-theme="dark"] .topLogo{
                 document.getElementById('monthlyChart').innerHTML = STORE.monthly.map(m => `<div class="col"><div class="colval">${Math.round(m.매출 / 10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4, m.매출 / max * 180)}px"></div><div class="collabel">${m.월}</div></div>`).join('');
                 const wmax = Math.max(...STORE.weekly.map(w => w.매출), 1);
                 document.getElementById('weeklyChart').innerHTML = STORE.weekly.map(w => `<div class="col"><div class="colval">${Math.round(w.매출 / 10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4, w.매출 / wmax * 180)}px"></div><div class="collabel">${w.주.replace(' ~ ', '<br>~ ')}</div></div>`).join('');
+                const dmax = Math.max(...STORE.daily.map(d => d.매출), 1);
+                document.getElementById('dailyChart').innerHTML = STORE.daily.map(d => `<div class="col"><div class="colval">${Math.round(d.매출 / 10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4, d.매출 / dmax * 180)}px"></div><div class="collabel">${d.일.slice(5)}</div></div>`).join('');
             }
             function showTab(id, btn) {
                 document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1856,6 +1931,7 @@ body[data-theme="dark"] .topLogo{
                 STORE = {
                     monthly: [],
                     weekly: [],
+                    daily: [],
                     dist: [],
                     episodes: [],
                     raw: []
