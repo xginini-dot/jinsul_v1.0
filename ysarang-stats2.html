@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -2721,7 +2722,9 @@
                         const age = ageFromCell(meta.ageIdx >= 0 ? row[meta.ageIdx] : '', rrn);
                         const key = id;
                         const isInitial = /초진|신환/.test(type);
-                        const isRevisit = !isInitial && /재진/.test(type);
+                        // 재진, 물리치료재진뿐 아니라 '미산정'도 재진 통계에 포함합니다.
+                        // 단, 초진/신환으로 판정된 행은 재진에 중복 포함하지 않습니다.
+                        const isRevisit = !isInitial && (/재진/.test(type) || /미산정/.test(type));
                         // 동일 환자·동일 날짜·동일 진료실의 중복 행은 한 번만 집계합니다.
                         const recordKey = `${id}_${date}_${room}`;
                         if (!outpatientRecordSeen.has(recordKey)) {
