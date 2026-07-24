@@ -1826,6 +1826,7 @@ body.theme-light .metric{
                 </div>
                 <div class="summary" id="injectionCompareSummary"></div>
                 <div class="notice">동일 환자·동일 날짜의 주사 내역은 1회로 계산합니다. 도수치료까지 포함된 환자는 두 비교군에서 제외합니다.</div>
+                <div id="injectionDistributionTable" style="margin-top:18px"></div>
                 <div class="split" style="margin-top:18px">
                     <div id="injectionCompareTable"></div>
                     <div>
@@ -2359,6 +2360,22 @@ body.theme-light .metric{
 
                 const maxAvg = Math.max(...stats.map(x => x.avgInjection), 1);
                 injectionCompareTable.innerHTML = `<table><thead><tr><th>비교군</th><th class="right">환자수</th><th class="right">총 주사횟수</th><th class="right">평균</th><th class="right">중앙값</th><th class="right">최대</th><th>평균 비교</th></tr></thead><tbody>${stats.map(x => `<tr class="clickable" onclick="selectInjectionCompareGroup('${x.key}')"><td><span class="badge">${x.label}</span></td><td class="right"><b>${x.patientCount.toLocaleString()}</b></td><td class="right">${x.totalInjection.toLocaleString()}</td><td class="right"><b>${x.avgInjection.toFixed(2)}회</b></td><td class="right">${x.medianInjection.toFixed(1)}회</td><td class="right">${x.maxInjection.toLocaleString()}회</td><td><div class="bar"><i style="width:${(x.avgInjection / maxAvg * 100).toFixed(1)}%"></i></div></td></tr>`).join('')}</tbody></table>`;
+
+                const buckets = [1,2,3,4,5,6,7,8];
+                const bucketLabel = n => n === 8 ? '8회 이상' : `${n}회`;
+                const distributionRows = stats.map(x => {
+                    const dist = buckets.map(n => {
+                        const count = x.rows.filter(r => n === 8 ? (r.injectionCount || 0) >= 8 : (r.injectionCount || 0) === n).length;
+                        const rate = x.patientCount ? count / x.patientCount * 100 : 0;
+                        return {count, rate};
+                    });
+                    return `<tr class="clickable" onclick="selectInjectionCompareGroup('${x.key}')"><td><span class="badge">${x.label}</span><br><small>총 ${x.patientCount.toLocaleString()}명</small></td>${dist.map(d => `<td class="right"><b>${d.count.toLocaleString()}건</b><br><small>${d.rate.toFixed(1)}%</small></td>`).join('')}</tr>`;
+                }).join('');
+                injectionDistributionTable.innerHTML = `
+                    <div class="section-title" style="margin-top:4px"><h2>주사치료 횟수별 분포 비교</h2><small>각 비교군 전체 환자수를 기준으로 1회부터 8회 이상까지 건수와 비율을 표시합니다.</small></div>
+                    <div class="listbox" style="max-height:none">
+                        <table style="min-width:980px"><thead><tr><th>비교군</th>${buckets.map(bucketLabel).map(v => `<th class="right">${v}</th>`).join('')}</tr></thead><tbody>${distributionRows}</tbody></table>
+                    </div>`;
                 renderInjectionCompareList(groups.flatMap(g => g.rows.map(r => ({...r, compareGroup: g.label}))));
             }
             function renderInjectionCompareList(rows) {
