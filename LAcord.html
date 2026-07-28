@@ -56,14 +56,36 @@
       overflow:visible;
     }
     .filebox input[type=file]{
-      height:auto;
+      display:block;
+      width:auto;
+      min-width:0;
       max-width:100%;
+      min-height:46px;
+      height:46px;
       border:0;
-      padding:0;
+      padding:3px 2px;
       background:transparent;
       font-size:15px;
-      line-height:1.6;
+      line-height:1.4;
       color:#342f29;
+      overflow:visible;
+    }
+    .filebox input[type=file]::file-selector-button{
+      height:38px;
+      margin:0 10px 0 0;
+      padding:0 15px;
+      border:1px solid #b8afa4;
+      border-radius:10px;
+      background:linear-gradient(180deg,#ffffff,#f3f0eb);
+      color:#24211e;
+      font:inherit;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 2px 5px rgba(55,45,35,.08);
+    }
+    .filebox input[type=file]::file-selector-button:hover{
+      background:#eee7dd;
+      border-color:#a9967f;
     }
     .fileCount{font-size:15px;color:#6b6257;font-weight:800;white-space:nowrap}
     .quickDates{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -105,6 +127,8 @@
     .topActions{position:fixed;right:18px;top:18px;z-index:50;display:flex;gap:8px}.topAction{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 13px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.08)}
     body.dark{--bg:#111315;--ink:#f3eee7;--muted:#b8aea3;--line:#3a342d;--card:#1b1d20;--soft:#25272b;--soft2:#202226;--deep:#f8f2ea;background:linear-gradient(180deg,#111315,#181a1d 55%,#111315)}
     body.dark .card,body.dark .controlPanel,body.dark .filebox,body.dark .field input,body.dark .field select,body.dark .field textarea,body.dark .tableWrap,body.dark th{background:#1b1d20;color:var(--ink);border-color:#3a342d} body.dark .hero{background:linear-gradient(135deg,#1b1d20,#26221d)} body.dark h1,body.dark .panelTitle,body.dark .sectionTitle h2{color:#f6f0e8} body.dark tbody tr:hover{background:#25272b}
+    body.dark .filebox input[type=file]::file-selector-button{background:#292b2f;color:#f3eee7;border-color:#5a5148;box-shadow:none}
+    body.dark .filebox input[type=file]::file-selector-button:hover{background:#34373c;border-color:#8b7965}
 </style>
 </head>
 <body>
