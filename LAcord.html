@@ -155,7 +155,7 @@
         <div class="field">
           <label>*.xls, *.xlsx — 여러 파일 선택 가능</label>
           <div class="filebox"><input type="file" id="fileInput" multiple accept=".xls,.xlsx" /><span class="fileCount" id="fileCount">파일 0개</span></div>
-          <div class="hint"><b>자동 판별 기준</b> · 비트: 엑셀의 처방코드/수가코드와 금액 컬럼을 우선 사용 · 의사랑: 파일명(예: la275.xls)에서 LA275를 인식하고 단가표×총투여량으로 계산합니다. 여러 파일을 함께 선택할 수 있습니다.</div>
+          <div class="hint"><b>자동 판별 기준</b> · 비트: 엑셀의 처방코드/수가코드와 금액 컬럼을 우선 사용 · 의사랑: 파일명에서 LA 다음 숫자 3자리만 코드로 인식합니다. 예: la275.xls, la2751.xls, la275_1.xls, la275(1).xls → 모두 LA275. 단가표×총투여량으로 계산하며 여러 파일을 함께 선택할 수 있습니다.</div>
         </div>
       </div>
       <div class="controlPanel">
@@ -311,7 +311,13 @@ function parseAoaRows(aoa,fileCode,fileName){
 }
 function findHeaderRow(aoa){for(let i=0;i<Math.min(30,aoa.length);i++){const s=(aoa[i]||[]).map(v=>(v??'').toString()).join('|'); if(/차트번호|챠트번호|환자번호|등록번호/.test(s)&&/내원일|진료일|처방일|일자|날짜/.test(s))return i;} return -1;}
 function findIdx(headers,keys){return headers.findIndex(h=>keys.some(k=>h.replace(/\s/g,'').includes(k.replace(/\s/g,''))));}
-function codeFromFileName(name){const base=(name||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const m=base.match(/LA\d{3}/); return m?m[0]:'';}
+function codeFromFileName(name){
+  // 파일명에서 LA 다음 숫자 3자리만 코드로 사용합니다.
+  // 예: la275.xls, la2751.xls, la275_1.xls, la275(1).xls, la-275.xls → LA275
+  const base=(name||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const m=base.match(/LA(\d{3})/);
+  return m?`LA${m[1]}`:'';
+}
 function normalizeLACode(v){const s=(v??'').toString().toUpperCase(); const m=s.match(/LA\s*(\d{3})/); return m?'LA'+m[1]:'';}
 function clean(v){return (v??'').toString().trim();}
 function toNum(v){if(v===null||v===undefined||v==='')return 0; const n=parseFloat(v.toString().replace(/,/g,'').replace(/원/g,'').trim()); return isNaN(n)?0:n;}
