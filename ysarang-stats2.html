@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -1385,6 +1386,21 @@
             body.light #conversionOutput tr.rate-row td { background:rgba(159,135,100,.08)!important; }
             @media(max-width:760px){ .conversion-note-grid{grid-template-columns:1fr;} }
 
+            /* ===== 중복 초진·신환 목록 ===== */
+            .duplicate-card.is-hidden .duplicate-body { display:none; }
+            .duplicate-summary {
+                display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+                margin-bottom:12px; padding:13px 15px; border:1px solid var(--border);
+                border-radius:15px; background:rgba(255,255,255,.045); color:var(--muted);
+                font-size:12px; line-height:1.55;
+            }
+            .duplicate-summary strong { color:var(--gold2); font-size:14px; }
+            #duplicateInitialOutput { width:100%; overflow:auto; border-radius:18px; border:1px solid rgba(190,169,139,.24); background:rgba(255,255,255,.045); }
+            #duplicateInitialOutput table { width:100%; min-width:680px; table-layout:auto; }
+            #duplicateInitialOutput th,#duplicateInitialOutput td { font-size:12px!important; padding:10px 8px!important; white-space:normal!important; }
+            #duplicateInitialOutput td.duplicate-dates { text-align:left; line-height:1.65; }
+            body.light .duplicate-summary, body.light #duplicateInitialOutput { background:rgba(255,255,255,.62)!important; border-color:rgba(159,135,100,.28)!important; }
+
             /* ===== 요약 통계 그룹 헤더 ===== */
             #output .summary-group-head th {
                 position: sticky;
@@ -1716,6 +1732,25 @@
                     </span>
                 </h3>
                 <div id="output"></div>
+            </div>
+
+            <div class="card table-card duplicate-card is-hidden" id="duplicateInitialCard">
+                <h3 class="card-title">
+                    <span>👥 중복 초진·신환 목록</span>
+                    <span class="toolbar no-print">
+                        <button type="button" id="toggleDuplicateInitialBtn" onclick="toggleDuplicateInitial()">펼쳐보기</button>
+                        <button type="button" onclick="copyTable('#duplicateInitialOutput')">📋 복사</button>
+                        <button type="button" id="duplicateInitialDownloadBtn" disabled>엑셀 다운로드</button>
+                        <button type="button" onclick="openFullTable('#duplicateInitialOutput', '중복 초진·신환 목록')">전체화면</button>
+                    </span>
+                </h3>
+                <div class="duplicate-body">
+                    <div class="duplicate-summary" id="duplicateInitialSummary">
+                        <span><strong>0명</strong> · 서로 다른 날짜에 초진/신환으로 2회 이상 등록된 환자</span>
+                        <span>차트번호 · 이름 · 날짜</span>
+                    </div>
+                    <div id="duplicateInitialOutput"><p class="hint" style="padding:16px;margin:0">파일을 업로드하고 통계를 계산하면 결과가 표시됩니다.</p></div>
+                </div>
             </div>
 
             <div class="card table-card conversion-card" id="conversionCard">
@@ -2510,6 +2545,25 @@
                   <div class="conversion-note"><strong>전체 내원·회차</strong><br>${vm.role}의 ${name(vm,vm.dateIdx)}를 환자별 날짜 Set으로 인덱싱한 뒤 정렬했습니다. 사용 컬럼: ${name(vm,vm.idIdx)} / ${name(vm,vm.rrnIdx)} / ${name(vm,vm.dateIdx)}. 초진일은 항상 1회차로 포함합니다.</div>`;
             }
 
+            function toggleDuplicateInitial(){
+                const card=$('#duplicateInitialCard'), btn=$('#toggleDuplicateInitialBtn');
+                card.classList.toggle('is-hidden');
+                btn.textContent=card.classList.contains('is-hidden')?'펼쳐보기':'접기';
+            }
+
+            function escapeDuplicateText(value){
+                return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+            }
+
+            function renderDuplicateInitialTable(rows){
+                if (!rows.length) return '<p class="hint" style="padding:16px;margin:0">서로 다른 날짜에 중복 등록된 초진·신환 환자가 없습니다.</p>';
+                let h='<table><thead><tr><th style="width:18%">차트번호</th><th style="width:22%">이름</th><th style="width:12%">중복 횟수</th><th>초진·신환 등록 날짜</th></tr></thead><tbody>';
+                rows.forEach(r=>{
+                    h+=`<tr><td>${escapeDuplicateText(r['차트번호'])}</td><td>${escapeDuplicateText(r['이름']||'-')}</td><td>${r['중복 횟수']}회</td><td class="duplicate-dates">${r['날짜'].map(escapeDuplicateText).join('<br>')}</td></tr>`;
+                });
+                return h+'</tbody></table>';
+            }
+
             function toggleConversion(){
                 const card=$('#conversionCard'), btn=$('#toggleConversionBtn');
                 card.classList.toggle('is-hidden'); btn.textContent=card.classList.contains('is-hidden')?'보기':'숨기기';
@@ -2634,6 +2688,7 @@
 
                 let idIdx = exactOrIncludes(['차트번호','챠트번호','환자번호','차트']);
                 let rrnIdx = exactOrIncludes(['주민등록번호','주민번호','생년월일','등록번호']);
+                let patientNameIdx = exactOrIncludes(['수진자명','환자명','성명','이름']);
                 let dateIdx = exactOrIncludes(['내원일','진료일자','진료일','방문일','처방일']);
                 let typeIdx = exactOrIncludes(['초/재진구분','초재진구분','초재진','진료구분']);
                 let roomIdx = exactOrIncludes(['진료실','진료방','진료과']);
@@ -2643,6 +2698,7 @@
                 if (/외래 완료환자/.test(role)) {
                     if (idIdx < 0 && low[0]?.includes('차트')) idIdx = 0;
                     if (rrnIdx < 0 && low[2]?.includes('주민')) rrnIdx = 2;
+                    if (patientNameIdx < 0 && (low[1]?.includes('수진자') || low[1]?.includes('환자명') || low[1]?.includes('성명'))) patientNameIdx = 1;
                     if (typeIdx < 0 && low[5]?.includes('초재진')) typeIdx = 5;
                     if (ageIdx < 0 && low[4]?.includes('나이')) ageIdx = 4;
                     if (roomIdx < 0 && low[18]?.includes('진료실')) roomIdx = 18;
@@ -2654,7 +2710,7 @@
                     if (dateIdx < 0 && low[3]?.includes('내원일')) dateIdx = 3;
                 }
 
-                return { role, hi, header, idIdx, rrnIdx, dateIdx, typeIdx, roomIdx, ageIdx };
+                return { role, hi, header, idIdx, rrnIdx, patientNameIdx, dateIdx, typeIdx, roomIdx, ageIdx };
             }
 
             async function loadFiles(fileList, role) {
@@ -2701,6 +2757,7 @@
                 const patients = new Map();
                 const visitDates = new Map();
                 const initialCandidates = new Map();
+                const initialOccurrences = new Map();
                 const outpatientRecords = [];
                 const outpatientRecordSeen = new Set();
                 const standardizedVisits = [['차트번호','주민등록번호','내원일']];
@@ -2712,6 +2769,7 @@
                         const id = normalizePatientId(meta.idIdx >= 0 ? row[meta.idIdx] : row[0]);
                         if (!id) return;
                         const rrn = String(meta.rrnIdx >= 0 ? row[meta.rrnIdx] : '').trim();
+                        const patientName = String(meta.patientNameIdx >= 0 ? row[meta.patientNameIdx] : '').trim();
                         // 외래 완료환자 파일에는 진료일 열이 없는 경우가 많으므로
                         // 파일명의 `진료일자_YYYY-MM-DD`를 해당 파일 전체 행의 내원일로 사용합니다.
                         const internalDate = meta.dateIdx >= 0 ? excelDateToISO(row[meta.dateIdx]) : '';
@@ -2735,8 +2793,14 @@
                         standardizedVisits.push([id, rrn, date]);
                         if (!patients.has(key)) patients.set(key, {id, rrn, age, room});
                         if (isInitial) {
+                            const occurrence = initialOccurrences.get(key) || { id, name: patientName, dates: new Set() };
+                            if (!occurrence.name && patientName) occurrence.name = patientName;
+                            occurrence.dates.add(date);
+                            initialOccurrences.set(key, occurrence);
+
                             const prev = initialCandidates.get(key);
-                            if (!prev || date < prev.firstDate) initialCandidates.set(key, {id, rrn, age, room, firstDate: date});
+                            if (!prev || date < prev.firstDate) initialCandidates.set(key, {id, rrn, name: patientName, age, room, firstDate: date});
+                            else if (prev && !prev.name && patientName) prev.name = patientName;
                         }
                     });
                 });
@@ -2783,6 +2847,24 @@
                       `<strong>외래 파일 날짜 인식</strong><br>${outpatientDateInfo}<br>` +
                       `<strong>주사 파일 엑셀 내원일 인식</strong><br>${injectionDateInfo}</div>`;
                 }
+
+                const duplicateInitialRows = Array.from(initialOccurrences.values())
+                    .map(v => ({
+                        '차트번호': v.id,
+                        '이름': v.name || '',
+                        '중복 횟수': v.dates.size,
+                        '날짜': Array.from(v.dates).sort()
+                    }))
+                    .filter(v => v['중복 횟수'] >= 2)
+                    .sort((a,b) => a['날짜'][0].localeCompare(b['날짜'][0]) || String(a['차트번호']).localeCompare(String(b['차트번호'])));
+                window.__latestDuplicateInitialRows = duplicateInitialRows;
+                $('#duplicateInitialSummary').innerHTML = `<span><strong>${duplicateInitialRows.length.toLocaleString()}명</strong> · 서로 다른 날짜에 초진/신환으로 2회 이상 등록된 환자</span><span>총 중복 등록 ${duplicateInitialRows.reduce((sum,r)=>sum+r['중복 횟수'],0).toLocaleString()}건</span>`;
+                $('#duplicateInitialOutput').innerHTML = renderDuplicateInitialTable(duplicateInitialRows);
+                $('#duplicateInitialDownloadBtn').disabled = duplicateInitialRows.length === 0;
+                $('#duplicateInitialDownloadBtn').onclick = () => exportXlsx([{
+                    name:'중복_초진신환',
+                    rows:duplicateInitialRows.map(r=>({차트번호:r['차트번호'], 이름:r['이름'], '중복 횟수':r['중복 횟수'], 날짜:r['날짜'].join(', ')}))
+                }], '의사랑_중복_초진신환_목록.xlsx');
 
                 const merged = Array.from(initialCandidates.values()).map(r => {
                     const visits = Array.from(visitDates.get(r.id) || []).filter(d => d >= r.firstDate).sort();
@@ -2844,7 +2926,8 @@
                 $('#downloadBtn').onclick = () => exportXlsx([
                     {name:'요약_진료실', rows:orderedSummaryRows(stats)},
                     {name:'연령대별_진료실', rows:byAge},
-                    {name:'초진후_최초주사전환', rows:conversion.rows}
+                    {name:'초진후_최초주사전환', rows:conversion.rows},
+                    {name:'중복_초진신환', rows:duplicateInitialRows.map(r=>({차트번호:r['차트번호'], 이름:r['이름'], '중복 횟수':r['중복 횟수'], 날짜:r['날짜'].join(', ')}))}
                 ]);
             }
 
