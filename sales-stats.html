@@ -26,7 +26,7 @@
     .hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;align-items:center}.hero h2{margin:0 0 8px;font-size:25px}.hero p{margin:0;color:var(--muted);line-height:1.6}
     .dropzone{border:1.5px dashed var(--gold);border-radius:18px;padding:18px;text-align:center;background:color-mix(in srgb,var(--gold) 7%,transparent);cursor:pointer;min-height:124px;display:flex;flex-direction:column;justify-content:center}
     .dropzone.drag{background:color-mix(in srgb,var(--gold) 16%,transparent)}.dropzone strong{font-size:16px}.dropzone small{display:block;color:var(--muted);margin-top:7px}.file-name{margin-top:8px;color:var(--gold);font-weight:700;word-break:break-all}
-    #fileInput{display:none}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:16px;box-shadow:var(--shadow)}
+    #fileInput{display:none}.week-start-box{display:none;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.week-start-box.show{display:flex}.week-start-box label{font-size:12px;color:var(--muted);font-weight:700}.week-start-box select{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 9px;border-radius:9px;cursor:pointer}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:16px;box-shadow:var(--shadow)}
     .seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}.seg button{border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);padding:9px 14px;cursor:pointer}.seg button:last-child{border-right:0}.seg button.active{background:var(--dark);color:var(--bg);font-weight:700}
     .date-box{display:flex;gap:7px;align-items:center;margin-left:auto}.date-box input{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px 10px;border-radius:10px}.primary{border:0;background:var(--gold);color:#fff;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}.secondary{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:9px 13px;cursor:pointer}
     .notice{display:none;background:#fff7df;color:#795d1d;border:1px solid #ead18f;border-radius:12px;padding:10px 13px;margin-bottom:14px;font-size:13px}.notice.show{display:block}
@@ -60,6 +60,7 @@
 
   <div class="toolbar">
     <div class="seg" id="periodSeg"><button data-period="weekday" class="active">요일별</button><button data-period="week">주별</button><button data-period="month">월별</button></div>
+    <div class="week-start-box" id="weekStartBox"><label for="weekStart">주 시작</label><select id="weekStart"><option value="1" selected>월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>
     <button class="secondary" id="exportBtn">표 CSV 저장</button>
     <div class="date-box"><input type="date" id="startDate"><span>~</span><input type="date" id="endDate"><button class="primary" id="applyBtn">기간 적용</button><button class="secondary" id="resetBtn">전체 기간</button></div>
   </div>
@@ -69,7 +70,7 @@
   <div class="footer">JINSUL · 경험과 가치를 현실화 하는 컨설팅</div>
 </div>
 <script>
-const state={rows:[],filtered:[],period:'weekday',charts:[],summaryRows:[],sourceType:'unknown',sourceRule:''};
+const state={rows:[],filtered:[],period:'weekday',weekStart:1,charts:[],summaryRows:[],sourceType:'unknown',sourceRule:''};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmtInt=n=>Math.round(Number(n)||0).toLocaleString('ko-KR');
 const fmtWon=n=>'₩'+fmtInt(n);
@@ -78,11 +79,24 @@ const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const weekdays=['일','월','화','수','목','금','토'];
 const weekdayOrder=['월','화','수','목','금','토','일'];
 function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0; if(v==null)return 0; const s=String(v).replace(/[₩원,%\s,]/g,''); const n=Number(s); return isFinite(n)?n:0}
-function parseDate(v){
-  if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate());
-  if(typeof v==='number'){const p=XLSX.SSF.parse_date_code(v); if(p)return new Date(p.y,p.m-1,p.d)}
-  const s=String(v||'').trim(); let m=s.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/); if(m)return new Date(+m[1],+m[2]-1,+m[3]);
-  const d=new Date(s); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+function localDate(y,m,d){
+  // 날짜 전용 값은 정오(12:00)로 고정해 브라우저/시간대/DST에 따른 전일·익일 이동을 방지합니다.
+  return new Date(Number(y),Number(m)-1,Number(d),12,0,0,0);
+}
+function parseDate(v,date1904=false){
+  if(v instanceof Date&&!isNaN(v)) return localDate(v.getFullYear(),v.getMonth()+1,v.getDate());
+  if(typeof v==='number'){
+    // Excel 일련번호를 직접 Y/M/D로 해석합니다. Date 객체 자동변환을 거치지 않아 요일 밀림을 방지합니다.
+    const p=XLSX.SSF.parse_date_code(v,{date1904:!!date1904});
+    if(p) return localDate(p.y,p.m,p.d);
+  }
+  const s=String(v||'').trim();
+  let m=s.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  if(m) return localDate(+m[1],+m[2],+m[3]);
+  // YYYYMMDD 형식도 지원
+  m=s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(m) return localDate(+m[1],+m[2],+m[3]);
+  return null;
 }
 function norm(s){return String(s||'').replace(/[\s\[\]()_-]/g,'').toLowerCase()}
 const aliases={date:['일자','날짜','진료일자','진료일'],totalRevenue:['총진료비','진료비총액','총수입'],insured:['급여총액','급여금액','보험급여'],noninsured:['비급여','비급여금액','비급여총액'],newCount:['초진수','신환수','초진'],returnCount:['재진수','재진'],visits:['인원계','총내원','총내원수','환자수','합계']};
@@ -100,21 +114,31 @@ function detectFormat(matrix){
 }
 function workbookRows(wb){
   let all=[], detectedTypes=new Set();
+  const date1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
   wb.SheetNames.forEach(sheet=>{
     const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:null,raw:true});
     const h=detectFormat(matrix);if(h.score<4)return;detectedTypes.add(h.type);
     for(let i=h.idx+1;i<matrix.length;i++){
-      const r=matrix[i],date=parseDate(r[h.map.date]);if(!date)continue;
+      const r=matrix[i],date=parseDate(r[h.map.date],date1904);if(!date)continue;
       let newCount=0,returnCount=0,visits=0,totalRevenue=0,insured=0,noninsured=0;
       if(h.type==='bit'){
-        newCount=parseNum(r[h.map.newPatient]) + (h.map.deptNew>=0?parseNum(r[h.map.deptNew]):0) + (h.map.day90New>=0?parseNum(r[h.map.day90New]):0);
-        returnCount=parseNum(r[h.map.returnCount]);
-        visits=parseNum(r[h.map.visits]) || newCount+returnCount;
+        // 비트 기준: 초진은 신환 + 90일 초진만 포함합니다.
+        // 과초진, 재진, 동일과내원, 물리치료, 타인대리, 진찰료산정안함 등 나머지 내원은 모두 재진으로 분류합니다.
+        newCount=parseNum(r[h.map.newPatient]) + (h.map.day90New>=0?parseNum(r[h.map.day90New]):0);
+        visits=parseNum(r[h.map.visits]);
+        // 총내원이 있는 경우 재진은 반드시 '총내원 - 초진'으로 계산하여 초진+재진=총내원을 보장합니다.
+        returnCount=visits>0?Math.max(0,visits-newCount):parseNum(r[h.map.returnCount]) + (h.map.deptNew>=0?parseNum(r[h.map.deptNew]):0);
+        if(!visits) visits=newCount+returnCount;
         insured=parseNum(r[h.map.insured]); noninsured=parseNum(r[h.map.noninsured]);
         totalRevenue=insured+noninsured;
       }else{
-        newCount=parseNum(r[h.map.newCount]);returnCount=parseNum(r[h.map.returnCount]);
-        visits=h.map.visits!=null?parseNum(r[h.map.visits]):newCount+returnCount;
+        newCount=parseNum(r[h.map.newCount]);
+        const rawReturnCount=parseNum(r[h.map.returnCount]);
+        visits=h.map.visits!=null?parseNum(r[h.map.visits]):newCount+rawReturnCount;
+        // 의사랑도 총내원(인원계)을 기준값으로 사용합니다.
+        // 인원계가 있으면 재진 = 총내원 - 초진으로 보정하여 초진+재진=총내원이 항상 성립합니다.
+        returnCount=visits>0?Math.max(0,visits-newCount):rawReturnCount;
+        if(!visits) visits=newCount+returnCount;
         totalRevenue=parseNum(r[h.map.totalRevenue]);insured=parseNum(r[h.map.insured]);noninsured=parseNum(r[h.map.noninsured]);
         if(!totalRevenue && (insured||noninsured)) totalRevenue=insured+noninsured;
       }
@@ -123,13 +147,13 @@ function workbookRows(wb){
     }
   });
   state.sourceType=detectedTypes.size===1?[...detectedTypes][0]:(detectedTypes.size>1?'mixed':'unknown');
-  state.sourceRule=state.sourceType==='bit'?'비트 · 초진=신환+과초진+90일 초진 · 총진료비=급여총액+비급여액':state.sourceType==='uisarang'?'의사랑 · 기존 일별 수입통계 컬럼 기준':'복합/미확인 형식';
+  state.sourceRule=state.sourceType==='bit'?'비트 · 초진=신환+90일 초진 · 재진=총내원-초진(과초진·물리치료·진찰료산정안함 등 포함) · 총진료비=급여총액+비급여액':state.sourceType==='uisarang'?'의사랑 · 초진=초진수 · 총내원=인원계 · 재진=총내원-초진(원본 재진수와 일치 여부 자동 보정)':'복합/미확인 형식';
   const byDate=new Map();all.forEach(r=>{const k=iso(r.date);if(!byDate.has(k))byDate.set(k,{...r});else{const x=byDate.get(k);['newCount','returnCount','visits','totalRevenue','insured','noninsured'].forEach(m=>x[m]+=r[m])}});
   return [...byDate.values()].sort((a,b)=>a.date-b.date);
 }
 function aggregate(rows,period){
   const map=new Map();
-  rows.forEach(r=>{let key,label,sortKey;if(period==='weekday'){key=weekdays[r.date.getDay()];label=key+'요일';sortKey=weekdayOrder.indexOf(key)}else if(period==='month'){key=`${r.date.getFullYear()}-${String(r.date.getMonth()+1).padStart(2,'0')}`;label=`${r.date.getFullYear()}년 ${r.date.getMonth()+1}월`;sortKey=key}else{const d=new Date(r.date);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);const e=new Date(d);e.setDate(e.getDate()+6);key=iso(d);label=`${d.getMonth()+1}/${d.getDate()}~${e.getMonth()+1}/${e.getDate()}`;sortKey=key}
+  rows.forEach(r=>{let key,label,sortKey;if(period==='weekday'){key=weekdays[r.date.getDay()];label=key+'요일';sortKey=weekdayOrder.indexOf(key)}else if(period==='month'){key=`${r.date.getFullYear()}-${String(r.date.getMonth()+1).padStart(2,'0')}`;label=`${r.date.getFullYear()}년 ${r.date.getMonth()+1}월`;sortKey=key}else{const d=new Date(r.date);const diff=(d.getDay()-state.weekStart+7)%7;d.setDate(d.getDate()-diff);const e=new Date(d);e.setDate(e.getDate()+6);key=iso(d);label=`${d.getMonth()+1}/${d.getDate()}(${weekdays[d.getDay()]})~${e.getMonth()+1}/${e.getDate()}(${weekdays[e.getDay()]})`;sortKey=key}
     if(!map.has(key))map.set(key,{key,label,sortKey,days:0,newCount:0,returnCount:0,visits:0,totalRevenue:0,insured:0,noninsured:0});const x=map.get(key);x.days++;['newCount','returnCount','visits','totalRevenue','insured','noninsured'].forEach(m=>x[m]+=r[m]);});
   return [...map.values()].sort((a,b)=>period==='weekday'?a.sortKey-b.sortKey:String(a.sortKey).localeCompare(String(b.sortKey))).map(x=>({...x,insuredRate:x.totalRevenue?x.insured/x.totalRevenue*100:0,noninsuredRate:x.totalRevenue?x.noninsured/x.totalRevenue*100:0,perVisit:x.visits?x.totalRevenue/x.visits:0,avgNew:x.newCount/x.days,avgReturn:x.returnCount/x.days,avgVisits:x.visits/x.days,avgTotal:x.totalRevenue/x.days,avgInsured:x.insured/x.days,avgNoninsured:x.noninsured/x.days,avgPerVisit:x.perVisit}));
 }
@@ -141,11 +165,11 @@ function cv(arr){const vals=arr.filter(v=>isFinite(v));if(!vals.length)return 0;
 function render(){
   destroyCharts();if(!state.filtered.length){$('#dashboard').innerHTML='<div class="empty">선택한 기간에 데이터가 없습니다.</div>';return}
   const t=totals(state.filtered), a=aggregate(state.filtered,state.period);state.summaryRows=a;const avg=x=>t.days?t[x]/t.days:0;
-  const typeName={weekday:'요일별',week:'주별',month:'월별'}[state.period];
+  const typeName={weekday:'요일별',week:'주별',month:'월별'}[state.period];const weekRule=state.period==='week'?` · 주 기준 ${weekdays[state.weekStart]}요일 시작~${weekdays[(state.weekStart+6)%7]}요일 종료`:'';
   let html=`<div class="section-title"><h3>전체값 및 일평균</h3><span>${state.sourceRule} · ${iso(state.filtered[0].date)} ~ ${iso(state.filtered.at(-1).date)} · ${fmtInt(t.days)}일</span></div><div class="kpis">
   ${metricCard('초진수',fmtInt(t.newCount),`일평균 ${fmtInt(avg('newCount'))}명`)}${metricCard('재진수',fmtInt(t.returnCount),`일평균 ${fmtInt(avg('returnCount'))}`)}${metricCard('총내원',fmtInt(t.visits),`일평균 ${fmtInt(avg('visits'))}명`)}${metricCard('총진료비',fmtWon(t.totalRevenue),`일평균 ${fmtWon(avg('totalRevenue'))}`)}${metricCard('건당 진료비',fmtWon(t.perVisit),'총진료비 ÷ 총내원')}
   ${metricCard('급여총액',fmtWon(t.insured),`일평균 ${fmtWon(avg('insured'))}`)}${metricCard('급여총액 비율',fmtPct(t.insuredRate),'총진료비 대비')}${metricCard('비급여 금액',fmtWon(t.noninsured),`일평균 ${fmtWon(avg('noninsured'))}`)}${metricCard('비급여금액 비율',fmtPct(t.noninsuredRate),'총진료비 대비')}${metricCard('분석 일수',fmtInt(t.days)+'일',`${typeName} ${fmtInt(a.length)}개 구간`)}</div>`;
-  html+=`<div class="section-title"><h3>${typeName} 그래프</h3><span>합계와 평균을 함께 비교할 수 있습니다.</span></div><div class="charts">
+  html+=`<div class="section-title"><h3>${typeName} 그래프</h3><span>합계와 평균을 함께 비교할 수 있습니다.${weekRule}</span></div><div class="charts">
   <div class="chart-card"><div class="chart-head"><h4>초진·재진·총내원</h4><small>구간별 합계</small></div><div class="chart-box"><canvas id="visitChart"></canvas></div></div>
   <div class="chart-card"><div class="chart-head"><h4>총진료비·급여·비급여</h4><small>구간별 금액</small></div><div class="chart-box"><canvas id="revenueChart"></canvas></div></div>
   <div class="chart-card"><div class="chart-head"><h4>급여·비급여 비율</h4><small>총진료비 대비</small></div><div class="chart-box"><canvas id="ratioChart"></canvas></div></div>
@@ -174,10 +198,13 @@ function tableHTML(a,typeName){return `<div class="section-title"><h3>${typeName
 function setDateRange(){if(!state.rows.length)return;$('#startDate').value=iso(state.rows[0].date);$('#endDate').value=iso(state.rows.at(-1).date)}
 function applyFilter(){const s=$('#startDate').value?new Date($('#startDate').value+'T00:00:00'):null,e=$('#endDate').value?new Date($('#endDate').value+'T23:59:59'):null;state.filtered=state.rows.filter(r=>(!s||r.date>=s)&&(!e||r.date<=e));render()}
 function showNotice(msg){const n=$('#notice');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),5000)}
-async function loadFile(file){try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});const rows=workbookRows(wb);if(!rows.length)throw new Error('의사랑 또는 비트 통계에 필요한 컬럼을 찾지 못했습니다.');state.rows=rows;state.filtered=[...rows];const typeLabel=state.sourceType==='bit'?'비트':state.sourceType==='uisarang'?'의사랑':state.sourceType==='mixed'?'복합':'미확인';$('#fileName').textContent=`${file.name} · ${typeLabel} 자동인식 · ${rows.length}일`;setDateRange();render();showNotice(`${typeLabel} 형식으로 자동 인식했습니다. ${state.sourceRule} · ${rows.length}일 데이터를 불러왔습니다.`)}catch(err){console.error(err);showNotice('파일 분석 오류: '+err.message)}}
+async function loadFile(file){try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:false});const rows=workbookRows(wb);if(!rows.length)throw new Error('의사랑 또는 비트 통계에 필요한 컬럼을 찾지 못했습니다.');state.rows=rows;state.filtered=[...rows];const typeLabel=state.sourceType==='bit'?'비트':state.sourceType==='uisarang'?'의사랑':state.sourceType==='mixed'?'복합':'미확인';const first=rows[0],last=rows.at(-1);const firstWd=weekdays[first.date.getDay()]+'요일',lastWd=weekdays[last.date.getDay()]+'요일';$('#fileName').textContent=`${file.name} · ${typeLabel} 자동인식 · ${rows.length}일`;setDateRange();render();showNotice(`${typeLabel} 형식으로 자동 인식했습니다. ${state.sourceRule} · 날짜 검증: ${iso(first.date)} ${firstWd} ~ ${iso(last.date)} ${lastWd} · ${rows.length}일 데이터를 불러왔습니다.`)}catch(err){console.error(err);showNotice('파일 분석 오류: '+err.message)}}
 $('#fileInput').addEventListener('change',e=>e.target.files[0]&&loadFile(e.target.files[0]));
 const dz=$('#dropzone');['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&loadFile(e.dataTransfer.files[0]));
-$('#periodSeg').addEventListener('click',e=>{if(!e.target.dataset.period)return;$$('#periodSeg button').forEach(b=>b.classList.toggle('active',b===e.target));state.period=e.target.dataset.period;render()});
+function syncWeekStartUI(){const box=$('#weekStartBox');if(box)box.classList.toggle('show',state.period==='week')}
+$('#periodSeg').addEventListener('click',e=>{if(!e.target.dataset.period)return;$$('#periodSeg button').forEach(b=>b.classList.toggle('active',b===e.target));state.period=e.target.dataset.period;syncWeekStartUI();render()});
+$('#weekStart').addEventListener('change',e=>{state.weekStart=Number(e.target.value);render();showNotice(`주 시작 요일을 ${weekdays[state.weekStart]}요일로 변경했습니다.`)});
+syncWeekStartUI();
 $('#applyBtn').onclick=applyFilter;$('#resetBtn').onclick=()=>{setDateRange();state.filtered=[...state.rows];render()};
 $('#themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=dark?'light':'dark';localStorage.setItem('jinsul-theme',dark?'light':'dark');render()};document.documentElement.dataset.theme=localStorage.getItem('jinsul-theme')||'light';
 $('#exportBtn').onclick=()=>{if(!state.summaryRows.length)return showNotice('먼저 엑셀 파일을 업로드해 주세요.');const data=state.summaryRows.map(x=>({'구분':x.label,'일수':x.days,'초진수':Math.round(x.newCount),'초진 일평균':Math.round(x.avgNew),'재진수':Math.round(x.returnCount),'재진 일평균':Math.round(x.avgReturn),'총내원':Math.round(x.visits),'총내원 일평균':Math.round(x.avgVisits),'총진료비':Math.round(x.totalRevenue),'총진료비 일평균':Math.round(x.avgTotal),'급여총액':Math.round(x.insured),'급여총액 비율(%)':+x.insuredRate.toFixed(1),'비급여':Math.round(x.noninsured),'비급여 비율(%)':+x.noninsuredRate.toFixed(1),'건당 진료비':Math.round(x.perVisit)}));const ws=XLSX.utils.json_to_sheet(data),csv=XLSX.utils.sheet_to_csv(ws),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`JINSUL_${state.period}_통계_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href)};
