@@ -46,15 +46,15 @@
   <header class="topbar">
     <div class="brand">
       <img src="https://xginini-dot.github.io/jinsul_V1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL" onerror="this.style.display='none'">
-      <div class="brand-text"><h1>요일·주·월별 통계 현황</h1><p>일별 수입통계 엑셀 자동 분석</p></div>
+      <div class="brand-text"><h1>요일·주·월별 통계 현황</h1><p>의사랑·비트 엑셀 자동 판별 · 일별 수입통계 분석</p></div>
     </div>
     <div class="top-actions"><button class="icon-btn" onclick="history.back()">← 뒤로가기</button><button class="icon-btn" id="themeBtn">◐ 다크/라이트</button></div>
   </header>
 
   <section class="hero">
     <div class="hero-grid">
-      <div><h2>병원 운영 흐름을 한눈에 비교하세요.</h2><p>요일별, 주별, 월별로 초진·재진·내원·진료비·급여·비급여를 자동 집계합니다. 전체 합계와 일평균을 동시에 확인하고, 요일별 효율과 변동성도 비교할 수 있습니다.</p></div>
-      <label class="dropzone" id="dropzone" for="fileInput"><strong>엑셀 파일 선택 또는 드래그</strong><small>.xls / .xlsx · 일별 수입통계 파일</small><span class="file-name" id="fileName">파일을 업로드해 주세요</span><input id="fileInput" type="file" accept=".xls,.xlsx,.xlsm,.csv"></label>
+      <div><h2>병원 운영 흐름을 한눈에 비교하세요.</h2><p>의사랑과 비트 통계 엑셀을 업로드하면 형식을 자동 판별합니다. 요일별, 주별, 월별로 초진·재진·내원·진료비·급여·비급여를 동일한 화면에서 비교할 수 있습니다.</p></div>
+      <label class="dropzone" id="dropzone" for="fileInput"><strong>엑셀 파일 선택 또는 드래그</strong><small>.xls / .xlsx · 의사랑/비트 자동 판별</small><span class="file-name" id="fileName">파일을 업로드해 주세요</span><input id="fileInput" type="file" accept=".xls,.xlsx,.xlsm,.csv"></label>
     </div>
   </section>
 
@@ -69,7 +69,7 @@
   <div class="footer">JINSUL · 경험과 가치를 현실화 하는 컨설팅</div>
 </div>
 <script>
-const state={rows:[],filtered:[],period:'weekday',charts:[],summaryRows:[]};
+const state={rows:[],filtered:[],period:'weekday',charts:[],summaryRows:[],sourceType:'unknown',sourceRule:''};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmtInt=n=>Math.round(Number(n)||0).toLocaleString('ko-KR');
 const fmtWon=n=>'₩'+fmtInt(n);
@@ -86,14 +86,46 @@ function parseDate(v){
 }
 function norm(s){return String(s||'').replace(/[\s\[\]()_-]/g,'').toLowerCase()}
 const aliases={date:['일자','날짜','진료일자','진료일'],totalRevenue:['총진료비','진료비총액','총수입'],insured:['급여총액','급여금액','보험급여'],noninsured:['비급여','비급여금액','비급여총액'],newCount:['초진수','신환수','초진'],returnCount:['재진수','재진'],visits:['인원계','총내원','총내원수','환자수','합계']};
-function detectHeader(matrix){
-  let best={idx:0,score:-1,map:{}};
-  matrix.slice(0,30).forEach((row,idx)=>{let score=0,map={}; Object.entries(aliases).forEach(([key,list])=>{const ci=row.findIndex(c=>list.some(a=>norm(c)===norm(a)||norm(c).includes(norm(a))));if(ci>=0){map[key]=ci;score++}});if(score>best.score)best={idx,score,map}});return best;
+function findCol(row,names){return row.findIndex(c=>names.some(a=>norm(c)===norm(a)))}
+function detectFormat(matrix){
+  let best={idx:0,type:'unknown',score:-1,map:{}};
+  matrix.slice(0,30).forEach((row,idx)=>{
+    const bitMap={date:findCol(row,['진료일자']),visits:findCol(row,['총내원수']),newPatient:findCol(row,['신환']),deptNew:findCol(row,['과초진']),day90New:findCol(row,['90일 초진']),returnCount:findCol(row,['재진']),insured:findCol(row,['급여총액']),noninsured:findCol(row,['비급여액'])};
+    const bitScore=['date','visits','newPatient','returnCount','insured','noninsured'].filter(k=>bitMap[k]>=0).length;
+    if(bitScore>=5 && bitScore>best.score) best={idx,type:'bit',score:bitScore,map:bitMap};
+    let uMap={},uScore=0;Object.entries(aliases).forEach(([key,list])=>{const ci=row.findIndex(c=>list.some(a=>norm(c)===norm(a)||norm(c).includes(norm(a))));if(ci>=0){uMap[key]=ci;uScore++}});
+    if(uScore>best.score)best={idx,type:'uisarang',score:uScore,map:uMap};
+  });
+  return best;
 }
 function workbookRows(wb){
-  let all=[];
-  wb.SheetNames.forEach(sheet=>{const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:null,raw:true});const h=detectHeader(matrix);if(h.score<4)return;for(let i=h.idx+1;i<matrix.length;i++){const r=matrix[i],date=parseDate(r[h.map.date]);if(!date)continue;const newCount=parseNum(r[h.map.newCount]),returnCount=parseNum(r[h.map.returnCount]);const visits=h.map.visits!=null?parseNum(r[h.map.visits]):newCount+returnCount;const totalRevenue=parseNum(r[h.map.totalRevenue]),insured=parseNum(r[h.map.insured]),noninsured=parseNum(r[h.map.noninsured]);if(!(visits||totalRevenue||insured||noninsured))continue;all.push({date,newCount,returnCount,visits:visits||newCount+returnCount,totalRevenue,insured,noninsured,source:sheet})}});
-  const byDate=new Map();all.forEach(r=>{const k=iso(r.date);if(!byDate.has(k))byDate.set(k,{...r});else{const x=byDate.get(k);['newCount','returnCount','visits','totalRevenue','insured','noninsured'].forEach(m=>x[m]+=r[m])}});return [...byDate.values()].sort((a,b)=>a.date-b.date);
+  let all=[], detectedTypes=new Set();
+  wb.SheetNames.forEach(sheet=>{
+    const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:null,raw:true});
+    const h=detectFormat(matrix);if(h.score<4)return;detectedTypes.add(h.type);
+    for(let i=h.idx+1;i<matrix.length;i++){
+      const r=matrix[i],date=parseDate(r[h.map.date]);if(!date)continue;
+      let newCount=0,returnCount=0,visits=0,totalRevenue=0,insured=0,noninsured=0;
+      if(h.type==='bit'){
+        newCount=parseNum(r[h.map.newPatient]) + (h.map.deptNew>=0?parseNum(r[h.map.deptNew]):0) + (h.map.day90New>=0?parseNum(r[h.map.day90New]):0);
+        returnCount=parseNum(r[h.map.returnCount]);
+        visits=parseNum(r[h.map.visits]) || newCount+returnCount;
+        insured=parseNum(r[h.map.insured]); noninsured=parseNum(r[h.map.noninsured]);
+        totalRevenue=insured+noninsured;
+      }else{
+        newCount=parseNum(r[h.map.newCount]);returnCount=parseNum(r[h.map.returnCount]);
+        visits=h.map.visits!=null?parseNum(r[h.map.visits]):newCount+returnCount;
+        totalRevenue=parseNum(r[h.map.totalRevenue]);insured=parseNum(r[h.map.insured]);noninsured=parseNum(r[h.map.noninsured]);
+        if(!totalRevenue && (insured||noninsured)) totalRevenue=insured+noninsured;
+      }
+      if(!(visits||totalRevenue||insured||noninsured))continue;
+      all.push({date,newCount,returnCount,visits:visits||newCount+returnCount,totalRevenue,insured,noninsured,source:sheet,sourceType:h.type});
+    }
+  });
+  state.sourceType=detectedTypes.size===1?[...detectedTypes][0]:(detectedTypes.size>1?'mixed':'unknown');
+  state.sourceRule=state.sourceType==='bit'?'비트 · 초진=신환+과초진+90일 초진 · 총진료비=급여총액+비급여액':state.sourceType==='uisarang'?'의사랑 · 기존 일별 수입통계 컬럼 기준':'복합/미확인 형식';
+  const byDate=new Map();all.forEach(r=>{const k=iso(r.date);if(!byDate.has(k))byDate.set(k,{...r});else{const x=byDate.get(k);['newCount','returnCount','visits','totalRevenue','insured','noninsured'].forEach(m=>x[m]+=r[m])}});
+  return [...byDate.values()].sort((a,b)=>a.date-b.date);
 }
 function aggregate(rows,period){
   const map=new Map();
@@ -110,7 +142,7 @@ function render(){
   destroyCharts();if(!state.filtered.length){$('#dashboard').innerHTML='<div class="empty">선택한 기간에 데이터가 없습니다.</div>';return}
   const t=totals(state.filtered), a=aggregate(state.filtered,state.period);state.summaryRows=a;const avg=x=>t.days?t[x]/t.days:0;
   const typeName={weekday:'요일별',week:'주별',month:'월별'}[state.period];
-  let html=`<div class="section-title"><h3>전체값 및 일평균</h3><span>${iso(state.filtered[0].date)} ~ ${iso(state.filtered.at(-1).date)} · ${fmtInt(t.days)}일</span></div><div class="kpis">
+  let html=`<div class="section-title"><h3>전체값 및 일평균</h3><span>${state.sourceRule} · ${iso(state.filtered[0].date)} ~ ${iso(state.filtered.at(-1).date)} · ${fmtInt(t.days)}일</span></div><div class="kpis">
   ${metricCard('초진수',fmtInt(t.newCount),`일평균 ${fmtInt(avg('newCount'))}명`)}${metricCard('재진수',fmtInt(t.returnCount),`일평균 ${fmtInt(avg('returnCount'))}`)}${metricCard('총내원',fmtInt(t.visits),`일평균 ${fmtInt(avg('visits'))}명`)}${metricCard('총진료비',fmtWon(t.totalRevenue),`일평균 ${fmtWon(avg('totalRevenue'))}`)}${metricCard('건당 진료비',fmtWon(t.perVisit),'총진료비 ÷ 총내원')}
   ${metricCard('급여총액',fmtWon(t.insured),`일평균 ${fmtWon(avg('insured'))}`)}${metricCard('급여총액 비율',fmtPct(t.insuredRate),'총진료비 대비')}${metricCard('비급여 금액',fmtWon(t.noninsured),`일평균 ${fmtWon(avg('noninsured'))}`)}${metricCard('비급여금액 비율',fmtPct(t.noninsuredRate),'총진료비 대비')}${metricCard('분석 일수',fmtInt(t.days)+'일',`${typeName} ${fmtInt(a.length)}개 구간`)}</div>`;
   html+=`<div class="section-title"><h3>${typeName} 그래프</h3><span>합계와 평균을 함께 비교할 수 있습니다.</span></div><div class="charts">
@@ -142,7 +174,7 @@ function tableHTML(a,typeName){return `<div class="section-title"><h3>${typeName
 function setDateRange(){if(!state.rows.length)return;$('#startDate').value=iso(state.rows[0].date);$('#endDate').value=iso(state.rows.at(-1).date)}
 function applyFilter(){const s=$('#startDate').value?new Date($('#startDate').value+'T00:00:00'):null,e=$('#endDate').value?new Date($('#endDate').value+'T23:59:59'):null;state.filtered=state.rows.filter(r=>(!s||r.date>=s)&&(!e||r.date<=e));render()}
 function showNotice(msg){const n=$('#notice');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),5000)}
-async function loadFile(file){try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});const rows=workbookRows(wb);if(!rows.length)throw new Error('필요한 컬럼을 찾지 못했습니다. 일자, 총진료비, 급여총액, 비급여, 초진수, 재진수 컬럼을 확인해 주세요.');state.rows=rows;state.filtered=[...rows];$('#fileName').textContent=`${file.name} · ${rows.length}일`;setDateRange();render();showNotice(`${rows.length}일의 데이터를 불러왔습니다. 동일 날짜가 여러 시트에 있으면 합산 처리됩니다.`)}catch(err){console.error(err);showNotice('파일 분석 오류: '+err.message)}}
+async function loadFile(file){try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});const rows=workbookRows(wb);if(!rows.length)throw new Error('의사랑 또는 비트 통계에 필요한 컬럼을 찾지 못했습니다.');state.rows=rows;state.filtered=[...rows];const typeLabel=state.sourceType==='bit'?'비트':state.sourceType==='uisarang'?'의사랑':state.sourceType==='mixed'?'복합':'미확인';$('#fileName').textContent=`${file.name} · ${typeLabel} 자동인식 · ${rows.length}일`;setDateRange();render();showNotice(`${typeLabel} 형식으로 자동 인식했습니다. ${state.sourceRule} · ${rows.length}일 데이터를 불러왔습니다.`)}catch(err){console.error(err);showNotice('파일 분석 오류: '+err.message)}}
 $('#fileInput').addEventListener('change',e=>e.target.files[0]&&loadFile(e.target.files[0]));
 const dz=$('#dropzone');['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&loadFile(e.dataTransfer.files[0]));
 $('#periodSeg').addEventListener('click',e=>{if(!e.target.dataset.period)return;$$('#periodSeg button').forEach(b=>b.classList.toggle('active',b===e.target));state.period=e.target.dataset.period;render()});
