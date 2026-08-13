@@ -39,7 +39,7 @@ html[data-theme="dark"] .util-btn{background:#111827;color:#e5e7eb;border-color:
 html[data-theme="dark"] .guide-item{background:var(--panel)}
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}.upload-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px}.upload-card{transition:.18s}.upload-card:hover{transform:translateY(-2px);border-color:rgba(185,165,138,.7)}
 .upload-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.upload-head h3{font-size:16px;margin:0;color:var(--text)}.status{font-size:12px;font-weight:850;color:var(--muted)}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:#8d7254}
-.dropzone{border:2px dashed #d5c6b4;background:#fffaf3;border-radius:16px;min-height:138px;padding:24px;text-align:center;display:flex;flex-direction:column;justify-content:center;transition:.2s}.dropzone:hover,.dropzone.drag-over{border-color:var(--gold);background:#fff7ec}.dropzone strong{font-size:15px;color:var(--text)}.dropzone span{font-size:12px;color:var(--muted);margin-top:7px}.file-name{font-size:12px;color:#80684e;font-weight:850;margin-top:10px;word-break:break-all}
+.dropzone{border:2px dashed #d5c6b4;background:#fffaf3;border-radius:16px;min-height:138px;padding:24px;text-align:center;display:flex;flex-direction:column;justify-content:center;transition:.2s}.dropzone:hover,.dropzone.drag-over{border-color:var(--gold);background:#fff7ec}.dropzone strong{font-size:15px;color:var(--text)}.dropzone span{font-size:12px;color:var(--muted);margin-top:7px}.file-name{font-size:12px;color:#80684e;font-weight:850;margin-top:10px;word-break:break-all}.file-date-info{font-size:11px;color:var(--muted);font-weight:750;margin-top:6px;line-height:1.5}
 html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[data-theme="dark"] .dropzone:hover{background:#111827;border-color:var(--gold2)}
 .calendar-area{display:none;margin-top:15px}.calendar-title{font-size:12px;font-weight:850;color:var(--muted);margin-bottom:8px}.calendar-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}.day-btn{height:35px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font-size:12px;font-weight:850}.day-btn:hover:not(.disabled){border-color:var(--gold)}.day-btn.active{background:linear-gradient(180deg,#a98e6e,#8d7254);border-color:#8d7254;color:white;box-shadow:0 4px 10px rgba(111,86,61,.18)}.day-btn.disabled{opacity:.25;cursor:not-allowed}
 .panel{margin-top:18px}.panel.hidden-panel{display:none}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.panel-head h2{font-size:19px;margin:0}.selected-day{font-size:12px;color:#80684e;font-weight:850}
@@ -63,7 +63,7 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
     <div class="brand-row">
       <div class="brand-copy">
         <div class="brand-mark">
-          <div class="logo-box"><img class="logo" src="https://xginini-dot.github.io/jinsul_v1.0/진설로고.png" alt="JINSUL Logo" loading="eager"></div>
+          <div class="logo-box"><img class="logo" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL Logo" loading="eager"></div>
           <div class="company"><div class="en">JINSUL</div><div class="ko">경험과 가치를 현실화 하는 컨설팅</div></div>
         </div>
         <h1>수납 검수 시스템</h1>
@@ -72,13 +72,13 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
       <div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.1 · Optimized</small></div>
     </div>
   </section>
-
+<br>
   <section class="guide">
-    <div class="guide-item"><b>비트컴퓨터</b>접수 → 일일집계 → 집계 → 엑셀 다운로드</div>
+    <div class="guide-item"><b>비트컴퓨터</b>접수 → 일일집계 → 기간 선택 → 엑셀 다운로드 · 기간/단일파일 다중 업로드 지원</div>
     <div class="guide-item"><b>의사랑</b>원무과 외래 → 마감 → 일일마감 → 마감 → 엑셀출력</div>
     <div class="guide-item"><b>이지스</b>접수 → 일일수납현황 → 조회기간(당일) → 조회(F5) → 엑셀(F10)</div>
   </section>
-
+<br>
   <section class="upload-grid">
     <div class="upload-card">
       <div class="upload-head"><h3>1. 진설 일일 수납 대장</h3><span id="statusA" class="status">파일 대기</span></div>
@@ -87,13 +87,13 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
     </div>
     <div class="upload-card">
       <div class="upload-head"><h3>2. 차트 일일 수납 엑셀</h3><span id="statusB" class="status">파일 대기</span></div>
-      <div class="dropzone" id="dropB"><strong>병원 프로그램 수납 엑셀 업로드</strong><span>비트 · 의사랑 · 이지스 컬럼명을 자동 탐색합니다.</span><div id="fileNameB" class="file-name"></div><input type="file" id="fileB" accept=".xlsx,.xls,.xlsm" hidden></div>
+      <div class="dropzone" id="dropB"><strong>병원 프로그램 수납 엑셀 업로드</strong><span>비트 기간 엑셀 1개 또는 일자별 엑셀 여러 개를 한 번에 선택할 수 있습니다.</span><div id="fileNameB" class="file-name"></div><div id="bitDateInfo" class="file-date-info"></div><input type="file" id="fileB" accept=".xlsx,.xls,.xlsm" multiple hidden></div>
     </div>
   </section>
-
+<br>
   <section id="resultPanel" class="panel hidden-panel">
     <div class="panel-head"><h2>검수 결과</h2><div id="selectedDay" class="selected-day"></div></div>
-
+<br>
     <div class="kpis">
       <div class="kpi"><div class="label">전체 환자</div><div id="kpiAll" class="value">0</div><div class="sub">차트번호 기준</div></div>
       <div class="kpi ok"><div class="label">정상</div><div id="kpiOk" class="value">0</div><div id="rateOk" class="sub">0%</div></div>
@@ -102,13 +102,13 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
       <div class="kpi"><div class="label">수단 오류</div><div id="kpiMethodErr" class="value">0</div><div class="sub">현금·카드 구분</div></div>
       <div class="kpi"><div class="label">미수 대기</div><div id="kpiMisu" class="value">0</div><div class="sub">오류 집계 제외</div></div>
     </div>
-
+<br>
     <div class="compare-grid">
       <div class="compare"><div class="compare-title">현금 + 이체</div><div class="compare-row"><span>수납대장</span><b id="sumCashA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCashB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCash">0원</b></div></div>
       <div class="compare"><div class="compare-title">카드</div><div class="compare-row"><span>수납대장</span><b id="sumCardA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCardB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCard">0원</b></div></div>
       <div class="compare"><div class="compare-title">총 수납액</div><div class="compare-row"><span>수납대장</span><b id="sumTotalA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumTotalB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffTotal">0원</b></div></div>
     </div>
-
+<br>
     <div class="toolbar">
       <input class="control search" id="searchInput" placeholder="차트번호 또는 환자명 검색" oninput="applyFilter()">
       <select class="control" id="resultFilter" onchange="applyFilter()"><option value="all">전체 결과</option><option value="error">오류만</option><option value="정상">정상</option><option value="총액오류">총액 오류</option><option value="수단오류">수단 오류</option><option value="수납 미처리">수납 미처리</option><option value="수납대장 미기재">수납대장 미기재</option><option value="미수대기">미수 대기</option></select>
@@ -116,7 +116,7 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
       <button class="toolbar-btn" onclick="resetAll()">초기화</button>
       <button class="toolbar-btn primary" onclick="exportResult()">결과 엑셀 저장</button>
     </div>
-
+<br>
     <div class="table-wrap">
       <table>
         <thead><tr><th rowspan="2">차트번호</th><th rowspan="2">환자명</th><th colspan="2">현금+이체</th><th colspan="2">카드</th><th colspan="2">총액</th><th rowspan="2">검수결과</th><th rowspan="2">수단상세</th></tr><tr><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th></tr></thead>
@@ -128,17 +128,26 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
 </main>
 <div class="footer">© JINSUL · 경험과 가치를 현실화 하는 컨설팅</div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-card"><div class="spinner"></div><div id="loadingTitle" class="loading-title">엑셀을 분석하고 있습니다.</div><div id="loadingSub" class="loading-sub">필요한 데이터만 불러오는 중입니다.</div></div></div>
-
+<br>
 <script>
-let currentWbA=null,dbA=[],dbB=[],confA=null,confB=null,resultRows=[],selectedSheet=null;
-let fileABuffer=null,fileBBuffer=null,sheetNamesA=[],sheetNamesB=[],cacheA=new Map();
+let currentWbA=null,dbA=[],confA=null,resultRows=[],selectedSheet=null;
+let fileABuffer=null,sheetNamesA=[],cacheA=new Map();
+let bitRecords=[],bitFiles=[],bitDates=new Set();
 const methodNames={1:'현금',2:'카드',3:'미수',4:'미수(현)',5:'미수(카)',6:'이체'};
 const norm=s=>String(s??'').trim().replace(/\s/g,'');
 const normId=id=>String(id??'').trim().replace(/^0+/,'');
 const toN=v=>Math.round(Number(String(v??0).replace(/[^0-9.-]+/g,'')))||0;
 const won=v=>Number(v||0).toLocaleString()+'원';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const TAGS={id:['차트번호','챠트번호','등록번호','환자번호'],name:['성명','수진자명','수진자','이름','환자명'],total:['원무과입금액','수납액','수납액합계','합계','본인부담총액'],cash:['현금수납액','현금수납','현금금액','현금'],card:['카드수납액','카드수납','카드금액','카드'],acc:['계좌이체액','계좌수납','계좌금액','계좌']};
+const TAGS={
+  id:['차트번호','챠트번호','등록번호','환자번호'],
+  name:['성명','수진자명','수진자','이름','환자명'],
+  date:['수납일자','수납일','진료일자','진료일','접수일자','내원일자','일자','날짜'],
+  total:['원무과입금액','수납액','수납액합계','합계','본인부담총액'],
+  cash:['현금수납액','현금수납','현금금액','현금'],
+  card:['카드수납액','카드수납','카드금액','카드'],
+  acc:['계좌이체액','계좌수납','계좌금액','계좌이체','계좌']
+};
 function goBack(){if(history.length>1)history.back();else location.href='https://xginini-dot.github.io/jinsul/'}
 function initTheme(){const saved=localStorage.getItem('jinsul-theme');const dark=saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';updateThemeBtn()}
 function toggleTheme(){document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('jinsul-theme',document.documentElement.dataset.theme);updateThemeBtn()}
@@ -147,32 +156,125 @@ initTheme();
 function setLoading(on,title='엑셀을 분석하고 있습니다.',sub='필요한 데이터만 불러오는 중입니다.'){const el=document.getElementById('loadingOverlay');if(!el)return;document.getElementById('loadingTitle').textContent=title;document.getElementById('loadingSub').textContent=sub;el.classList.toggle('on',!!on)}
 function yieldUI(){return new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)))}
 function setStatus(id,text,type=''){const el=document.getElementById(id);el.className='status'+(type?' '+type:'');el.textContent=text}
-function getMap(rows,side){for(let i=0;i<Math.min(rows.length,60);i++){const row=rows[i];if(!Array.isArray(row))continue;const map={};row.forEach((cell,idx)=>{const c=norm(cell);if(!c)return;for(const k in TAGS){if(TAGS[k].some(t=>c.includes(norm(t)))&&map[k]===undefined)map[k]=idx}if(side==='A'){if(c.includes('수단(입력)')||c==='수단'||c.includes('결제수단'))map.method=idx;if(c.includes('금')&&c.includes('액')&&idx<12&&map.total===undefined)map.total=idx}});if(map.id!==undefined&&map.name!==undefined)return{index:i,map}}return null}
-function setupDropZone(dropId,inputId,handler){const zone=document.getElementById(dropId),input=document.getElementById(inputId);zone.onclick=()=>input.click();zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};zone.ondragleave=()=>zone.classList.remove('drag-over');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const f=e.dataTransfer.files?.[0];if(f)handler(f)};input.onchange=e=>{const f=e.target.files?.[0];if(f)handler(f);e.target.value=''}}
-setupDropZone('dropA','fileA',handleFileA);setupDropZone('dropB','fileB',handleFileB);
+function getMap(rows,side){
+  for(let i=0;i<Math.min(rows.length,80);i++){
+    const row=rows[i];if(!Array.isArray(row))continue;const map={};
+    row.forEach((cell,idx)=>{
+      const c=norm(cell);if(!c)return;
+      for(const k in TAGS){if(TAGS[k].some(t=>c===norm(t)||c.includes(norm(t)))&&map[k]===undefined)map[k]=idx}
+      if(side==='A'){
+        if(c.includes('수단(입력)')||c==='수단'||c.includes('결제수단'))map.method=idx;
+        if(c.includes('금')&&c.includes('액')&&idx<12&&map.total===undefined)map.total=idx;
+      }
+    });
+    if(map.id!==undefined&&map.name!==undefined)return{index:i,map};
+  }
+  return null;
+}
+function setupDropZone(dropId,inputId,handler,multiple=false){
+  const zone=document.getElementById(dropId),input=document.getElementById(inputId);
+  zone.onclick=()=>input.click();
+  zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};
+  zone.ondragleave=()=>zone.classList.remove('drag-over');
+  zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const fs=[...(e.dataTransfer.files||[])];if(fs.length)handler(multiple?fs:fs[0])};
+  input.onchange=e=>{const fs=[...(e.target.files||[])];if(fs.length)handler(multiple?fs:fs[0]);e.target.value=''};
+}
+setupDropZone('dropA','fileA',handleFileA,false);
+setupDropZone('dropB','fileB',handleFilesB,true);
 function readSheetNames(buffer){const wb=XLSX.read(new Uint8Array(buffer),{type:'array',bookSheets:true,bookProps:false});return wb.SheetNames||[]}
 function readOneSheet(buffer,sheetName,limitRows=0){const opt={type:'array',sheets:[sheetName],dense:true,cellStyles:false,cellNF:false,cellText:true,bookVBA:false};if(limitRows>0)opt.sheetRows=limitRows;const wb=XLSX.read(new Uint8Array(buffer),opt);const ws=wb.Sheets[sheetName];if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true})}
-async function handleFileA(file){try{document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};renderCalendar();setStatus('statusA','로드 완료','ok')}catch(err){console.error(err);setStatus('statusA','파일 인식 실패','err');alert('수납 대장 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}}
-async function handleFileB(file){try{document.getElementById('fileNameB').textContent=file.name;setStatus('statusB','항목 확인 중','loading');setLoading(true,'병원 프로그램 엑셀을 분석하고 있습니다.','전체 시트를 한꺼번에 펼치지 않고 필요한 시트만 탐색합니다.');await yieldUI();fileBBuffer=await file.arrayBuffer();sheetNamesB=readSheetNames(fileBBuffer);if(!sheetNamesB.length)throw new Error('시트를 찾지 못했습니다.');let best=null;for(let i=0;i<sheetNamesB.length;i++){await yieldUI();const sheet=sheetNamesB[i];const sample=readOneSheet(fileBBuffer,sheet,80);const res=getMap(sample,'B');if(res){const raw=readOneSheet(fileBBuffer,sheet,0);const fullRes=getMap(raw,'B')||res;best={raw,res:fullRes,sheet};break}}if(!best){setStatus('statusB','항목 인식 실패','err');alert('차트번호/환자명/수납금액 컬럼을 찾지 못했습니다.');return}confB={data:best.raw.slice(best.res.index+1),map:best.res.map};dbB=confB.data;setStatus('statusB','로드 완료','ok');if(dbA.length){await yieldUI();runCheck()}}catch(err){console.error(err);setStatus('statusB','파일 인식 실패','err');alert('병원 프로그램 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}}
+function pad2(n){return String(n).padStart(2,'0')}
+function dateKey(v){
+  if(v===null||v===undefined||v==='')return null;
+  if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${pad2(v.getMonth()+1)}-${pad2(v.getDate())}`;
+  if(typeof v==='number'&&isFinite(v)){
+    const d=XLSX.SSF.parse_date_code(v);if(d&&d.y)return `${d.y}-${pad2(d.m)}-${pad2(d.d)}`;
+  }
+  const s=String(v).trim();
+  let m=s.match(/(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+  m=s.match(/^(20\d{2})(\d{2})(\d{2})$/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  return null;
+}
+function inferDateFromName(name){
+  let m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-](\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+  m=String(name).match(/(?:^|\D)(\d{1,2})[._\/-](\d{1,2})(?:\D|$)/);if(m){const y=new Date().getFullYear();return `${y}-${pad2(m[1])}-${pad2(m[2])}`}
+  return null;
+}
+function dayFromDateKey(k){if(!k)return null;const m=String(k).match(/-(\d{2})$/);return m?Number(m[1]):null}
+function sheetDateKey(name){const m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-](\d{1,2})/);return m?`${m[1]}-${pad2(m[2])}-${pad2(m[3])}`:null}
+async function handleFileA(file){
+  try{
+    document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();
+    fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};renderCalendar();setStatus('statusA','로드 완료','ok');
+  }catch(err){console.error(err);setStatus('statusA','파일 인식 실패','err');alert('수납 대장 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
+}
+async function handleFilesB(files){
+  try{
+    bitRecords=[];bitFiles=[];bitDates.clear();
+    const names=files.map(f=>f.name);document.getElementById('fileNameB').textContent=names.length===1?names[0]:`${names.length}개 파일 선택 · ${names.slice(0,3).join(', ')}${names.length>3?' 외 '+(names.length-3)+'개':''}`;
+    setStatus('statusB',`${files.length}개 파일 분석 중`,'loading');setLoading(true,'병원 프로그램 엑셀을 분석하고 있습니다.','기간 파일과 일자별 여러 파일의 날짜를 자동 분류합니다.');await yieldUI();
+    let recognized=0,unrecognized=[];
+    for(let fi=0;fi<files.length;fi++){
+      const file=files[fi];document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name}`;await yieldUI();
+      const buffer=await file.arrayBuffer();const sheets=readSheetNames(buffer);let fileRows=0;const fallbackDate=inferDateFromName(file.name);
+      for(const sheet of sheets){
+        const sample=readOneSheet(buffer,sheet,100);const res=getMap(sample,'B');if(!res)continue;
+        const raw=readOneSheet(buffer,sheet,0),fullRes=getMap(raw,'B')||res,m=fullRes.map,data=raw.slice(fullRes.index+1);let sheetRows=0;
+        for(const row of data){
+          const id=normId(row[m.id]),name=row[m.name];if(!id&&!name)continue;
+          let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||fallbackDate||sheetDateKey(sheet);
+          const cash=toN(m.cash!==undefined?row[m.cash]:0),acc=toN(m.acc!==undefined?row[m.acc]:0),card=toN(m.card!==undefined?row[m.card]:0);
+          const total=(m.cash!==undefined||m.card!==undefined||m.acc!==undefined)?cash+acc+card:toN(m.total!==undefined?row[m.total]:0);
+          bitRecords.push({id,name:name||'',cash:cash+acc,card,total,dateKey:dk,day:dayFromDateKey(dk),source:file.name,sheet});
+          if(dk)bitDates.add(dk);sheetRows++;fileRows++;
+        }
+      }
+      if(fileRows){recognized++}else unrecognized.push(file.name);
+    }
+    if(!bitRecords.length)throw new Error('차트번호/환자명/수납금액 컬럼을 찾지 못했습니다.');
+    bitFiles=files.map(f=>f.name);const dates=[...bitDates].sort();
+    const dateText=dates.length?`${dates[0]}${dates.length>1?' ~ '+dates[dates.length-1]:''} · ${dates.length}일 · ${bitRecords.length.toLocaleString()}건`:`날짜 열 미확인 · ${bitRecords.length.toLocaleString()}건`;
+    document.getElementById('bitDateInfo').textContent=dateText+(unrecognized.length?` · 인식 제외 ${unrecognized.length}개`:``);
+    setStatus('statusB',recognized===files.length?`${files.length}개 로드 완료`:`${recognized}/${files.length}개 로드`,'ok');
+    if(dbA.length){await yieldUI();runCheck()}
+  }catch(err){console.error(err);bitRecords=[];setStatus('statusB','파일 인식 실패','err');document.getElementById('bitDateInfo').textContent='';alert('병원 프로그램 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
+}
 function sheetDay(name){const m=String(name).trim().match(/(?:^|\D)(\d{1,2})(?:일)?(?:\D|$)/);if(!m)return null;const d=Number(m[1]);return d>=1&&d<=31?d:null}
-function renderCalendar(){const grid=document.getElementById('calendarGrid');grid.innerHTML='';const dayMap=new Map();sheetNamesA.forEach(n=>{const d=sheetDay(n);if(d&&!dayMap.has(d))dayMap.set(d,n)});const today=new Date().getDate();const days=[...dayMap.keys()].sort((a,b)=>a-b);const initial=dayMap.has(today)?today:days[0];for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(dbB.length)runCheck()};grid.appendChild(btn)}document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(dbB.length)runCheck()})}
-async function loadSheetData(sheetName,day){selectedSheet={name:sheetName,day};try{setStatus('statusA',`${day}일 분석 중`,'loading');let parsed=cacheA.get(sheetName);if(!parsed){setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`선택한 ${day}일 시트만 불러옵니다.`);await yieldUI();const raw=readOneSheet(fileABuffer,sheetName,0);const res=getMap(raw,'A');if(!res)throw new Error('차트번호/환자명/금액 항목을 찾지 못했습니다.');parsed={data:raw.slice(res.index+1),map:res.map};cacheA.set(sheetName,parsed)}confA=parsed;dbA=parsed.data;document.getElementById('selectedDay').textContent=day+'일 검수';setStatus('statusA',`${day}일 준비 완료`,'ok')}catch(err){console.error(err);dbA=[];confA=null;setStatus('statusA','시트 항목 인식 실패','err');alert(`${day}일 시트를 읽는 중 오류가 발생했습니다.\n${err.message}`)}finally{setLoading(false)}}
-
+function renderCalendar(){
+  const grid=document.getElementById('calendarGrid');grid.innerHTML='';const dayMap=new Map();sheetNamesA.forEach(n=>{const d=sheetDay(n);if(d&&!dayMap.has(d))dayMap.set(d,n)});
+  const today=new Date().getDate(),days=[...dayMap.keys()].sort((a,b)=>a-b),initial=dayMap.has(today)?today:days[0];
+  for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(bitRecords.length)runCheck()};grid.appendChild(btn)}
+  document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(bitRecords.length)runCheck()})
+}
+async function loadSheetData(sheetName,day){
+  selectedSheet={name:sheetName,day,dateKey:sheetDateKey(sheetName)};
+  try{setStatus('statusA',`${day}일 분석 중`,'loading');let parsed=cacheA.get(sheetName);if(!parsed){setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`선택한 ${day}일 시트만 불러옵니다.`);await yieldUI();const raw=readOneSheet(fileABuffer,sheetName,0);const res=getMap(raw,'A');if(!res)throw new Error('차트번호/환자명/금액 항목을 찾지 못했습니다.');parsed={data:raw.slice(res.index+1),map:res.map};cacheA.set(sheetName,parsed)}confA=parsed;dbA=parsed.data;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';setStatus('statusA',`${day}일 준비 완료`,'ok')}catch(err){console.error(err);dbA=[];confA=null;setStatus('statusA','시트 항목 인식 실패','err');alert(`${day}일 시트를 읽는 중 오류가 발생했습니다.\n${err.message}`)}finally{setLoading(false)}
+}
+function recordsForSelectedDay(){
+  if(!selectedSheet)return bitRecords;
+  const exact=selectedSheet.dateKey;
+  if(exact&&bitRecords.some(r=>r.dateKey===exact))return bitRecords.filter(r=>r.dateKey===exact);
+  const dated=bitRecords.filter(r=>r.day===selectedSheet.day);
+  if(dated.length)return dated;
+  const undated=bitRecords.filter(r=>!r.dateKey);
+  return undated.length===bitRecords.length?bitRecords:undated;
+}
 function runCheck(){
-  if(!confA||!confB||!dbA.length||!dbB.length)return;
-  const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set();
+  if(!confA||!dbA.length||!bitRecords.length)return;
+  const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set(),selectedB=recordsForSelectedDay();
   dbA.forEach(row=>{const id=normId(row[confA.map.id]),name=row[confA.map.name];if(!id||!name)return;allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});const e=aggA.get(id),amt=toN(row[confA.map.total]),met=parseInt(row[confA.map.method]);if([1,4,6].includes(met))e.cash+=amt;else if([2,5].includes(met))e.card+=amt;e.total+=amt;if(met)e.methods.add(met)});
-  dbB.forEach(row=>{const id=normId(row[confB.map.id]);if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:row[confB.map.name],cash:0,card:0,total:0});const e=aggB.get(id),m=confB.map,rowCash=toN(row[m.cash]),rowAcc=toN(row[m.acc]),rowCard=toN(row[m.card]);if(m.total!==undefined&&m.cash===undefined&&m.card===undefined&&m.acc===undefined){e.total+=toN(row[m.total])}else{e.cash+=rowCash+rowAcc;e.card+=rowCard;e.total+=rowCash+rowAcc+rowCard}});
+  selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
   let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
   [...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{const a=aggA.get(id),b=aggB.get(id);const misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}else if(!a&&b){result='수납대장 미기재';isError=true}else if(a&&b){const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;if(dTotal!==0&&!misuOnly){result='총액오류';isError=true}else if((Math.abs(dCash)>tolerance||Math.abs(dCard)>tolerance)&&!misuOnly){result='수단오류';isError=true}else if(misuOnly)result='미수대기'}const row={id,name:a?.name||b?.name||'',aCash:a?.cash||0,bCash:b?.cash||0,aCard:a?.card||0,bCard:b?.card||0,aTotal:a?.total||0,bTotal:b?.total||0,result,isError,methods:a?[...a.methods]:[],misuOnly};if(!misuOnly){totals.aCash+=row.aCash;totals.aCard+=row.aCard;totals.aTotal+=row.aTotal;totals.bCash+=row.bCash;totals.bCard+=row.bCard;totals.bTotal+=row.bTotal}resultRows.push(row)});
   updateSummary(totals);renderRows();document.getElementById('resultPanel').classList.remove('hidden-panel');
+  const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
 }
 function updateSummary(t){const all=resultRows.length,err=resultRows.filter(r=>r.isError).length,misu=resultRows.filter(r=>r.result==='미수대기').length,ok=resultRows.filter(r=>r.result==='정상').length;document.getElementById('kpiAll').textContent=all;document.getElementById('kpiOk').textContent=ok;document.getElementById('kpiErr').textContent=err;document.getElementById('kpiTotalErr').textContent=resultRows.filter(r=>r.result==='총액오류').length;document.getElementById('kpiMethodErr').textContent=resultRows.filter(r=>r.result==='수단오류').length;document.getElementById('kpiMisu').textContent=misu;document.getElementById('rateOk').textContent=(all?ok/all*100:0).toFixed(1)+'%';document.getElementById('rateErr').textContent=(all?err/all*100:0).toFixed(1)+'%';[['sumCashA',t.aCash],['sumCashB',t.bCash],['sumCardA',t.aCard],['sumCardB',t.bCard],['sumTotalA',t.aTotal],['sumTotalB',t.bTotal]].forEach(([id,v])=>document.getElementById(id).textContent=won(v));setDiff('diffCash',t.aCash-t.bCash);setDiff('diffCard',t.aCard-t.bCard);setDiff('diffTotal',t.aTotal-t.bTotal)}
 function setDiff(id,v){const el=document.getElementById(id);el.textContent=won(v);el.className=v===0?'diff-zero':'diff-bad'}
 function renderRows(){const body=document.getElementById('resultBody');const q=norm(document.getElementById('searchInput').value).toLowerCase(),filter=document.getElementById('resultFilter').value;const html=[];for(const r of resultRows){if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;if(filter==='error'&&!r.isError)continue;if(!['all','error'].includes(filter)&&r.result!==filter)continue;const rowClass=r.isError?'row-err':r.result==='미수대기'?'row-misu':'';const cls=r.result==='정상'?'r-ok':r.result==='미수대기'?'r-wait':'r-err';const methods=r.methods.length?r.methods.map(m=>`<span class="badge m${m}">${esc(methodNames[m]||m)}</span>`).join(' '):'<span class="badge">기록없음</span>';html.push(`<tr class="${rowClass}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td class="${r.aCash!==r.bCash?'diff-text':''}">${r.aCash.toLocaleString()}</td><td>${r.bCash.toLocaleString()}</td><td class="${r.aCard!==r.bCard?'diff-text':''}">${r.aCard.toLocaleString()}</td><td>${r.bCard.toLocaleString()}</td><td class="${r.aTotal!==r.bTotal?'diff-text':''}">${r.aTotal.toLocaleString()}</td><td>${r.bTotal.toLocaleString()}</td><td><span class="result-badge ${cls}">${esc(r.result)}</span></td><td>${methods}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('emptyResult').classList.toggle('hidden',html.length>0)}
 function applyFilter(){renderRows()}
-function exportResult(){if(!resultRows.length){alert('저장할 검수 결과가 없습니다.');return}const rows=resultRows.map(r=>({'차트번호':r.id,'환자명':r.name,'현금+이체(수납대장)':r.aCash,'현금+이체(프로그램)':r.bCash,'카드(수납대장)':r.aCard,'카드(프로그램)':r.bCard,'총액(수납대장)':r.aTotal,'총액(프로그램)':r.bTotal,'검수결과':r.result,'수단상세':r.methods.map(m=>methodNames[m]||m).join(', ')}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'검수결과');const day=selectedSheet?.day?`_${selectedSheet.day}일`:'';XLSX.writeFile(wb,`JINSUL_수납검수${day}.xlsx`)}
-function resetAll(){currentWbA=confA=confB=null;fileABuffer=fileBBuffer=null;sheetNamesA=[];sheetNamesB=[];cacheA.clear();dbA=[];dbB=[];selectedSheet=null;resultRows=[];['fileA','fileB'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB'].forEach(id=>document.getElementById(id).textContent='');['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';setLoading(false)}
+function exportResult(){if(!resultRows.length){alert('저장할 검수 결과가 없습니다.');return}const rows=resultRows.map(r=>({'차트번호':r.id,'환자명':r.name,'현금+이체(수납대장)':r.aCash,'현금+이체(프로그램)':r.bCash,'카드(수납대장)':r.aCard,'카드(프로그램)':r.bCard,'총액(수납대장)':r.aTotal,'총액(프로그램)':r.bTotal,'검수결과':r.result,'수단상세':r.methods.map(m=>methodNames[m]||m).join(', ')}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'검수결과');const day=selectedSheet?.dateKey?'_'+selectedSheet.dateKey:selectedSheet?.day?`_${selectedSheet.day}일`:'';XLSX.writeFile(wb,`JINSUL_수납검수${day}.xlsx`)}
+function resetAll(){currentWbA=confA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();dbA=[];bitRecords=[];bitFiles=[];bitDates.clear();selectedSheet=null;resultRows=[];['fileA','fileB'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB','bitDateInfo'].forEach(id=>document.getElementById(id).textContent='');['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';setLoading(false)}
 </script>
 </body>
 </html>
