@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -129,6 +130,43 @@
     body.dark .card,body.dark .controlPanel,body.dark .filebox,body.dark .field input,body.dark .field select,body.dark .field textarea,body.dark .tableWrap,body.dark th{background:#1b1d20;color:var(--ink);border-color:#3a342d} body.dark .hero{background:linear-gradient(135deg,#1b1d20,#26221d)} body.dark h1,body.dark .panelTitle,body.dark .sectionTitle h2{color:#f6f0e8} body.dark tbody tr:hover{background:#25272b}
     body.dark .filebox input[type=file]::file-selector-button{background:#292b2f;color:#f3eee7;border-color:#5a5148;box-shadow:none}
     body.dark .filebox input[type=file]::file-selector-button:hover{background:#34373c;border-color:#8b7965}
+
+    /* 실제 심사조정 비교 */
+    .adjustUpload{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+    .pageTabs{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px}
+    .pageTab{border:1px solid #d8cbb9;background:#fffaf3;color:#6a5944;border-radius:999px;padding:11px 17px;cursor:pointer;font-weight:950}
+    .pageTab.active{background:#2b2926;color:#fff;border-color:#2b2926;box-shadow:0 8px 18px rgba(43,41,38,.16)}
+    .adjustSummary{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0 18px}
+    .compareGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}
+    .metricPanel{border:1px solid var(--line);background:var(--soft2);border-radius:20px;padding:17px}
+    .metricPanel h3{margin:0 0 12px;font-size:16px}
+    .metricLine{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .metricLine:last-child{border-bottom:0}
+    .metricLine strong{font-size:14px}
+    .adjustStatus{margin-top:8px;font-size:13px;color:var(--muted);font-weight:800}
+    .matchWarn{background:#fff7e9;border:1px solid #ecd8b8;border-radius:14px;padding:11px 13px;color:#795d36;font-size:12.5px;line-height:1.6}
+    .timelineLegend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .legendItem{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:850;color:var(--muted)}
+    .legendDot{width:10px;height:10px;border-radius:999px;display:inline-block}.legendDot.bad{background:#c45151}.legendDot.good{background:#35845d}.legendDot.part{background:#b88938}
+    .patientStats{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}.patientStat{font-size:11.5px;border:1px solid var(--line);background:var(--soft2);padding:5px 8px;border-radius:999px;color:var(--muted);font-weight:850}
+    .eventChip.part{background:#fff4df;border-color:#e8c98e;color:#8b6224}.statusTag.part{background:#fff1d4;color:#8b6224}
+    body.dark .eventChip.part,body.dark .statusTag.part{background:#352b1d;color:#e4c27f;border-color:#695437}
+    .patternNote{margin-top:12px;border:1px solid #e7dccd;background:#fffaf3;border-radius:16px;padding:13px 15px;font-size:12.5px;line-height:1.65;color:#6f6254}
+    body.dark .patternNote{background:#22201d;border-color:#433b32;color:#c9bdb0}
+    body.dark .pageTab{background:#1b1d20;color:#d8cec3;border-color:#4a4239}
+    body.dark .pageTab.active{background:#f3eee7;color:#201e1b;border-color:#f3eee7}
+    body.dark .metricPanel{background:#202226}
+    body.dark .matchWarn{background:#2a241d;border-color:#554735;color:#d8c4a7}
+    @media(max-width:1150px){.adjustSummary,.compareGrid{display:block}.adjustSummary .kpi,.metricPanel{margin-top:12px}}
+
+    .reviewUpload{margin-top:14px;padding-top:14px;border-top:1px dashed #d9c9b5}
+    .timelineSummary{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0 18px}
+    .timelineCard{border:1px solid #e7dccd;border-radius:18px;padding:15px;background:#fffaf3}
+    .timelineCard .label{font-size:12px;color:var(--muted);font-weight:850}.timelineCard .value{font-size:22px;font-weight:950;margin-top:5px}
+    .timelineFlow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.eventChip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:12px;border:1px solid #e6d9ca;background:#fffdf9;font-size:12px;font-weight:850}.eventChip.bad{background:#fff0ec;border-color:#efc8c0;color:#a94242}.eventChip.good{background:#effaf4;border-color:#cbe6d7;color:#2f7c54}.eventArrow{color:#9a8b79;font-weight:900}.statusTag{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:950}.statusTag.bad{background:#ffe7e2;color:#ad4141}.statusTag.good{background:#e7f6ed;color:#2f7c54}.statusTag.neutral{background:#f0ebe4;color:#76695a}
+    .patientTimeline{margin:12px 0 18px;border:1px solid #e6dacb;border-radius:18px;overflow:hidden}.patientTimelineHead{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 15px;background:#f5ede4}.patientTimelineBody{padding:14px 15px;background:#fffdf9}.patientMeta{font-size:12px;color:var(--muted)}
+    body.dark .timelineCard,body.dark .eventChip,body.dark .patientTimelineBody{background:#1b1d20;border-color:#3a342d}body.dark .patientTimelineHead{background:#25272b;border-color:#3a342d}
+    @media(max-width:1150px){.timelineSummary{grid-template-columns:1fr 1fr}.timelineFlow{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -156,6 +194,22 @@
           <label>*.xls, *.xlsx — 여러 파일 선택 가능</label>
           <div class="filebox"><input type="file" id="fileInput" multiple accept=".xls,.xlsx" /><span class="fileCount" id="fileCount">파일 0개</span></div>
           <div class="hint"><b>자동 판별 기준</b> · 비트: 엑셀의 처방코드/수가코드와 금액 컬럼을 우선 사용 · 의사랑: 파일명에서 LA 다음 숫자 3자리만 코드로 인식합니다. 예: la275.xls, la2751.xls, la275_1.xls, la275(1).xls → 모두 LA275. 단가표×총투여량으로 계산하며 여러 파일을 함께 선택할 수 있습니다.</div>
+        </div>
+        <div class="adjustUpload">
+          <div class="panelTitle">실제 심사조정 엑셀 <span class="mini">(선택)</span></div>
+          <div class="field">
+            <label>코드별조정총괄 *.xlsx — 여러 파일 선택 가능</label>
+            <div class="filebox"><input type="file" id="adjustFileInput" multiple accept=".xls,.xlsx" /><span class="fileCount" id="adjustFileCount">파일 0개</span></div>
+            <div class="hint"><b>심사조정현황</b> 시트를 우선 인식해 수진자·조정금액·조정사유·분류코드를 읽습니다. 상세 시트가 없으면 <b>코드별조정총괄내역</b> 시트의 코드별 건수/금액을 사용합니다.</div>
+            <div class="adjustStatus" id="adjustStatus">실제 조정 엑셀을 추가하면 예상 조정과 비교할 수 있습니다.</div>
+            <div class="reviewUpload">
+              <div class="panelTitle">날짜 포함 심사조정건조회 <span class="mini">(추가)</span></div>
+              <label>심사조정건조회 *.xlsx — 여러 파일 선택 가능</label>
+              <div class="filebox"><input type="file" id="reviewFileInput" multiple accept=".xls,.xlsx" /><span class="fileCount" id="reviewFileCount">파일 0개</span></div>
+              <div class="hint"><b>수진자성명 + 요양개시일 + 조정사항</b>을 읽어 실제 조정 대상 진료일을 연결합니다. 이 파일에는 별도의 ‘심사 처리일’ 컬럼이 없으므로 <b>요양개시일을 실제 조정 대상일</b>로 표시합니다.</div>
+              <div class="adjustStatus" id="reviewStatus">날짜 파일을 추가하면 실제 조정일을 확정하고 조정 환자의 기간 전체 타임라인을 분석합니다.</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="controlPanel">
@@ -229,6 +283,13 @@ LA367 외톨이신경절 138230</textarea>
     <div class="status" id="status">비트 또는 의사랑 엑셀을 선택하면 파일 구조를 자동 판별하여 분석합니다.</div>
   </div>
 
+  <div class="pageTabs">
+    <button class="pageTab active" data-page="estimate">① 예상 조정 분석</button>
+    <button class="pageTab" data-page="actual">② 실제 조정 비교</button>
+    <button class="pageTab" data-page="timeline">③ 실제 날짜 · 간격 분석</button>
+  </div>
+
+  <div id="pageEstimate">
   <div class="card">
     <div class="sectionTitle"><div><h2>매출 감소 요약</h2><div class="hint">감소액은 설정한 인정기간 이내 불인정으로 가정한 <b>대상코드 금액</b> 기준입니다.</div></div></div>
     <div class="summary">
@@ -258,24 +319,109 @@ LA367 외톨이신경절 138230</textarea>
     <div id="tabPrice" class="hidden"><div class="tableWrap"><table id="priceViewTable"></table></div></div>
     <div id="tabRaw" class="hidden"><div class="tableWrap"><table id="rawTable"></table></div></div>
   </div>
+  </div><!-- /pageEstimate -->
+
+  <div id="pageActual" class="hidden">
+    <div class="card">
+      <div class="sectionTitle">
+        <div><h2>예상 조정 vs 실제 심사조정</h2><div class="hint">기존 인정간격 판정 결과와 코드별조정총괄의 실제 조정 내역을 비교합니다.</div></div>
+      </div>
+      <div class="adjustSummary">
+        <div class="kpi loss"><div class="t">예상 불인정 방문</div><div class="v" id="aExpectedCount">0건</div></div>
+        <div class="kpi loss"><div class="t">예상 조정금액</div><div class="v" id="aExpectedAmount">0원</div></div>
+        <div class="kpi"><div class="t">실제 대상코드 조정</div><div class="v" id="aActualTargetCount">0건</div></div>
+        <div class="kpi"><div class="t">실제 대상코드 조정금액</div><div class="v" id="aActualTargetAmount">0원</div></div>
+        <div class="kpi good"><div class="t">전체 차단술 대비 실제 조정률</div><div class="v" id="aActualRate">0%</div></div>
+        <div class="kpi good"><div class="t">예상-실제 매칭률</div><div class="v" id="aMatchRate">0%</div></div>
+      </div>
+      <div class="compareGrid">
+        <div class="metricPanel">
+          <h3>실제 조정 건수 기준</h3>
+          <div class="metricLine"><span>전체 차단술 방문</span><strong id="aAllVisits">0건</strong></div>
+          <div class="metricLine"><span>대상코드 포함 방문</span><strong id="aTargetVisits">0건</strong></div>
+          <div class="metricLine"><span>실제 전체 LA 조정 청구건</span><strong id="aActualAllClaims">0건</strong></div>
+          <div class="metricLine"><span>실제 전체 LA 조정 라인</span><strong id="aActualAllLines">0건</strong></div>
+          <div class="metricLine"><span>실제 조정 환자</span><strong id="aActualPatients">0명</strong></div>
+        </div>
+        <div class="metricPanel">
+          <h3>실제 조정 간격 <span class="mini">(매칭된 건)</span></h3>
+          <div class="metricLine"><span>간격 확인 가능 건</span><strong id="aGapMatched">0건</strong></div>
+          <div class="metricLine"><span>평균 간격</span><strong id="aGapAvg">-</strong></div>
+          <div class="metricLine"><span>중앙값</span><strong id="aGapMedian">-</strong></div>
+          <div class="metricLine"><span>최소 ~ 최대</span><strong id="aGapRange">-</strong></div>
+          <div class="matchWarn">실제 조정 엑셀에는 시행일자가 없으므로, <b>수진자명 + LA코드</b>가 기존 예상 불인정 리스트와 일치하는 경우에만 해당 시행일과 ‘마지막 인정일 기준 간격’을 연결합니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>코드별 예상 · 실제 비교</h2><div class="hint">건수와 금액 차이를 코드별로 비교합니다.</div></div></div>
+      <div class="tableWrap"><table id="adjustCodeTable"></table></div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>실제 조정 상세</h2><div class="hint">코드별조정총괄의 실제 조정 내역을 그대로 표시하며, 날짜 파일이 있으면 실제 조정 대상일(요양개시일)을 연결합니다.</div></div></div>
+      <div class="tableWrap"><table id="adjustMatchTable"></table></div>
+    </div>
+  </div>
+
+  <div id="pageTimeline" class="hidden">
+    <div class="card">
+      <div class="sectionTitle"><div><h2>실제 조정 환자 · 기간 전체 타임라인</h2><div class="hint">실제 조정된 환자를 먼저 확정한 뒤, 조회기간 동안 해당 환자의 대상 차단술 시행을 모두 불러와 조정 또는 인정으로 표시합니다.</div></div></div>
+      <div class="timelineSummary">
+        <div class="kpi loss"><div class="t">실제 조정 시행<br><span class="mini">조정 환자 타임라인</span></div><div class="v" id="tAdjustedDated">0건</div></div>
+        <div class="kpi"><div class="t">조정 시행 전회 간격 평균</div><div class="v" id="tAdjustedAvg">-</div></div>
+        <div class="kpi"><div class="t">조정 시행 전회 간격 중앙값</div><div class="v" id="tAdjustedMedian">-</div></div>
+        <div class="kpi good"><div class="t">실제 인정 시행<br><span class="mini">조정 환자 내 · 본 분석 기준</span></div><div class="v" id="tAcceptedCount">0건</div></div>
+        <div class="kpi good"><div class="t">인정 시행 전회 간격 평균</div><div class="v" id="tAcceptedAvg">-</div></div>
+        <div class="kpi"><div class="t">조정 날짜 매칭률</div><div class="v" id="tDateMatchRate">0%</div></div>
+      </div>
+      <div class="note">이 화면의 <b>‘인정’</b>은 사용자가 요청한 분석 기준에 따라, <b>실제 조정 환자의 기간 내 차단술 중 코드별조정총괄에 조정으로 잡히지 않은 시행</b>을 인정 사례로 분류한 것입니다. 심평원의 공식 개별 인정 판정서를 의미하지는 않습니다.</div>
+      <div class="timelineLegend"><span class="legendItem"><span class="legendDot bad"></span>조정</span><span class="legendItem"><span class="legendDot good"></span>인정</span><span class="legendItem"><span class="legendDot part"></span>일부 코드 조정</span></div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>환자별 시행 타임라인</h2><div class="hint">각 조정 환자의 조회기간 전체 시행을 날짜순으로 표시합니다. 전회 시행 간격과 동일 코드의 직전 시행 간격을 함께 확인할 수 있습니다.</div></div></div>
+      <div id="timelinePatients"><div class="empty">세 종류의 데이터를 업로드하면 실제 조정 환자별 전체 타임라인이 표시됩니다.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>심평원 패턴 추정 · 간격별 실제 결과</h2><div class="hint">조회기간의 전체 대상 차단술 시행을 분모로 전회 차단술과의 간격별 인정/조정 결과를 비교합니다. 특히 정확히 7일 시행을 별도 구간으로 분리했습니다.</div></div></div>
+      <div class="tableWrap"><table id="patternTable"></table></div>
+      <div class="patternNote"><b>해석 주의:</b> 조정률이 낮은 구간은 ‘이 표본에서는 상대적으로 인정 사례가 많았다’는 뜻이며, 심평원의 공식 허용 간격을 의미하지 않습니다. 또한 <b>전체 내원 대비 차단술 시행률(예: 차단술 비율이 몇 % 이하인지)</b>은 현재 업로드 자료에 전체 내원 건수가 없어 계산할 수 없습니다. 전체 내원 데이터가 추가되면 이 지표도 연결할 수 있습니다.</div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>조정 환자 전체 시행 상세</h2><div class="hint">조정된 날짜뿐 아니라 같은 환자의 기간 내 인정 사례까지 모두 표시합니다.</div></div></div>
+      <div class="tableWrap"><table id="timelineTable"></table></div>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><div><h2>인정 vs 조정 간격 비교</h2><div class="hint">첫 시행을 제외하고 전회 대상 차단술과의 간격을 기준으로 실제 인정과 조정을 비교합니다.</div></div></div>
+      <div class="tableWrap"><table id="intervalCompareTable"></table></div>
+    </div>
+  </div>
 </div>
 <footer>© JINSUL Consulting. All rights reserved.</footer>
 
 <script>
 const els={
- fileInput:document.getElementById('fileInput'),fileCount:document.getElementById('fileCount'),dateStart:document.getElementById('dateStart'),dateEnd:document.getElementById('dateEnd'),intervalDays:document.getElementById('intervalDays'),targetCodes:document.getElementById('targetCodes'),priceTable:document.getElementById('priceTable'),searchInput:document.getElementById('searchInput'),judgeFilter:document.getElementById('judgeFilter'),typeFilter:document.getElementById('typeFilter'),minCount:document.getElementById('minCount'),status:document.getElementById('status'),codeList:document.getElementById('codeList'),judgeTable:document.getElementById('judgeTable'),deniedTable:document.getElementById('deniedTable'),patientTable:document.getElementById('patientTable'),comboTable:document.getElementById('comboTable'),priceViewTable:document.getElementById('priceViewTable'),rawTable:document.getElementById('rawTable')
+ fileInput:document.getElementById('fileInput'),fileCount:document.getElementById('fileCount'),dateStart:document.getElementById('dateStart'),dateEnd:document.getElementById('dateEnd'),intervalDays:document.getElementById('intervalDays'),targetCodes:document.getElementById('targetCodes'),priceTable:document.getElementById('priceTable'),searchInput:document.getElementById('searchInput'),judgeFilter:document.getElementById('judgeFilter'),typeFilter:document.getElementById('typeFilter'),minCount:document.getElementById('minCount'),status:document.getElementById('status'),codeList:document.getElementById('codeList'),judgeTable:document.getElementById('judgeTable'),deniedTable:document.getElementById('deniedTable'),patientTable:document.getElementById('patientTable'),comboTable:document.getElementById('comboTable'),priceViewTable:document.getElementById('priceViewTable'),rawTable:document.getElementById('rawTable'),adjustFileInput:document.getElementById('adjustFileInput'),adjustFileCount:document.getElementById('adjustFileCount'),adjustStatus:document.getElementById('adjustStatus'),adjustCodeTable:document.getElementById('adjustCodeTable'),adjustMatchTable:document.getElementById('adjustMatchTable'),reviewFileInput:document.getElementById('reviewFileInput'),reviewFileCount:document.getElementById('reviewFileCount'),reviewStatus:document.getElementById('reviewStatus'),timelineTable:document.getElementById('timelineTable'),intervalCompareTable:document.getElementById('intervalCompareTable'),patternTable:document.getElementById('patternTable'),timelinePatients:document.getElementById('timelinePatients')
 };
-let rawRows=[], visitRows=[], result=null, priceMap=new Map(), uploadedNames=[], activeTab='judge', allDateMin='', allDateMax='';
+let rawRows=[], visitRows=[], result=null, priceMap=new Map(), uploadedNames=[], activeTab='judge', allDateMin='', allDateMax='', adjustRows=[], adjustSummaryRows=[], adjustComparison=null, reviewRows=[], timelineComparison=null, activePage='estimate';
 const debounce=(fn,wait=120)=>{let t;return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait);};};
 const recalcDebounced=debounce(()=>recalc(),120), renderDebounced=debounce(()=>render(),80);
 const DEFAULT_TARGET='LA357, LA358, LA359';
 
 els.fileInput.addEventListener('change',handleFiles);
+els.adjustFileInput.addEventListener('change',handleAdjustFiles);
+els.reviewFileInput.addEventListener('change',handleReviewFiles);
 [els.dateStart,els.dateEnd,els.intervalDays,els.targetCodes,els.priceTable].forEach(el=>el.addEventListener('input',recalcDebounced));
 [els.searchInput,els.judgeFilter,els.typeFilter,els.minCount].forEach(el=>el.addEventListener('input',renderDebounced));
 document.getElementById('applyBtn').onclick=recalc; document.getElementById('resetBtn').onclick=resetAll; document.getElementById('exportBtn').onclick=exportExcel;
 document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{activeTab=btn.dataset.tab;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');['Judge','Denied','Patient','Combo','Price','Raw'].forEach(x=>document.getElementById('tab'+x).classList.toggle('hidden',activeTab!==x.toLowerCase())); renderActiveTable();});
 document.querySelectorAll('.qbtn').forEach(btn=>btn.onclick=()=>quickRange(btn.dataset.range));
+document.querySelectorAll('.pageTab').forEach(btn=>btn.onclick=()=>{activePage=btn.dataset.page;document.querySelectorAll('.pageTab').forEach(b=>b.classList.toggle('active',b===btn));document.getElementById('pageEstimate').classList.toggle('hidden',activePage!=='estimate');document.getElementById('pageActual').classList.toggle('hidden',activePage!=='actual');document.getElementById('pageTimeline').classList.toggle('hidden',activePage!=='timeline');renderAdjustment();renderTimeline();});
 
 async function handleFiles(e){
  const files=Array.from(e.target.files||[]); if(!files.length)return;
@@ -293,6 +439,78 @@ async function handleFiles(e){
   setupDateRange(); recalc(); const bitCount=rawRows.filter(r=>r.system==='BIT').length, uiCount=rawRows.filter(r=>r.system==='UISARANG').length; els.status.textContent=`자동 판별 완료 · 파일 ${files.length}개 / 유효 행 ${rawRows.length.toLocaleString()}건 (비트 ${bitCount.toLocaleString()}건 · 의사랑 ${uiCount.toLocaleString()}건)`;
  }catch(err){console.error(err);els.status.textContent='엑셀 분석 중 오류가 발생했습니다. 파일 형식을 확인해주세요.';}
 }
+async function handleAdjustFiles(e){
+ const files=Array.from(e.target.files||[]); adjustRows=[];adjustSummaryRows=[];adjustComparison=null;
+ if(els.adjustFileCount)els.adjustFileCount.textContent=`파일 ${files.length}개`;
+ if(!files.length){els.adjustStatus.textContent='실제 조정 엑셀을 추가하면 예상 조정과 비교할 수 있습니다.';renderAdjustment();return;}
+ els.adjustStatus.textContent='실제 심사조정 엑셀을 읽는 중입니다...';
+ try{
+  for(const f of files){
+   const buf=await f.arrayBuffer(), wb=XLSX.read(buf,{type:'array',cellDates:true});
+   let detailed=[];
+   for(const sname of wb.SheetNames){
+    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sname],{header:1,defval:null,raw:false});
+    const rows=parseAdjustDetail(aoa,f.name,sname); if(rows.length)detailed.push(...rows);
+   }
+   if(detailed.length)adjustRows.push(...detailed);
+   else{
+    for(const sname of wb.SheetNames){
+     const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sname],{header:1,defval:null,raw:false});
+     adjustSummaryRows.push(...parseAdjustSummary(aoa,f.name,sname));
+    }
+   }
+  }
+  const info=adjustRows.length?`상세 ${adjustRows.length.toLocaleString()}행`:`코드별 요약 ${adjustSummaryRows.length.toLocaleString()}행`;
+  els.adjustStatus.textContent=`실제 조정 파일 ${files.length}개 인식 완료 · ${info}`;
+  recalc();
+ }catch(err){console.error(err);els.adjustStatus.textContent='실제 조정 엑셀 분석 중 오류가 발생했습니다.';renderAdjustment();}
+}
+function findAdjustHeader(aoa,detail=true){
+ for(let i=0;i<Math.min(30,aoa.length);i++){
+  const hs=(aoa[i]||[]).map(v=>(v??'').toString().replace(/\s/g,''));
+  const txt=hs.join('|');
+  if(detail && /수진자/.test(txt)&&/조정금액/.test(txt)&&/분류코드/.test(txt))return i;
+  if(!detail && /분류코드/.test(txt)&&/건수/.test(txt)&&/조정금액/.test(txt))return i;
+ }
+ return -1;
+}
+function parseAdjustDetail(aoa,fileName,sheetName){
+ const h=findAdjustHeader(aoa,true);if(h<0)return[]; const headers=(aoa[h]||[]).map(v=>(v??'').toString().trim());
+ const idx={serial:findIdx(headers,['명일련','명세서일련','일련번호']),name:findIdx(headers,['수진자','수진자명','환자명','성명']),amount:findIdx(headers,['조정금액']),reasonCode:findIdx(headers,['조정사유코드']),reason:findIdx(headers,['조정사유코드명','조정사유명']),code:findIdx(headers,['분류코드(항)','분류코드']),codeName:findIdx(headers,['분류코드명'])};
+ if(idx.name<0||idx.amount<0||idx.code<0)return[]; const out=[];
+ for(let i=h+1;i<aoa.length;i++){const row=aoa[i]||[];const rawCode=clean(row[idx.code]);const code=normalizeLACode(rawCode);if(!code)continue;out.push({serial:idx.serial>=0?clean(row[idx.serial]):'',name:clean(row[idx.name]),amount:toNum(row[idx.amount]),reasonCode:idx.reasonCode>=0?clean(row[idx.reasonCode]):'',reason:idx.reason>=0?clean(row[idx.reason]):'',rawCode,code,codeName:idx.codeName>=0?clean(row[idx.codeName]):'',fileName,sheetName,rowNo:i+1});}
+ return out;
+}
+function parseAdjustSummary(aoa,fileName,sheetName){
+ const h=findAdjustHeader(aoa,false);if(h<0)return[];const headers=(aoa[h]||[]).map(v=>(v??'').toString().trim());
+ const idx={code:findIdx(headers,['분류코드(항)','분류코드']),count:findIdx(headers,['건수']),amount:findIdx(headers,['조정금액']),reasonCode:findIdx(headers,['조정사유코드']),reason:findIdx(headers,['조정사유코드명'])};
+ if(idx.code<0||idx.count<0||idx.amount<0)return[];const out=[];
+ for(let i=h+1;i<aoa.length;i++){const row=aoa[i]||[],rawCode=clean(row[idx.code]),code=normalizeLACode(rawCode);if(!code)continue;out.push({rawCode,code,count:toNum(row[idx.count]),amount:toNum(row[idx.amount]),reasonCode:idx.reasonCode>=0?clean(row[idx.reasonCode]):'',reason:idx.reason>=0?clean(row[idx.reason]):'',fileName,sheetName,rowNo:i+1});}
+ return out;
+}
+async function handleReviewFiles(e){
+ const files=Array.from(e.target.files||[]);reviewRows=[];timelineComparison=null;
+ els.reviewFileCount.textContent=`파일 ${files.length}개`;
+ if(!files.length){els.reviewStatus.textContent='날짜 파일을 추가하면 실제 조정일을 확정하고 조정 환자의 기간 전체 타임라인을 분석합니다.';recalc();return;}
+ els.reviewStatus.textContent='심사조정건조회 날짜 데이터를 읽는 중입니다...';
+ try{
+  for(const f of files){const buf=await f.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});for(const sname of wb.SheetNames){const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sname],{header:1,defval:null,raw:false});reviewRows.push(...parseReviewRows(aoa,f.name,sname));}}
+  reviewRows=dedupeReviewRows(reviewRows);
+  els.reviewStatus.textContent=`날짜 파일 ${files.length}개 인식 완료 · ${reviewRows.length.toLocaleString()}개 조정 대상 진료일`;
+  recalc();
+ }catch(err){console.error(err);els.reviewStatus.textContent='심사조정건조회 분석 중 오류가 발생했습니다.';renderTimeline();}
+}
+function parseReviewRows(aoa,fileName,sheetName){
+ if(!aoa?.length)return[];let h=-1;
+ for(let i=0;i<Math.min(12,aoa.length);i++){const t=(aoa[i]||[]).map(v=>clean(v).replace(/\s/g,'')).join('|');if(/수진자성명|수진자명/.test(t)&&/요양개시일/.test(t)){h=i;break;}}
+ if(h<0)return[];const h1=aoa[h]||[],h2=aoa[h+1]||[];
+ const combined=h1.map((v,j)=>`${clean(v)} ${clean(h2[j])}`.trim());
+ const idx={serial:findIdx(combined,['명일련','명세서일련']),name:findIdx(combined,['수진자성명','수진자명']),date:findIdx(combined,['요양개시일']),adj1:combined.findIndex(x=>/조정사항/.test(x)&&/소계1/.test(x)),adj2:combined.findIndex(x=>/조정사항/.test(x)&&/소계2/.test(x)),decision:findIdx(combined,['심사결정액']),detail:findIdx(combined,['심사조정내역'])};
+ if(idx.name<0||idx.date<0)return[];const out=[];
+ for(let i=h+2;i<aoa.length;i++){const row=aoa[i]||[],name=clean(row[idx.name]),d=parseDate(row[idx.date]);if(!name||!d)continue;const adj1=idx.adj1>=0?toNum(row[idx.adj1]):0,adj2=idx.adj2>=0?toNum(row[idx.adj2]):0;out.push({serial:idx.serial>=0?clean(row[idx.serial]):'',name,date:d,dateKey:dateKey(d),adjust1:adj1,adjust2:adj2,adjustTotal:Math.abs(adj1)+Math.abs(adj2),decisionAmount:idx.decision>=0?toNum(row[idx.decision]):0,detail:idx.detail>=0?clean(row[idx.detail]):'',fileName,sheetName,rowNo:i+1});}
+ return out;
+}
+function dedupeReviewRows(rows){const m=new Map();rows.forEach(r=>{const k=`${nameKey(r.name)}|${r.dateKey}|${r.serial}`;if(!m.has(k))m.set(k,r);});return[...m.values()].sort((a,b)=>a.date-b.date||a.name.localeCompare(b.name,'ko'));}
 function parseAoaRows(aoa,fileCode,fileName){
  const headerIdx=findHeaderRow(aoa); if(headerIdx<0)return [];
  const headers=aoa[headerIdx].map(v=>(v??'').toString().trim());
@@ -332,7 +550,7 @@ function amountFor(code,dose){const p=priceMap.get(code)?.price||0; return p*(do
 function recalc(){
  priceMap=parsePriceTable(); renderPriceTable(); if(!rawRows.length){renderEmpty();return;}
  const s=els.dateStart.value, e=els.dateEnd.value; const rows=rawRows.filter(r=>(!s||r.dateKey>=s)&&(!e||r.dateKey<=e));
- visitRows=makeVisits(rows); result=calcByInterval(visitRows, Number(els.intervalDays.value)||14, getTargetCodes()); render();
+ visitRows=makeVisits(rows); result=calcByInterval(visitRows, Number(els.intervalDays.value)||14, getTargetCodes()); adjustComparison=calcAdjustmentComparison(); timelineComparison=calcTimelineComparison(); render();
 }
 function makeVisits(rows){
  const map=new Map();
@@ -365,12 +583,155 @@ function calcByInterval(visits,interval,targetCodes){
  return {judged,patientRows,allCost,targetCodeCost,targetVisitCost,loss,lossRate:allCost?loss/allCost*100:0,targetPatientCount:byPatient.size,targetVisitCount:targetVisits.length,comboRows:calcCombo(visitWithTarget,judged),rawRows:targetVisits.flatMap(v=>v.raw.map(r=>({...r,combo:v.combo,visitAmount:v.totalAmount,targetVisitAmount:v.targetAmount,unitPrice:(r.actualAmount>0&&r.dose)?r.actualAmount/r.dose:(priceMap.get(r.code)?.price||0),lineAmount:r.actualAmount>0?r.actualAmount:amountFor(r.code,r.dose),system:r.system}))),targetCodes};
 }
 function calcCombo(visits,judged){const map=new Map(); visits.forEach(v=>{if(!map.has(v.combo))map.set(v.combo,{combo:v.combo,codeCount:v.codeCount,count:0,amount:0,targetCount:0,targetAmount:0,deniedCount:0,deniedLoss:0}); const o=map.get(v.combo); o.count++; o.amount+=v.totalAmount; if(v.hasTarget){o.targetCount++; o.targetAmount+=v.targetAmount;}}); judged.forEach(r=>{const o=map.get(r.combo); if(o&&r.judge==='불인정'){o.deniedCount++; o.deniedLoss+=r.loss;}}); return [...map.values()].sort((a,b)=>b.count-a.count||a.combo.localeCompare(b.combo,'ko',{numeric:true}));}
+function nameKey(v){return clean(v).replace(/\s+/g,'').toUpperCase();}
+function median(nums){if(!nums.length)return null;const a=[...nums].sort((x,y)=>x-y),m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;}
+function calcAdjustmentComparison(){
+ if(!result)return null;
+ const targets=new Set(result.targetCodes), denied=result.judged.filter(r=>r.judge==='불인정');
+ const expectedByCode=new Map();
+ denied.forEach(r=>{r.visit.targetItems.forEach(it=>{if(!expectedByCode.has(it.code))expectedByCode.set(it.code,{code:it.code,expectedCount:0,expectedAmount:0});const o=expectedByCode.get(it.code);o.expectedCount++;o.expectedAmount+=it.amount;});});
+ const actualByCode=new Map(), actualTargetRows=[];
+ if(adjustRows.length){adjustRows.forEach(a=>{if(!actualByCode.has(a.code))actualByCode.set(a.code,{code:a.code,actualCount:0,actualAmount:0});const o=actualByCode.get(a.code);o.actualCount++;o.actualAmount+=a.amount;if(targets.has(a.code))actualTargetRows.push(a);});}
+ else adjustSummaryRows.forEach(a=>{if(!actualByCode.has(a.code))actualByCode.set(a.code,{code:a.code,actualCount:0,actualAmount:0});const o=actualByCode.get(a.code);o.actualCount+=a.count;o.actualAmount+=a.amount;});
+ const codes=[...new Set([...targets,...expectedByCode.keys(),...actualByCode.keys()])].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+ const codeRows=codes.map(code=>{const e=expectedByCode.get(code)||{},a=actualByCode.get(code)||{};return{code,name:priceMap.get(code)?.name||'',expectedCount:e.expectedCount||0,expectedAmount:e.expectedAmount||0,actualCount:a.actualCount||0,actualAmount:a.actualAmount||0};});
+ const deniedPool=new Map();
+ denied.forEach(r=>r.visit.targetItems.forEach(it=>{const k=`${nameKey(r.name)}|${it.code}`;if(!deniedPool.has(k))deniedPool.set(k,[]);deniedPool.get(k).push({row:r,item:it});}));
+ deniedPool.forEach(a=>a.sort((x,y)=>x.row.dateKey.localeCompare(y.row.dateKey)));
+ const used=new Map(),matchRows=[];
+ if(adjustRows.length){
+  adjustRows.filter(a=>targets.has(a.code)).forEach(a=>{const k=`${nameKey(a.name)}|${a.code}`,pool=deniedPool.get(k)||[],n=used.get(k)||0,m=pool[n]||null;if(m)used.set(k,n+1);matchRows.push({...a,matched:!!m,predDate:m?.row.dateKey||'',gap:m?.row.diffAccepted??null,predAmount:m?.item.amount||0,predCombo:m?.row.combo||'',chart:m?.row.chart||''});});
+ }
+ const actualTargetCount=adjustRows.length?actualTargetRows.length:codeRows.filter(r=>targets.has(r.code)).reduce((a,r)=>a+r.actualCount,0);
+ const actualTargetAmount=codeRows.filter(r=>targets.has(r.code)).reduce((a,r)=>a+r.actualAmount,0);
+ const actualAllLines=adjustRows.length?adjustRows.length:codeRows.reduce((a,r)=>a+r.actualCount,0);
+ const claimKeys=new Set(adjustRows.map(a=>`${nameKey(a.name)}|${a.serial||a.rowNo}`));
+ const actualAllClaims=adjustRows.length?claimKeys.size:actualAllLines;
+ const actualPatients=adjustRows.length?new Set(adjustRows.map(a=>nameKey(a.name)).filter(Boolean)).size:0;
+ const matched=matchRows.filter(r=>r.matched),gaps=matched.map(r=>r.gap).filter(v=>Number.isFinite(v));
+ const expectedCount=denied.length,expectedAmount=denied.reduce((a,r)=>a+r.loss,0),matchedCount=matched.length;
+ return{codeRows,matchRows,expectedCount,expectedAmount,actualTargetCount,actualTargetAmount,actualAllLines,actualAllClaims,actualPatients,actualRate:visitRows.length?actualAllClaims/visitRows.length*100:0,matchRate:actualTargetCount?matchedCount/actualTargetCount*100:0,matchedCount,gaps,gapAvg:gaps.length?gaps.reduce((a,b)=>a+b,0)/gaps.length:null,gapMedian:median(gaps),gapMin:gaps.length?Math.min(...gaps):null,gapMax:gaps.length?Math.max(...gaps):null};
+}
+function calcTimelineComparison(){
+ if(!result||!adjustRows.length||!reviewRows.length)return null;
+ const targets=new Set(result.targetCodes);
+ const targetAdjustRows=(adjustRows||[]).filter(a=>targets.has(a.code));
+ if(!targetAdjustRows.length)return null;
+
+ // 1) 실제 조정 행의 날짜는 명일련 -> 심사조정건조회 요양개시일로 우선 확정
+ const reviewBySerial=new Map();
+ reviewRows.forEach(rr=>{if(rr.serial)reviewBySerial.set(clean(rr.serial).padStart(5,'0'),rr);});
+ const visits=result.judged.map(j=>j.visit).filter(Boolean);
+ const visitByNameDate=new Map();
+ visits.forEach(v=>visitByNameDate.set(`${nameKey(v.name)}|${v.dateKey}`,v));
+ const assignments=[];
+ targetAdjustRows.forEach(a=>{
+   const sk=clean(a.serial).padStart(5,'0'), rr=sk?reviewBySerial.get(sk):null;
+   let actualDate=rr?.dateKey||'', visit=actualDate?visitByNameDate.get(`${nameKey(a.name)}|${actualDate}`):null, matchType=rr?'명일련 정확매칭':'미매칭';
+   if(!rr){
+     // 보조: 동일 환자 심사조정건조회 중 실제 업로드 차단술에 동일 코드가 존재하는 날짜
+     const cands=reviewRows.filter(x=>nameKey(x.name)===nameKey(a.name)).map(x=>({rr:x,v:visitByNameDate.get(`${nameKey(x.name)}|${x.dateKey}`)})).filter(x=>x.v&&x.v.items.some(it=>it.code===a.code));
+     if(cands.length===1){actualDate=cands[0].rr.dateKey;visit=cands[0].v;matchType='환자명+코드 보조매칭';}
+   }
+   const codeConfirmed=!!(visit&&visit.items.some(it=>it.code===a.code));
+   assignments.push({...a,actualDate,review:rr||null,visit:visit||null,dateMatched:!!actualDate,codeConfirmed,dateMatchType:matchType});
+ });
+
+ // 2) 실제 조정 환자만 확정한 뒤 그 환자의 조회기간 전체 대상 차단술을 불러옴
+ const adjustedPatients=new Set(targetAdjustRows.map(a=>nameKey(a.name)).filter(Boolean));
+ const adjustedCodeKeys=new Set(assignments.filter(a=>a.actualDate).map(a=>`${nameKey(a.name)}|${a.actualDate}|${a.code}`));
+ const byPatient=new Map();
+ visits.filter(v=>adjustedPatients.has(nameKey(v.name))).forEach(v=>{const k=nameKey(v.name);if(!byPatient.has(k))byPatient.set(k,[]);byPatient.get(k).push(v);});
+
+ const eventRows=[], patientMap=new Map();
+ byPatient.forEach((arr,nk)=>{
+   arr.sort((a,b)=>a.date-b.date);let prevVisit=null;const prevByCode=new Map();const patientEvents=[];
+   arr.forEach(v=>{
+     const codes=v.items.filter(it=>targets.has(it.code)).map(it=>it.code);
+     const codeResults=codes.map(code=>{
+       const isAdj=adjustedCodeKeys.has(`${nk}|${v.dateKey}|${code}`), prevCode=prevByCode.get(code)||null;
+       return{code,isAdjusted:isAdj,sameCodeGap:prevCode?dayDiff(prevCode.date,v.date):null};
+     });
+     const adjustedCodes=codeResults.filter(x=>x.isAdjusted).map(x=>x.code), acceptedCodes=codeResults.filter(x=>!x.isAdjusted).map(x=>x.code);
+     const isAdjusted=adjustedCodes.length>0, isPartial=isAdjusted&&acceptedCodes.length>0;
+     const status=isPartial?'일부 조정':isAdjusted?'조정':'인정';
+     const diffPrev=prevVisit?dayDiff(prevVisit.date,v.date):null;
+     const rr=reviewRows.find(x=>nameKey(x.name)===nk&&x.dateKey===v.dateKey)||null;
+     const ev={name:v.name,chart:v.chart,dateKey:v.dateKey,date:v.date,codes:codes.join(', '),combo:v.combo,status,isAdjusted,isPartial,adjustedCodes:adjustedCodes.join(', '),acceptedCodes:acceptedCodes.join(', '),codeResults,diffPrev,reviewAdjust1:rr?.adjust1||0,reviewAdjust2:rr?.adjust2||0,reviewAdjustTotal:rr?.adjustTotal||0};
+     eventRows.push(ev);patientEvents.push(ev);
+     codes.forEach(code=>prevByCode.set(code,v));prevVisit=v;
+   });
+   const adj=patientEvents.filter(e=>e.isAdjusted).length,acc=patientEvents.filter(e=>!e.isAdjusted).length,gaps=patientEvents.map(e=>e.diffPrev).filter(Number.isFinite);
+   patientMap.set(nk,{name:arr[0]?.name||'',chart:arr[0]?.chart||'',events:patientEvents,adjusted:adj,accepted:acc,adjustRate:patientEvents.length?adj/patientEvents.length*100:0,avgGap:gaps.length?gaps.reduce((a,b)=>a+b,0)/gaps.length:null});
+ });
+
+ const adjustedIntervals=eventRows.filter(r=>r.isAdjusted&&Number.isFinite(r.diffPrev)).map(r=>r.diffPrev);
+ const acceptedIntervals=eventRows.filter(r=>!r.isAdjusted&&Number.isFinite(r.diffPrev)).map(r=>r.diffPrev);
+ const stats=a=>({count:a.length,avg:a.length?a.reduce((x,y)=>x+y,0)/a.length:null,median:median(a),min:a.length?Math.min(...a):null,max:a.length?Math.max(...a):null});
+
+ // 3) 패턴 추정은 조정 환자만이 아니라 전체 대상 차단술 시행을 분모로 사용
+ const allPatternEvents=[];const allByChart=new Map();
+ visits.forEach(v=>{if(!allByChart.has(v.chart))allByChart.set(v.chart,[]);allByChart.get(v.chart).push(v);});
+ allByChart.forEach(arr=>{arr.sort((a,b)=>a.date-b.date);let prev=null;arr.forEach(v=>{const codes=v.items.filter(it=>targets.has(it.code)).map(it=>it.code),adjustedCodes=codes.filter(code=>adjustedCodeKeys.has(`${nameKey(v.name)}|${v.dateKey}|${code}`));allPatternEvents.push({diffPrev:prev?dayDiff(prev.date,v.date):null,isAdjusted:adjustedCodes.length>0});prev=v;});});
+ const buckets=[
+   {key:'first',label:'첫 시행 / 전회 없음',test:g=>g===null},
+   {key:'1-6',label:'1~6일',test:g=>Number.isFinite(g)&&g>=1&&g<=6},
+   {key:'7',label:'정확히 7일',test:g=>g===7},
+   {key:'8-13',label:'8~13일',test:g=>Number.isFinite(g)&&g>=8&&g<=13},
+   {key:'14+',label:'14일 이상',test:g=>Number.isFinite(g)&&g>=14}
+ ];
+ const patternRows=buckets.map(b=>{const es=allPatternEvents.filter(e=>b.test(e.diffPrev)),adj=es.filter(e=>e.isAdjusted).length,acc=es.filter(e=>!e.isAdjusted).length,total=es.length;return{key:b.key,label:b.label,total,accepted:acc,adjusted:adj,adjustRate:total?adj/total*100:0};});
+
+ return{assignments,eventRows,patients:[...patientMap.values()].sort((a,b)=>b.adjusted-a.adjusted||b.events.length-a.events.length||a.name.localeCompare(b.name,'ko')),adjustedStats:stats(adjustedIntervals),acceptedStats:stats(acceptedIntervals),patternRows,dateMatched:assignments.filter(a=>a.dateMatched).length,dateMatchRate:assignments.length?assignments.filter(a=>a.dateMatched).length/assignments.length*100:0,adjustedPatientCount:adjustedPatients.size,patternEventCount:allPatternEvents.length};
+}
+function renderTimeline(){
+ const t=timelineComparison;
+ if(!t){document.getElementById('tAdjustedDated').textContent='0건';document.getElementById('tAdjustedAvg').textContent='-';document.getElementById('tAdjustedMedian').textContent='-';document.getElementById('tAcceptedCount').textContent='0건';document.getElementById('tAcceptedAvg').textContent='-';document.getElementById('tDateMatchRate').textContent='0%';if(els.timelinePatients)els.timelinePatients.innerHTML='<div class="empty">기존 차단술 + 코드별조정총괄 + 심사조정건조회 파일을 업로드하면 표시됩니다.</div>';if(els.timelineTable)els.timelineTable.innerHTML='<tbody><tr><td class="empty">환자별 전체 시행 데이터가 없습니다.</td></tr></tbody>';if(els.intervalCompareTable)els.intervalCompareTable.innerHTML='<tbody><tr><td class="empty">간격 데이터가 없습니다.</td></tr></tbody>';if(els.patternTable)els.patternTable.innerHTML='<tbody><tr><td class="empty">패턴 데이터가 없습니다.</td></tr></tbody>';return;}
+ const adjEvents=t.eventRows.filter(r=>r.isAdjusted).length,acc=t.eventRows.filter(r=>!r.isAdjusted).length;
+ document.getElementById('tAdjustedDated').textContent=`${fmtInt(adjEvents)}건`;document.getElementById('tAdjustedAvg').textContent=t.adjustedStats.avg===null?'-':`${t.adjustedStats.avg.toFixed(1)}일`;document.getElementById('tAdjustedMedian').textContent=t.adjustedStats.median===null?'-':`${t.adjustedStats.median.toFixed(1)}일`;document.getElementById('tAcceptedCount').textContent=`${fmtInt(acc)}건`;document.getElementById('tAcceptedAvg').textContent=t.acceptedStats.avg===null?'-':`${t.acceptedStats.avg.toFixed(1)}일`;document.getElementById('tDateMatchRate').textContent=`${t.dateMatchRate.toFixed(1)}%`;
+ renderTimelinePatients(t.patients);renderPatternTable(t.patternRows);renderTimelineTable(t.eventRows);renderIntervalCompare(t);
+}
+function renderTimelinePatients(patients){
+ if(!patients.length){els.timelinePatients.innerHTML='<div class="empty">실제 조정 환자와 기존 차단술 원본의 환자명이 연결되지 않았습니다.</div>';return;}
+ let h='';patients.forEach(p=>{h+=`<div class="patientTimeline"><div class="patientTimelineHead"><div><b>${p.name}</b> <span class="patientMeta">차트 ${p.chart||'-'} · ${p.events.length}회 시행</span><div class="patientStats"><span class="patientStat">조정 ${p.adjusted}회</span><span class="patientStat">인정 ${p.accepted}회</span><span class="patientStat">조정률 ${p.adjustRate.toFixed(1)}%</span><span class="patientStat">평균 시행간격 ${p.avgGap===null?'-':p.avgGap.toFixed(1)+'일'}</span></div></div><div><span class="statusTag ${p.adjusted?'bad':'good'}">실제 조정 환자</span></div></div><div class="patientTimelineBody"><div class="timelineFlow">`;
+ p.events.forEach((e,i)=>{if(i)h+='<span class="eventArrow">→</span>';const cls=e.isPartial?'part':e.isAdjusted?'bad':'good';const codeTxt=e.codeResults.map(x=>`${x.code} ${x.isAdjusted?'조정':'인정'}${x.sameCodeGap===null?'':`(동일코드 +${x.sameCodeGap}일)`}`).join(' · ');h+=`<span class="eventChip ${cls}"><b>${e.dateKey}</b> · <b>${e.status}</b>${e.diffPrev===null?'':` · 전회 +${e.diffPrev}일`}<br><span class="mini">${codeTxt}</span></span>`;});h+='</div></div></div>';});els.timelinePatients.innerHTML=h;
+}
+function renderPatternTable(rows){
+ if(!rows?.length){els.patternTable.innerHTML='<tbody><tr><td class="empty">패턴 데이터가 없습니다.</td></tr></tbody>';return;}
+ let h='<thead><tr><th>전회 시행 간격</th><th>전체 시행</th><th>인정</th><th>조정 포함</th><th>조정률</th><th class="left">해석</th></tr></thead><tbody>';
+ rows.forEach(r=>{let interp='표본 부족';if(r.total>=3){if(r.adjustRate===0)interp='현재 표본에서는 모두 인정';else if(r.adjustRate<=20)interp='인정 사례가 많은 편';else if(r.adjustRate>=80)interp='조정 사례가 많은 편';else interp='인정·조정 혼재';}h+=`<tr><td><b>${r.label}</b></td><td class="num">${fmtInt(r.total)}</td><td class="okTxt">${fmtInt(r.accepted)}</td><td class="lossTxt">${fmtInt(r.adjusted)}</td><td><b>${r.total?r.adjustRate.toFixed(1):'0.0'}%</b></td><td class="left">${interp}</td></tr>`;});els.patternTable.innerHTML=h+'</tbody>';
+}
+function renderTimelineTable(rows){
+ if(!rows.length){els.timelineTable.innerHTML='<tbody><tr><td class="empty">상세 데이터가 없습니다.</td></tr></tbody>';return;}
+ let h='<thead><tr><th>No</th><th>결과</th><th>환자명</th><th>차트번호</th><th>시행일</th><th>전회 시행 간격</th><th class="left">코드별 결과 · 동일코드 간격</th><th>조정 코드</th><th>인정 코드</th><th class="left">방문 조합</th></tr></thead><tbody>';
+ rows.forEach((r,i)=>{const cls=r.isPartial?'part':r.isAdjusted?'bad':'good',codeTxt=r.codeResults.map(x=>`${x.code} ${x.isAdjusted?'조정':'인정'}${x.sameCodeGap===null?'':` / 동일코드 +${x.sameCodeGap}일`}`).join('<br>');h+=`<tr class="${r.isAdjusted?'dangerLine':''}"><td>${i+1}</td><td><span class="statusTag ${cls}">${r.status}</span></td><td>${r.name}</td><td>${r.chart||''}</td><td><b>${r.dateKey}</b></td><td>${r.diffPrev===null?'-':r.diffPrev+'일'}</td><td class="left">${codeTxt}</td><td class="lossTxt">${r.adjustedCodes||'-'}</td><td class="okTxt">${r.acceptedCodes||'-'}</td><td class="left">${r.combo}</td></tr>`;});els.timelineTable.innerHTML=h+'</tbody>';
+}
+function renderIntervalCompare(t){const a=t.adjustedStats,b=t.acceptedStats;const row=(label,s,cls)=>`<tr><td><span class="statusTag ${cls}">${label}</span></td><td class="num">${fmtInt(s.count)}</td><td>${s.avg===null?'-':s.avg.toFixed(1)+'일'}</td><td>${s.median===null?'-':s.median.toFixed(1)+'일'}</td><td>${s.min===null?'-':s.min+'일'}</td><td>${s.max===null?'-':s.max+'일'}</td></tr>`;els.intervalCompareTable.innerHTML='<thead><tr><th>구분</th><th>간격 확인 건</th><th>평균</th><th>중앙값</th><th>최소</th><th>최대</th></tr></thead><tbody>'+row('조정',a,'bad')+row('인정',b,'good')+'</tbody>';}
+function renderAdjustment(){
+ const c=adjustComparison;
+ if(!c){['aExpectedCount','aActualTargetCount','aAllVisits','aTargetVisits','aActualAllClaims','aActualAllLines','aActualPatients','aGapMatched'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='0건';});['aExpectedAmount','aActualTargetAmount'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='0원';});['aActualRate','aMatchRate'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='0%';}); if(els.adjustCodeTable)els.adjustCodeTable.innerHTML='<tbody><tr><td class="empty">차단술 데이터와 실제 조정 엑셀을 업로드하면 비교 결과가 표시됩니다.</td></tr></tbody>';if(els.adjustMatchTable)els.adjustMatchTable.innerHTML='<tbody><tr><td class="empty">실제 조정 상세 데이터가 없습니다.</td></tr></tbody>';return;}
+ document.getElementById('aExpectedCount').textContent=`${fmtInt(c.expectedCount)}건`;document.getElementById('aExpectedAmount').textContent=won(c.expectedAmount);document.getElementById('aActualTargetCount').textContent=`${fmtInt(c.actualTargetCount)}건`;document.getElementById('aActualTargetAmount').textContent=won(c.actualTargetAmount);document.getElementById('aActualRate').textContent=c.actualRate.toFixed(2)+'%';document.getElementById('aMatchRate').textContent=c.matchRate.toFixed(1)+'%';
+ document.getElementById('aAllVisits').textContent=`${fmtInt(visitRows.length)}건`;document.getElementById('aTargetVisits').textContent=`${fmtInt(result.targetVisitCount)}건`;document.getElementById('aActualAllClaims').textContent=`${fmtInt(c.actualAllClaims)}건`;document.getElementById('aActualAllLines').textContent=`${fmtInt(c.actualAllLines)}건`;document.getElementById('aActualPatients').textContent=c.actualPatients?`${fmtInt(c.actualPatients)}명`:'-';document.getElementById('aGapMatched').textContent=`${fmtInt(c.gaps.length)}건`;document.getElementById('aGapAvg').textContent=c.gapAvg===null?'-':`${c.gapAvg.toFixed(1)}일`;document.getElementById('aGapMedian').textContent=c.gapMedian===null?'-':`${c.gapMedian.toFixed(1)}일`;document.getElementById('aGapRange').textContent=c.gapMin===null?'-':`${c.gapMin}일 ~ ${c.gapMax}일`;
+ renderAdjustCodeTable(c.codeRows);renderAdjustMatchTable(c.matchRows);
+}
+function renderAdjustCodeTable(rows){
+ const targets=new Set(result?.targetCodes||[]);const show=rows.filter(r=>targets.has(r.code)||r.actualCount||r.expectedCount);if(!show.length){els.adjustCodeTable.innerHTML='<tbody><tr><td class="empty">비교할 코드가 없습니다.</td></tr></tbody>';return;}
+ let h='<thead><tr><th>코드</th><th class="left">명칭</th><th>예상 조정 건수</th><th>실제 조정 건수</th><th>건수 차이</th><th>실제/예상</th><th>예상 조정금액</th><th>실제 조정금액</th><th>금액 차이</th></tr></thead><tbody>';
+ show.forEach(r=>{const dc=r.actualCount-r.expectedCount,da=r.actualAmount-r.expectedAmount,ratio=r.expectedCount?r.actualCount/r.expectedCount*100:0;h+=`<tr><td><b>${r.code}</b></td><td class="left">${r.name||''}</td><td class="lossTxt">${fmtInt(r.expectedCount)}</td><td class="num">${fmtInt(r.actualCount)}</td><td class="${dc>0?'lossTxt':dc<0?'okTxt':''}">${dc>0?'+':''}${fmtInt(dc)}</td><td>${r.expectedCount?ratio.toFixed(1)+'%':'-'}</td><td class="lossTxt">${won(r.expectedAmount)}</td><td class="money">${won(r.actualAmount)}</td><td class="${da>0?'lossTxt':da<0?'okTxt':''}">${da>0?'+':''}${won(da)}</td></tr>`;});els.adjustCodeTable.innerHTML=h+'</tbody>';
+}
+function renderAdjustMatchTable(rows){
+ const targets=new Set(result?.targetCodes||[]), actual=(adjustRows||[]).filter(r=>targets.has(r.code));
+ if(!actual.length){els.adjustMatchTable.innerHTML='<tbody><tr><td class="empty">대상코드의 실제 조정 상세 행이 없습니다.</td></tr></tbody>';return;}
+ const byKey=new Map((timelineComparison?.assignments||[]).map(a=>[`${clean(a.serial).padStart(5,'0')}|${a.code}|${nameKey(a.name)}`,a]));
+ let h='<thead><tr><th>No</th><th>명일련</th><th>수진자</th><th>실제 조정 코드</th><th>실제 조정금액</th><th class="left">조정사유</th><th>실제 조정 대상일<br>(요양개시일)</th><th>날짜 연결</th></tr></thead><tbody>';
+ actual.forEach((r,i)=>{const a=byKey.get(`${clean(r.serial).padStart(5,'0')}|${r.code}|${nameKey(r.name)}`),d=a?.actualDate||'',ok=!!d;h+=`<tr><td>${i+1}</td><td>${r.serial||'-'}</td><td>${r.name}</td><td><b>${r.code}</b></td><td class="money">${won(r.amount)}</td><td class="left">${r.reason||r.reasonCode||''}</td><td>${d||'-'}</td><td><span class="pill ${ok?'good':'bad'}">${ok?(a.codeConfirmed?'확인':'날짜만 확인'):'미확인'}</span></td></tr>`;});els.adjustMatchTable.innerHTML=h+'</tbody>';
+}
 function filteredJudged(){if(!result)return[]; const q=els.searchInput.value.trim().toUpperCase().replace(/\s+/g,' '), jf=els.judgeFilter.value, tf=els.typeFilter.value; return result.judged.filter(r=>(jf==='all'||(jf==='denied'&&r.judge==='불인정')||(jf==='accepted'&&r.judge==='인정'))).filter(r=>(tf==='all'||(tf==='single'&&r.type==='단독')||(tf==='combo'&&r.type==='조합'))).filter(r=>!q||`${r.chart} ${r.name} ${r.combo} ${r.targetCodes}`.toUpperCase().includes(q.replace(/\s*\+\s*/g,' + ')));}
 function filteredCombo(){if(!result)return[]; const q=els.searchInput.value.trim().toUpperCase().replace(/\s+/g,' '), tf=els.typeFilter.value, min=Number(els.minCount.value)||1; return result.comboRows.filter(r=>r.count>=min).filter(r=>(tf==='all'||(tf==='single'&&r.codeCount===1)||(tf==='combo'&&r.codeCount>1))).filter(r=>!q||r.combo.toUpperCase().includes(q.replace(/\s*\+\s*/g,' + ')));}
 function render(){
  if(!result){renderEmpty();return;} const codes=[...new Set(rawRows.map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})); els.codeList.textContent=codes.join(', ')||'-';
  document.getElementById('kAllCost').textContent=won(result.allCost); document.getElementById('kTargetCodeCost').textContent=won(result.targetCodeCost); document.getElementById('kTargetVisitCost').textContent=won(result.targetVisitCost); document.getElementById('kLoss').textContent=won(result.loss); document.getElementById('kLossRate').textContent=(result.lossRate||0).toFixed(2)+'%'; document.getElementById('kPatients').textContent=`${fmtInt(result.targetPatientCount)} / ${fmtInt(result.targetVisitCount)}`; document.getElementById('targetMini').textContent=result.targetCodes.join('/'); document.getElementById('intervalMini').textContent=`${Number(els.intervalDays.value)||14}일 이내`;
- renderActiveTable();
+ renderActiveTable(); renderAdjustment(); renderTimeline();
 }
 function renderActiveTable(){if(!result){return;} if(activeTab==='judge') renderJudgeTable(els.judgeTable,filteredJudged()); if(activeTab==='denied') renderJudgeTable(els.deniedTable,filteredJudged().filter(r=>r.judge==='불인정')); if(activeTab==='patient') renderPatientTable(els.patientTable,result.patientRows); if(activeTab==='combo') renderComboTable(els.comboTable,filteredCombo()); if(activeTab==='raw') renderRawTable(els.rawTable,result.rawRows); if(activeTab==='price') renderPriceTable();}
 function renderJudgeTable(el,rows){if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return;} let html='<thead><tr><th>No</th><th>판정</th><th>사유</th><th>차트번호</th><th>환자명</th><th>시행일</th><th>전회간격</th><th>마지막 인정일 기준</th><th>대상코드</th><th class="left">LA코드 조합</th><th>방문 전체비용</th><th>대상코드 비용</th><th>감소액</th></tr></thead><tbody>'; rows.forEach((r,i)=>{html+=`<tr class="${r.judge==='불인정'?'dangerLine':''}"><td>${i+1}</td><td><span class="pill ${r.judge==='불인정'?'bad':'good'}">${r.judge}</span></td><td>${r.reason}</td><td>${r.chart}</td><td>${r.name||''}</td><td>${r.dateKey}</td><td>${r.diffPrev===null?'-':r.diffPrev+'일'}</td><td>${r.diffAccepted===null?'-':r.diffAccepted+'일'}</td><td>${r.targetCodes}</td><td class="left"><b>${r.combo}</b></td><td class="money">${won(r.totalAmount)}</td><td class="money">${won(r.targetAmount)}</td><td class="${r.loss?'lossTxt':''}">${won(r.loss)}</td></tr>`}); el.innerHTML=html+'</tbody>';}
@@ -378,9 +739,9 @@ function renderPatientTable(el,rows){if(!rows.length){el.innerHTML='<tbody><tr><
 function renderComboTable(el,rows){if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return;} let total=visitRows.length; let html='<thead><tr><th>순위</th><th>구분</th><th class="left">LA코드 단독/조합</th><th>전체 건수</th><th>전체 비율</th><th>전체 비용</th><th>대상코드 포함 건수</th><th>대상코드 비용</th><th>불인정 건수</th><th>불인정 감소액</th></tr></thead><tbody>'; rows.forEach((r,i)=>{html+=`<tr><td>${i+1}</td><td><span class="pill ${r.codeCount>1?'combo':''}">${r.codeCount>1?'조합':'단독'}</span></td><td class="left"><b>${r.combo}</b></td><td class="num">${fmtInt(r.count)}</td><td>${total?(r.count/total*100).toFixed(2):'0.00'}%</td><td class="money">${won(r.amount)}</td><td class="num">${fmtInt(r.targetCount)}</td><td class="money">${won(r.targetAmount)}</td><td class="lossTxt">${fmtInt(r.deniedCount)}</td><td class="lossTxt">${won(r.deniedLoss)}</td></tr>`}); el.innerHTML=html+'</tbody>';}
 function renderRawTable(el,rows){if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return;} let html='<thead><tr><th>No</th><th>차트번호</th><th>환자명</th><th>시행일</th><th>처방코드</th><th>총투여량</th><th>단가</th><th>처방행 금액</th><th class="left">방문 조합</th><th>방문 전체비용</th><th>원본구분</th><th>파일명</th><th>행번호</th></tr></thead><tbody>'; rows.forEach((r,i)=>{html+=`<tr><td>${i+1}</td><td>${r.chart}</td><td>${r.name||''}</td><td>${r.dateKey}</td><td>${r.code}</td><td>${fmtDose(r.dose)}</td><td class="money">${won(r.unitPrice)}</td><td class="money">${won(r.lineAmount)}</td><td class="left">${r.combo}</td><td class="money">${won(r.visitAmount)}</td><td><span class="pill ${r.system==='BIT'?'good':'combo'}">${r.system==='BIT'?'비트':'의사랑'}</span></td><td>${r.fileName}</td><td>${r.rowNo}</td></tr>`}); el.innerHTML=html+'</tbody>';}
 function renderPriceTable(){const rows=[...priceMap.values()].sort((a,b)=>a.code.localeCompare(b.code,'ko',{numeric:true})); if(!rows.length){els.priceViewTable.innerHTML='<tbody><tr><td class="empty">단가표가 없습니다.</td></tr></tbody>';return;} let html='<thead><tr><th>No</th><th>코드</th><th class="left">명칭</th><th>단가</th></tr></thead><tbody>'; rows.forEach((r,i)=>html+=`<tr><td>${i+1}</td><td>${r.code}</td><td class="left">${r.name}</td><td class="money">${won(r.price)}</td></tr>`); els.priceViewTable.innerHTML=html+'</tbody>';}
-function renderEmpty(){['judgeTable','deniedTable','patientTable','comboTable','rawTable'].forEach(k=>els[k].innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>'); ['kAllCost','kTargetCodeCost','kTargetVisitCost','kLoss'].forEach(id=>document.getElementById(id).textContent='0'); document.getElementById('kLossRate').textContent='0%'; document.getElementById('kPatients').textContent='0 / 0'; els.codeList.textContent='-'; priceMap=parsePriceTable(); renderPriceTable();}
-function resetAll(){rawRows=[];visitRows=[];result=null;uploadedNames=[];allDateMin='';allDateMax='';els.fileInput.value=''; if(els.fileCount) els.fileCount.textContent='파일 0개'; els.dateStart.value='';els.dateEnd.value='';els.dateStart.disabled=els.dateEnd.disabled=true;els.searchInput.value='';els.judgeFilter.value='all';els.typeFilter.value='all';els.minCount.value=1;els.intervalDays.value=14;els.targetCodes.value=DEFAULT_TARGET;els.status.textContent='비트 또는 의사랑 엑셀을 선택하면 파일 구조를 자동 판별하여 분석합니다.';renderEmpty();}
-function exportExcel(){if(!result){alert('먼저 엑셀을 업로드해주세요.');return;} const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['조회시작일',els.dateStart.value],['조회종료일',els.dateEnd.value],['인정간격일수',Number(els.intervalDays.value)||14],['대상코드',result.targetCodes.join(', ')],['전체차단술비용',result.allCost],['대상코드비용',result.targetCodeCost],['대상코드포함방문전체비용',result.targetVisitCost],['불인정감소액',result.loss],['전체대비감소율',result.lossRate],['대상환자수',result.targetPatientCount],['대상방문수',result.targetVisitCount]]),'요약'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.judged.map(r=>({'판정':r.judge,'사유':r.reason,'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'전회간격':r.diffPrev,'마지막인정일기준간격':r.diffAccepted,'대상코드':r.targetCodes,'LA조합':r.combo,'방문전체비용':r.totalAmount,'대상코드비용':r.targetAmount,'감소액':r.loss}))), '판정상세'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.judged.filter(r=>r.judge==='불인정').map(r=>({'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'전회간격':r.diffPrev,'마지막인정일기준간격':r.diffAccepted,'대상코드':r.targetCodes,'LA조합':r.combo,'대상코드비용':r.targetAmount,'감소액':r.loss}))), '불인정리스트'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.patientRows),'환자별시행일'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.comboRows),'조합별통계'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([...priceMap.values()]),'코드단가표'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.rawRows.map(r=>({'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'처방코드':r.code,'총투여량':r.dose,'단가':r.unitPrice,'처방행금액':r.lineAmount,'방문조합':r.combo,'방문전체비용':r.visitAmount,'원본구분':r.system==='BIT'?'비트':'의사랑','파일명':r.fileName,'행번호':r.rowNo}))), '검토용원본'); XLSX.writeFile(wb,'LA코드_인정기간_매출감소분석.xlsx');}
+function renderEmpty(){['judgeTable','deniedTable','patientTable','comboTable','rawTable'].forEach(k=>els[k].innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>'); ['kAllCost','kTargetCodeCost','kTargetVisitCost','kLoss'].forEach(id=>document.getElementById(id).textContent='0'); document.getElementById('kLossRate').textContent='0%'; document.getElementById('kPatients').textContent='0 / 0'; els.codeList.textContent='-'; priceMap=parsePriceTable(); renderPriceTable(); renderAdjustment();renderTimeline();}
+function resetAll(){rawRows=[];visitRows=[];result=null;uploadedNames=[];allDateMin='';allDateMax='';adjustRows=[];adjustSummaryRows=[];adjustComparison=null;reviewRows=[];timelineComparison=null;els.fileInput.value='';els.adjustFileInput.value='';els.reviewFileInput.value='';if(els.adjustFileCount)els.adjustFileCount.textContent='파일 0개';if(els.reviewFileCount)els.reviewFileCount.textContent='파일 0개';els.adjustStatus.textContent='실제 조정 엑셀을 추가하면 예상 조정과 비교할 수 있습니다.';els.reviewStatus.textContent='날짜 파일을 추가하면 실제 조정일을 확정하고 조정 환자의 기간 전체 타임라인을 분석합니다.'; if(els.fileCount) els.fileCount.textContent='파일 0개'; els.dateStart.value='';els.dateEnd.value='';els.dateStart.disabled=els.dateEnd.disabled=true;els.searchInput.value='';els.judgeFilter.value='all';els.typeFilter.value='all';els.minCount.value=1;els.intervalDays.value=14;els.targetCodes.value=DEFAULT_TARGET;els.status.textContent='비트 또는 의사랑 엑셀을 선택하면 파일 구조를 자동 판별하여 분석합니다.';renderEmpty();}
+function exportExcel(){if(!result){alert('먼저 엑셀을 업로드해주세요.');return;} const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['조회시작일',els.dateStart.value],['조회종료일',els.dateEnd.value],['인정간격일수',Number(els.intervalDays.value)||14],['대상코드',result.targetCodes.join(', ')],['전체차단술비용',result.allCost],['대상코드비용',result.targetCodeCost],['대상코드포함방문전체비용',result.targetVisitCost],['불인정감소액',result.loss],['전체대비감소율',result.lossRate],['대상환자수',result.targetPatientCount],['대상방문수',result.targetVisitCount]]),'요약'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.judged.map(r=>({'판정':r.judge,'사유':r.reason,'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'전회간격':r.diffPrev,'마지막인정일기준간격':r.diffAccepted,'대상코드':r.targetCodes,'LA조합':r.combo,'방문전체비용':r.totalAmount,'대상코드비용':r.targetAmount,'감소액':r.loss}))), '판정상세'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.judged.filter(r=>r.judge==='불인정').map(r=>({'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'전회간격':r.diffPrev,'마지막인정일기준간격':r.diffAccepted,'대상코드':r.targetCodes,'LA조합':r.combo,'대상코드비용':r.targetAmount,'감소액':r.loss}))), '불인정리스트'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.patientRows),'환자별시행일'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.comboRows),'조합별통계'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([...priceMap.values()]),'코드단가표'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(result.rawRows.map(r=>({'차트번호':r.chart,'환자명':r.name,'시행일':r.dateKey,'처방코드':r.code,'총투여량':r.dose,'단가':r.unitPrice,'처방행금액':r.lineAmount,'방문조합':r.combo,'방문전체비용':r.visitAmount,'원본구분':r.system==='BIT'?'비트':'의사랑','파일명':r.fileName,'행번호':r.rowNo}))), '검토용원본'); if(adjustComparison){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['예상불인정방문',adjustComparison.expectedCount],['예상조정금액',adjustComparison.expectedAmount],['실제대상코드조정',adjustComparison.actualTargetCount],['실제대상코드조정금액',adjustComparison.actualTargetAmount],['전체차단술방문',visitRows.length],['실제전체LA조정청구건',adjustComparison.actualAllClaims],['전체차단술대비실제조정률',adjustComparison.actualRate],['예상실제매칭률',adjustComparison.matchRate],['매칭평균간격',adjustComparison.gapAvg],['매칭중앙간격',adjustComparison.gapMedian]]),'실제조정비교요약');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(adjustComparison.codeRows.map(r=>({'코드':r.code,'명칭':r.name,'예상조정건수':r.expectedCount,'실제조정건수':r.actualCount,'예상조정금액':r.expectedAmount,'실제조정금액':r.actualAmount}))), '코드별예상실제');if(adjustRows.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(adjustRows.filter(r=>new Set(result.targetCodes).has(r.code)).map(r=>{const a=(timelineComparison?.assignments||[]).find(x=>clean(x.serial).padStart(5,'0')===clean(r.serial).padStart(5,'0')&&x.code===r.code&&nameKey(x.name)===nameKey(r.name));return {'명일련':r.serial,'수진자':r.name,'실제조정코드':r.code,'실제조정금액':r.amount,'조정사유':r.reason,'실제조정대상일(요양개시일)':a?.actualDate||'','날짜연결':a?.actualDate?'Y':'N'};})), '실제조정상세');}if(timelineComparison){XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(timelineComparison.eventRows.map(r=>({'결과':r.status,'환자명':r.name,'차트번호':r.chart,'시행일':r.dateKey,'대상코드':r.codes,'실제조정코드':r.adjustedCodes,'인정코드':r.acceptedCodes,'전회시행간격':r.diffPrev,'코드별동일코드간격':r.codeResults.map(x=>`${x.code}:${x.sameCodeGap===null?'-':x.sameCodeGap+'일'}`).join(', '),'방문조합':r.combo}))), '조정환자전체타임라인');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(timelineComparison.patternRows.map(r=>({'전회시행간격':r.label,'전체시행':r.total,'인정':r.accepted,'조정포함':r.adjusted,'조정률':r.adjustRate}))), '간격별패턴');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(timelineComparison.assignments.map(r=>({'수진자':r.name,'코드':r.code,'실제조정금액':r.amount,'날짜매칭':r.dateMatched?'Y':'N','매칭방식':r.dateMatchType||'','명일련':r.serial,'실제조정대상일':r.actualDate,'요양개시일조정소계1':r.review?.adjust1||0,'요양개시일조정소계2':r.review?.adjust2||0}))), '실제조정날짜매칭');}XLSX.writeFile(wb,'LA코드_실제조정_환자타임라인_패턴분석.xlsx');}
 function fmtInt(n){return Number(n||0).toLocaleString();} function won(n){return Math.round(Number(n||0)).toLocaleString()+'원';} function fmtDose(n){return (Math.round((n||0)*100)/100).toFixed(1).replace(/\.0$/,'.0');}
 const themeBtn=document.getElementById('themeBtn');
 function applyTheme(mode){document.body.classList.toggle('dark',mode==='dark');themeBtn.textContent=mode==='dark'?'☀️ 라이트':'🌙 다크';localStorage.setItem('jinsul-la-theme',mode);}
