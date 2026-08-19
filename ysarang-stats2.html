@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -1573,8 +1574,1088 @@
                 color: #d5c5aa !important;
             }
 
-        </style>
-    </head>
+        
+
+/* ===== 비트 통계와 동일한 연령대 그래프 / 한눈에 보기 UI ===== */
+.age-dash-modal{
+  position:fixed; inset:0; z-index:110000; display:none;
+  background:rgba(28,27,24,.68); padding:8px;
+  backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+}
+.age-dash-modal.active{display:block}
+.age-dash-shell{
+  width:min(1880px,calc(100vw - 16px)); height:calc(100vh - 16px);
+  margin:0 auto; overflow:auto; border-radius:28px;
+  border:1px solid #d8cdbd; background:#fbfaf7;
+  box-shadow:0 30px 90px rgba(45,39,31,.28);
+  color:#172033;
+}
+.age-dash-head{
+  position:sticky; top:0; z-index:20;
+  display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+  padding:24px 28px 18px; border-bottom:1px solid #ddd3c5;
+  background:rgba(243,239,231,.97); backdrop-filter:blur(14px);
+}
+.age-dash-title{font-size:24px;font-weight:950;color:#172033;letter-spacing:-.5px}
+.age-dash-sub{
+  display:inline-flex; margin-top:7px; padding:5px 10px;
+  border:1px solid #d9cdb9; border-radius:999px; background:#fbfaf7;
+  font-size:12px; color:#6c6255; font-weight:750;
+}
+.age-dash-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.age-dash-head-actions button{
+  height:44px; padding:0 16px; border:1px solid #d8c9b3;
+  border-radius:14px; background:#fff; color:#4a3b29; font-weight:900;
+  box-shadow:0 8px 20px rgba(74,59,41,.08);
+}
+.age-dash-body{padding:24px 28px 34px;background:#fbfaf7}
+.age-scope-row{
+  display:flex; justify-content:space-between; align-items:end; gap:18px;
+  margin-bottom:18px;
+}
+.age-scope-field{min-width:280px}
+.age-scope-field label{font-size:12px;font-weight:900;color:#5c6470;margin-bottom:7px}
+.age-scope-field select{
+  width:100%; height:48px; border-radius:14px; border:1px solid #d7c9b5;
+  background:#fff; color:#172033; padding:0 14px; font-weight:900;
+}
+.age-scope-note{font-size:12px;line-height:1.65;color:#707887;text-align:right}
+.age-kpis{
+  display:grid; grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:12px; margin-bottom:16px;
+}
+.age-kpi{
+  padding:17px 18px; border:1px solid #e1d7c9; border-radius:18px;
+  background:#fff; min-height:102px;
+}
+.age-kpi .k-label{font-size:12px;color:#5e6674;font-weight:900}
+.age-kpi .k-value{font-size:27px;color:#172033;font-weight:950;margin-top:7px;letter-spacing:-.5px}
+.age-kpi .k-sub{font-size:11px;color:#85796a;margin-top:5px;font-weight:700}
+.age-dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.age-panel{
+  border:1px solid #e0d6c8; border-radius:22px; background:#fff;
+  padding:20px; min-width:0;
+}
+.age-panel.wide{grid-column:1/-1}
+.age-panel h4{margin:0;color:#172033;font-size:19px;font-weight:950;letter-spacing:-.3px}
+.age-panel .desc{margin:6px 0 16px;color:#687180;font-size:12px;line-height:1.55}
+.age-bars{display:flex;flex-direction:column;gap:10px}
+.age-bar-row{display:grid;grid-template-columns:110px 1fr 68px;gap:10px;align-items:center;font-size:12px}
+.age-bar-label{font-weight:900;color:#172033;text-align:right}
+.age-bar-track{height:21px;border-radius:999px;background:#eeeae3;overflow:hidden;border:1px solid #e3dbcf}
+.age-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#b19d78,#d6c8ad)}
+.age-bar-val{text-align:right;font-weight:950;color:#172033}
+.age-relation-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+.age-relation-svg{width:100%;height:390px;display:block}
+.age-insights{display:flex;flex-direction:column;gap:9px}
+.age-insight,.age-consult{
+  border:1px solid #e0d6c8; border-radius:16px; padding:13px 14px;
+  background:#fffdf9; color:#344054; font-size:12px; line-height:1.55;
+}
+.age-insight strong,.age-consult strong{display:block;color:#172033;font-size:13px;margin-bottom:4px}
+.age-consult-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.age-heatmap,.age-room-compare{
+  overflow:hidden;border:1px solid #e0d6c8;border-radius:16px;background:#fff;
+}
+.age-heatmap table,.age-room-compare table{width:100%;table-layout:fixed;border-collapse:collapse}
+.age-heatmap th,.age-heatmap td,.age-room-compare th,.age-room-compare td{
+  padding:9px 5px!important;font-size:11px!important;height:auto!important;min-height:0!important;
+  color:#172033!important;border-color:#e9e2d8!important;
+}
+.age-heatmap th,.age-room-compare th{background:#e8e0d3!important;color:#33291f!important}
+.age-heatmap td.hm{font-weight:950;color:#172033!important}
+.age-rel-card{
+  display:grid;grid-template-columns:110px 1fr 86px 86px 92px;gap:8px;align-items:center;
+  padding:10px 11px;border-bottom:1px solid #eee8df;font-size:12px;background:#fff;
+}
+.age-rel-card:last-child{border-bottom:0}
+.age-rel-name{font-weight:950;color:#172033}
+.age-rel-text{color:#495465;line-height:1.45}
+.age-rel-num{text-align:center;font-weight:950;color:#172033}
+.age-rel-rate{text-align:center;font-weight:950;color:#765f3f}
+.age-badge{
+  display:inline-flex;align-items:center;border:1px solid #d8c9b3;border-radius:999px;
+  padding:3px 8px;font-size:10px;font-weight:900;color:#725a38;background:#f7f1e8;margin-left:5px;
+}
+.age-empty{padding:50px;text-align:center;color:#687180;font-size:14px}
+
+/* SVG — 비트 한눈에 보기와 같은 밝은 톤 */
+.age-svg-label{fill:#172033;font-size:12px;font-weight:900}
+.age-svg-tick{fill:#707887;font-size:10px}
+.age-svg-count{fill:#172033;font-size:11px;font-weight:950}
+.age-svg-rate{fill:#765f3f;font-size:11px;font-weight:950}
+.age-svg-grid{stroke:rgba(118,95,63,.14);stroke-width:1}
+.age-svg-axis{stroke:rgba(118,95,63,.30);stroke-width:1}
+.age-svg-bar1{fill:#ad9a75}
+.age-svg-bar2{fill:#d1c4aa}
+.age-svg-line{fill:none;stroke:#765f3f;stroke-width:3}
+.age-svg-dot{fill:#fff;stroke:#765f3f;stroke-width:2}
+
+/* 다크 모드에서도 비트 팝업처럼 밝은 분석화면 유지 */
+body:not(.light) .age-dash-shell,
+body:not(.light) .age-dash-body,
+body:not(.light) .age-panel,
+body:not(.light) .age-kpi,
+body:not(.light) .age-insight,
+body:not(.light) .age-consult,
+body:not(.light) .age-rel-card{
+  color:#172033;
+}
+@media(max-width:1200px){
+  .age-kpis{grid-template-columns:repeat(3,1fr)}
+  .age-relation-wrap{grid-template-columns:1fr}
+  .age-consult-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:850px){
+  .age-dash-modal{padding:4px}
+  .age-dash-shell{width:calc(100vw - 8px);height:calc(100vh - 8px)}
+  .age-dash-head{padding:18px 16px}
+  .age-dash-body{padding:18px 14px 28px}
+  .age-dash-grid{grid-template-columns:1fr}
+  .age-panel.wide{grid-column:auto}
+  .age-kpis{grid-template-columns:repeat(2,1fr)}
+  .age-scope-row{align-items:stretch;flex-direction:column}
+  .age-scope-note{text-align:left}
+  .age-consult-grid{grid-template-columns:1fr}
+  .age-rel-card{grid-template-columns:88px 1fr 65px 65px}
+  .age-rel-card .age-rel-rate{grid-column:2/-1;text-align:left}
+  .age-relation-svg{height:330px}
+}
+
+</style>
+    <style id="age-consulting-dashboard-v2">
+/* ===== 연령대별 컨설팅 분석 그래프 v2 ===== */
+#doctorBitAgeChartModal .modal{width:min(1480px,97vw);max-height:94vh}
+#doctorBitAgeChartModal .modal-body{padding:18px 20px 24px}
+.age-dash-toolbar{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.age-dash-filter{min-width:230px}
+.age-dash-filter label{display:block;margin:0 0 6px;font-size:12px;font-weight:900;color:var(--muted)}
+.age-dash-filter select{width:100%;height:42px;border-radius:13px;border:1px solid rgba(190,169,139,.34);background:rgba(0,0,0,.18);color:var(--text);padding:0 12px;font-weight:900;outline:none}
+body.light-mode .age-dash-filter select{background:#fff;color:#172033;border-color:#cdbb9f}
+.age-dash-note{font-size:12px;color:var(--muted);line-height:1.55;text-align:right}
+.age-dash-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.age-dash-kpi{border:1px solid rgba(190,169,139,.24);border-radius:17px;padding:13px 14px;background:rgba(255,255,255,.05)}
+.age-dash-kpi span{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px}.age-dash-kpi strong{display:block;font-size:23px;color:var(--text);letter-spacing:-.04em}.age-dash-kpi small{display:block;margin-top:5px;color:var(--gold2);font-size:10px;font-weight:800}
+body.light-mode .age-dash-kpi{background:#fbfaf7;border-color:#ddd1c0} body.light-mode .age-dash-kpi strong{color:#172033} body.light-mode .age-dash-kpi span{color:#667085}
+.age-dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.age-dash-card{border:1px solid rgba(190,169,139,.22);border-radius:19px;padding:16px;background:rgba(0,0,0,.10);min-width:0}.age-dash-card.wide{grid-column:1/-1}
+body.light-mode .age-dash-card{background:#fff;border-color:#ddd3c5}
+.age-dash-card h3{margin:0;font-size:16px;color:var(--text)}.age-dash-card .desc{margin:5px 0 14px;font-size:11px;color:var(--muted);line-height:1.5}
+body.light-mode .age-dash-card h3{color:#172033!important}
+.consult-bars{display:flex;flex-direction:column;gap:9px}.consult-row{display:grid;grid-template-columns:74px minmax(0,1fr) 76px;gap:9px;align-items:center}.consult-label{font-size:11px;font-weight:900;color:var(--text);text-align:right;white-space:nowrap}.consult-track{height:18px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(190,169,139,.10)}.consult-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold3),var(--gold2));min-width:0}.consult-value{text-align:right;font-size:11px;font-weight:900;color:var(--text);white-space:nowrap}
+body.light-mode .consult-track{background:#ece6dc;border-color:#e1d8ca} body.light-mode .consult-fill{background:linear-gradient(90deg,#94744c,#c4aa7e)} body.light-mode .consult-label,body.light-mode .consult-value{color:#172033!important}
+.first-grid{display:grid;grid-template-columns:74px minmax(0,1fr) minmax(0,1fr) 64px;gap:8px;align-items:center;margin-bottom:8px}.first-head{font-size:10px;color:var(--muted);font-weight:900;text-align:center}.first-age{font-size:11px;font-weight:900;text-align:right;color:var(--text)}.first-mini{height:18px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}.first-mini > i{display:block;height:100%;border-radius:999px;background:var(--viz-series-1, #bea98b)}.first-mini.inj > i{background:linear-gradient(90deg,var(--gold3),var(--gold2))}.first-num{font-size:10px;font-weight:900;color:var(--text);position:absolute;right:7px;top:2px;text-shadow:0 1px 2px rgba(0,0,0,.45)}.rate-badge{font-size:10px;font-weight:900;text-align:right;color:var(--gold2)}
+body.light-mode .first-mini{background:#ece6dc}body.light-mode .first-num{color:#172033}body.light-mode .first-age{color:#172033}
+.inj-dist{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;align-items:end;height:190px;padding-top:6px}.inj-col{display:flex;height:100%;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0}.inj-col .pct{font-size:11px;font-weight:900;color:var(--text)}.inj-col .vbar-wrap{width:72%;max-width:48px;height:130px;display:flex;align-items:flex-end;border-radius:10px 10px 5px 5px;background:rgba(255,255,255,.06);overflow:hidden}.inj-col .vbar{width:100%;border-radius:9px 9px 0 0;background:linear-gradient(180deg,var(--gold2),var(--gold3));min-height:0}.inj-col .lab{font-size:10px;font-weight:900;color:var(--muted);text-align:center;white-space:nowrap}
+body.light-mode .inj-col .vbar-wrap{background:#eee8de}body.light-mode .inj-col .pct{color:#172033}
+.age-heat{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:0!important}.age-heat th,.age-heat td{padding:7px 5px!important;font-size:10px!important}.age-heat .heat-cell{font-weight:900;border-radius:7px}.age-heat .heat-1{background:rgba(190,169,139,.08)!important}.age-heat .heat-2{background:rgba(190,169,139,.15)!important}.age-heat .heat-3{background:rgba(190,169,139,.24)!important}.age-heat .heat-4{background:rgba(190,169,139,.34)!important}.age-heat .heat-5{background:rgba(190,169,139,.46)!important}
+body.light-mode .age-heat .heat-1{background:#f8f5f0!important} body.light-mode .age-heat .heat-2{background:#f1e9dd!important} body.light-mode .age-heat .heat-3{background:#e8dbc8!important} body.light-mode .age-heat .heat-4{background:#ddc9aa!important} body.light-mode .age-heat .heat-5{background:#cdb38a!important;color:#342719!important}
+.room-compare{display:grid;grid-template-columns:125px repeat(4,minmax(90px,1fr));gap:0;border:1px solid rgba(190,169,139,.18);border-radius:14px;overflow:hidden}.room-compare > div{padding:9px 8px;border-right:1px solid rgba(190,169,139,.12);border-bottom:1px solid rgba(190,169,139,.12);font-size:11px;text-align:center}.room-compare .rh{font-weight:900;background:rgba(190,169,139,.13);color:var(--text)}.room-compare .room-name{font-weight:900;color:var(--gold2);text-align:left}.room-compare .last-row{border-bottom:0}.insight-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.insight{border-radius:14px;padding:12px;border:1px solid rgba(190,169,139,.18);background:rgba(255,255,255,.035)}.insight b{display:block;color:var(--gold2);font-size:11px;margin-bottom:5px}.insight span{display:block;color:var(--text);font-size:13px;font-weight:900;line-height:1.45}.insight small{display:block;color:var(--muted);font-size:10px;margin-top:5px;line-height:1.4}
+body.light-mode .insight{background:#fbfaf7;border-color:#e1d7c9}body.light-mode .insight span{color:#172033}
+.age-dash-empty{padding:50px 10px;text-align:center;color:var(--muted)}
+/* ===== 연령대 컨설팅 대시보드 가독성 강화 ===== */
+#doctorBitAgeChartModal .modal-header{padding:20px 24px}
+#doctorBitAgeChartModal .modal-title{font-size:20px;letter-spacing:-.03em}
+#doctorBitAgeChartModal .pill{font-size:12px;font-weight:900}
+#doctorBitAgeChartModal .modal-body{font-size:14px;color:var(--text)}
+.age-dash-toolbar{margin-bottom:18px}.age-dash-filter label{font-size:13px;color:var(--text)}
+.age-dash-filter select{font-size:14px}.age-dash-note{font-size:13px;color:var(--text);opacity:.72;line-height:1.65}
+.age-dash-kpis{gap:12px;margin-bottom:16px}.age-dash-kpi{padding:16px 17px}.age-dash-kpi span{font-size:12px;color:var(--text);opacity:.72}.age-dash-kpi strong{font-size:27px;line-height:1.15}.age-dash-kpi small{font-size:11px;color:var(--text);opacity:.68}
+.age-dash-grid{gap:16px}.age-dash-card{padding:19px 20px}.age-dash-card h3{font-size:17px;line-height:1.35}.age-dash-card .desc{font-size:12.5px;color:var(--text);opacity:.68;line-height:1.6;margin:6px 0 16px}
+.consult-bars{gap:11px}.consult-row{grid-template-columns:86px minmax(0,1fr) 84px;gap:11px}.consult-label{font-size:12.5px}.consult-track{height:21px}.consult-value{font-size:12.5px}
+.first-grid{grid-template-columns:86px minmax(0,1fr) minmax(0,1fr) 70px;gap:10px;margin-bottom:10px}.first-head{font-size:11.5px;color:var(--text);opacity:.72}.first-age{font-size:12.5px}.first-mini{height:22px}.first-num{font-size:11px;top:3px;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.72)}.rate-badge{font-size:12px;color:var(--text)}
+body.light-mode .first-age,body.light-mode .first-head,body.light-mode .rate-badge{color:#172033!important}body.light-mode .first-num{color:#fff!important}
+.inj-dist{height:220px;gap:10px}.inj-col .pct{font-size:12.5px}.inj-col .vbar-wrap{height:150px}.inj-col .lab{font-size:11.5px;color:var(--text);opacity:.72}
+.age-heat th,.age-heat td{padding:9px 6px!important;font-size:11.5px!important}.room-compare > div{padding:11px 9px;font-size:12px}.insight{padding:14px}.insight b{font-size:12px}.insight span{font-size:14px}.insight small{font-size:11.5px;line-height:1.55}
+body.light-mode .age-dash-card .desc,body.light-mode .age-dash-note,body.light-mode .age-dash-kpi span,body.light-mode .age-dash-kpi small,body.light-mode .inj-col .lab{color:#596577!important;opacity:1!important}
+body.light-mode .consult-label,body.light-mode .consult-value,body.light-mode .inj-col .pct{color:#172033!important}
+/* 추가 분석 그래프 */
+.retention-rows,.delta-rows{display:flex;flex-direction:column;gap:11px}.retention-row{display:grid;grid-template-columns:86px minmax(0,1fr) 78px;gap:11px;align-items:center}.retention-bar{display:flex;height:24px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid rgba(190,169,139,.12)}.retention-one{background:rgba(190,169,139,.38)}.retention-multi{background:linear-gradient(90deg,var(--gold3),var(--gold2))}.retention-value{font-size:12px;font-weight:900;text-align:right;color:var(--text)}
+body.light-mode .retention-bar{background:#eee9e1}.retention-legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 12px;font-size:11.5px;color:var(--text);opacity:.72}.retention-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.retention-legend .one{background:rgba(190,169,139,.55)}.retention-legend .multi{background:var(--gold3)}
+.delta-row{display:grid;grid-template-columns:86px minmax(0,1fr) 76px;gap:11px;align-items:center}.delta-track{position:relative;height:24px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(190,169,139,.12);overflow:hidden}.delta-mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.38)}.delta-fill-pos,.delta-fill-neg{position:absolute;top:4px;height:14px;border-radius:999px}.delta-fill-pos{left:50%;background:linear-gradient(90deg,var(--gold3),var(--gold2))}.delta-fill-neg{right:50%;background:rgba(255,255,255,.28)}.delta-value{font-size:12px;font-weight:900;text-align:right}.delta-value.pos{color:var(--gold2)}.delta-value.neg{color:var(--text);opacity:.72}
+body.light-mode .delta-track{background:#f0ebe4}body.light-mode .delta-mid{background:#a79b8d}body.light-mode .delta-fill-neg{background:#b8b0a5}
+.opportunity-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.opp-card{border:1px solid rgba(190,169,139,.18);border-radius:14px;padding:13px;background:rgba(255,255,255,.035)}.opp-card b{display:block;font-size:11.5px;color:var(--text);opacity:.68;margin-bottom:6px}.opp-card strong{display:block;font-size:16px;color:var(--text);line-height:1.4}.opp-card small{display:block;margin-top:5px;font-size:11px;color:var(--text);opacity:.65;line-height:1.45}body.light-mode .opp-card{background:#fbfaf7;border-color:#e1d7c9}
+@media(max-width:1050px){.age-dash-kpis{grid-template-columns:repeat(3,1fr)}.age-dash-grid{grid-template-columns:1fr}.age-dash-card.wide{grid-column:auto}.insight-list{grid-template-columns:1fr}.opportunity-grid{grid-template-columns:repeat(2,1fr)}.room-compare{grid-template-columns:105px repeat(4,minmax(75px,1fr))}}
+@media(max-width:700px){.age-dash-kpis{grid-template-columns:repeat(2,1fr)}.consult-row,.retention-row,.delta-row{grid-template-columns:66px minmax(0,1fr) 66px}.first-grid{grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 56px}.inj-dist{gap:4px}.inj-col .lab{font-size:10px}.room-compare{overflow:auto;display:grid;grid-template-columns:90px repeat(4,90px)}.opportunity-grid{grid-template-columns:1fr}}
+</style>
+<style id="age-relationship-dashboard-v3">
+/* ===== 연령대 초진 규모 × 주사 전환 관계도 / 가독성 개선 ===== */
+#doctorBitAgeChartModal .first-num{
+  color:#1f2937!important;
+  text-shadow:none!important;
+  background:rgba(255,255,255,.90);
+  border:1px solid rgba(122,101,72,.20);
+  border-radius:999px;
+  padding:1px 6px;
+  top:1px;
+  right:4px;
+  line-height:17px;
+}
+body:not(.light-mode) #doctorBitAgeChartModal .first-num{
+  color:#f7f1e8!important;
+  background:rgba(20,20,20,.82);
+  border-color:rgba(216,199,172,.22);
+}
+#doctorBitAgeChartModal .first-mini{overflow:visible;margin-right:2px}
+#doctorBitAgeChartModal .first-mini>i{overflow:hidden}
+#doctorBitAgeChartModal .rate-badge{font-weight:950;font-size:13px}
+#doctorBitAgeChartModal .age-dash-card .desc{max-width:100%;font-weight:600}
+
+.relation-wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(310px,.75fr);gap:16px;align-items:stretch}
+.relation-chart{position:relative;min-height:360px;border:1px solid rgba(190,169,139,.20);border-radius:16px;background:rgba(255,255,255,.025);overflow:hidden;padding:26px 24px 34px 48px}
+body.light-mode .relation-chart{background:#fbfaf7;border-color:#e0d5c6}
+.relation-axis-y{position:absolute;left:8px;top:50%;transform:rotate(-90deg) translateY(-50%);transform-origin:left top;font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap}
+.relation-axis-x{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap}
+.relation-grid-v,.relation-grid-h{position:absolute;background:rgba(190,169,139,.18);pointer-events:none}
+.relation-grid-v{top:26px;bottom:34px;width:1px}.relation-grid-h{left:48px;right:24px;height:1px}
+.relation-avg-v{position:absolute;top:26px;bottom:34px;width:2px;border-left:2px dashed rgba(153,112,58,.55);pointer-events:none}
+.relation-avg-h{position:absolute;left:48px;right:24px;height:2px;border-top:2px dashed rgba(153,112,58,.55);pointer-events:none}
+.relation-avg-label{position:absolute;font-size:10px;font-weight:900;color:#765a37;background:rgba(255,255,255,.9);padding:2px 6px;border-radius:999px;border:1px solid rgba(190,169,139,.28);z-index:3}
+body:not(.light-mode) .relation-avg-label{color:#eadcc5;background:rgba(20,20,20,.88)}
+.relation-zone{position:absolute;font-size:10px;font-weight:900;color:var(--muted);opacity:.82;pointer-events:none}
+.relation-point{position:absolute;transform:translate(-50%,50%);border-radius:999px;border:2px solid rgba(255,255,255,.92);background:linear-gradient(135deg,#9a7a50,#d2bea0);box-shadow:0 6px 16px rgba(65,49,29,.20);display:flex;align-items:center;justify-content:center;font-weight:950;font-size:10px;color:#231b12;z-index:4;cursor:default}
+body:not(.light-mode) .relation-point{border-color:#2a241d;color:#17120d}
+.relation-point span{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:950;color:var(--text);background:rgba(255,255,255,.92);padding:2px 5px;border-radius:7px;border:1px solid rgba(190,169,139,.18)}
+body:not(.light-mode) .relation-point span{background:rgba(20,20,20,.88);color:#f7f1e8}
+.relation-list{display:flex;flex-direction:column;gap:9px}
+.relation-item{border:1px solid rgba(190,169,139,.20);border-radius:14px;padding:11px 12px;background:rgba(255,255,255,.035)}
+body.light-mode .relation-item{background:#fff;border-color:#e0d5c6}
+.relation-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.relation-item-head b{font-size:13px;color:var(--text)}.relation-tag{font-size:10px;font-weight:950;border-radius:999px;padding:3px 7px;background:rgba(190,169,139,.17);color:var(--gold2);white-space:nowrap}
+body.light-mode .relation-item-head b{color:#172033}.relation-item p{margin:0;font-size:11.5px;line-height:1.55;color:var(--text)}body.light-mode .relation-item p{color:#455164}.relation-item strong{color:#7a5d39}.relation-item .up{color:#2f6f45}.relation-item .down{color:#a3483f}
+.relation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}.relation-summary>div{border:1px solid rgba(190,169,139,.18);border-radius:12px;padding:10px;background:rgba(190,169,139,.06)}.relation-summary b{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}.relation-summary strong{font-size:14px;color:var(--text)}
+body.light-mode .relation-summary>div{background:#fbfaf7;border-color:#e0d5c6}body.light-mode .relation-summary strong{color:#172033}
+@media(max-width:950px){.relation-wrap{grid-template-columns:1fr}.relation-chart{min-height:330px}.relation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== 연령대별 한눈에 보기 대시보드 ===== */
+.age-overview-modal{width:min(1540px,96vw)!important;max-height:94vh!important;border-radius:24px!important;}
+.age-overview-body{padding:18px 20px 24px!important;background:var(--card,#fff);}
+.age-overview-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;}
+.age-overview-toolbar label{font-size:12px;font-weight:900;color:var(--text);display:flex;flex-direction:column;gap:7px;min-width:220px;}
+.age-overview-toolbar select{min-height:42px;border:1px solid var(--border);border-radius:12px;padding:0 12px;background:rgba(255,255,255,.05);color:inherit;font-weight:800;}
+.age-overview-help{font-size:12px;color:var(--muted);text-align:right;line-height:1.55;}
+.age-overview-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+.age-overview-kpi{border:1px solid var(--border);border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.04);min-width:0;}
+.age-overview-kpi span{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;}
+.age-overview-kpi strong{font-size:22px;line-height:1.1;color:var(--text);letter-spacing:-.03em;}
+.age-overview-kpi small{display:block;margin-top:5px;font-size:10px;color:var(--muted);}
+.age-overview-grid{display:grid;grid-template-columns:1fr 1.55fr 1fr;gap:12px;align-items:stretch;}
+.age-overview-panel{border:1px solid var(--border);border-radius:18px;padding:14px;background:rgba(255,255,255,.035);overflow:hidden;}
+.age-overview-panel h3{margin:0 0 4px;font-size:15px;color:var(--text);}
+.age-overview-panel .ov-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.45;}
+.age-overview-panel.wide2{grid-column:span 2;}
+.age-overview-panel.full{grid-column:1/-1;}
+.ov-age-dist{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;}
+.ov-donut{width:140px;height:140px;border-radius:50%;position:relative;margin:auto;background:conic-gradient(var(--gold2) 0 25%,var(--gold3) 25% 50%,#9fa7b3 50% 75%,#d7cab6 75% 100%);}
+.ov-donut:after{content:"";position:absolute;inset:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);}
+.ov-donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2;color:var(--text);font-weight:900;font-size:11px;}
+.ov-donut-center b{font-size:18px;margin-top:2px;}
+.ov-mini-table{width:100%;border-collapse:collapse;min-width:0!important;}
+.ov-mini-table th,.ov-mini-table td{font-size:10px!important;padding:5px 6px!important;position:static!important;}
+.ov-combo{display:grid;grid-template-columns:1fr 230px;gap:14px;}
+.ov-combo-chart{position:relative;height:220px;padding:16px 10px 22px 26px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);}
+.ov-combo-row{position:absolute;left:32px;right:10px;bottom:24px;top:10px;display:flex;align-items:flex-end;gap:8px;}
+.ov-combo-item{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;position:relative;padding-bottom:22px;}
+.ov-bar{width:28%;min-width:8px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#bca989,#8e7959);position:relative;}
+.ov-bar.inj{background:linear-gradient(180deg,#d5c8b2,#b1a083);}
+.ov-bar span{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;color:var(--text);}
+.ov-combo-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;white-space:nowrap;color:var(--text);}
+.ov-rate-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:#7f6a49;border:2px solid var(--bg2);transform:translate(-50%,50%);z-index:4;}
+.ov-rate-dot em{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);font-style:normal;font-size:9px;font-weight:900;color:#6d5331;white-space:nowrap;}
+.ov-rate-line{position:absolute;height:2px;background:#7f6a49;transform-origin:left center;z-index:3;}
+.ov-insights{display:flex;flex-direction:column;gap:8px;}
+.ov-insight{border:1px solid var(--border);border-radius:12px;padding:9px 10px;font-size:10px;line-height:1.5;color:var(--text);background:rgba(255,255,255,.035);}
+.ov-insight b{display:block;font-size:11px;margin-bottom:2px;}
+.ov-injdist{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;height:170px;align-items:end;}
+.ov-injcol{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;}
+.ov-injcol .val{font-size:9px;font-weight:900;color:var(--text);}
+.ov-injcol .track{height:120px;width:22px;border-radius:8px;background:rgba(190,169,139,.14);display:flex;align-items:flex-end;overflow:hidden;}
+.ov-injcol .fill{width:100%;background:linear-gradient(180deg,var(--gold2),var(--gold3));border-radius:8px 8px 0 0;}
+.ov-injcol .lab{font-size:9px;color:var(--text);font-weight:800;}
+.ov-consult-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;}
+.ov-consult-card{border:1px solid var(--border);border-radius:14px;padding:10px 11px;background:rgba(255,255,255,.035);}
+.ov-consult-card span{font-size:9px;color:var(--muted);font-weight:800;}
+.ov-consult-card b{display:block;font-size:13px;color:var(--text);margin:4px 0;}
+.ov-consult-card p{font-size:9px;line-height:1.45;color:var(--muted);margin:0;}
+body.light-mode .age-overview-body{background:#fff;}
+body.light-mode .age-overview-kpi,body.light-mode .age-overview-panel,body.light-mode .ov-insight,body.light-mode .ov-consult-card{background:#fff;}
+body.light-mode .ov-donut:after{background:#fff;}
+body.light-mode .age-overview-toolbar select{background:#fff;color:#172033;}
+@media(max-width:1100px){.age-overview-kpis{grid-template-columns:repeat(3,1fr)}.age-overview-grid{grid-template-columns:1fr}.age-overview-panel.wide2,.age-overview-panel.full{grid-column:auto}.ov-combo{grid-template-columns:1fr}.ov-consult-cards{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== 한눈에 보기 ② 복합그래프 안정화 ===== */
+.ov-combo-svg-wrap{height:auto!important;min-height:0!important;padding:8px 8px 2px!important;border:1px solid var(--border)!important;border-radius:14px;background:rgba(255,255,255,.025);overflow:hidden;position:relative;}
+.ov-combo-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:2px 0 0;font-size:10px;font-weight:850;color:var(--text);}
+.ov-combo-legend span{display:inline-flex;align-items:center;gap:6px;}
+.ov-combo-legend i{display:inline-block;width:15px;height:8px;border-radius:3px;background:#aa9878;}
+.ov-combo-legend i.inj{background:#d2c5ae;}
+.ov-combo-legend i.rate{width:18px;height:2px;border-radius:999px;background:#7a6240;position:relative;}
+.ov-combo-legend i.rate:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:#7a6240;left:6px;top:-2px;}
+.ov-combo-svg{display:block;width:100%;height:auto;max-height:300px;overflow:visible;}
+.ov-svg-grid{stroke:rgba(120,100,75,.14);stroke-width:1;}
+.ov-svg-axis-line{stroke:rgba(120,100,75,.30);stroke-width:1.1;}
+.ov-svg-bar{opacity:.96;}
+.ov-svg-first{fill:#a89572;}
+.ov-svg-inj{fill:#d3c6ae;}
+.ov-svg-line{fill:none;stroke:#765d3c;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;}
+.ov-svg-dot{fill:#765d3c;stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke;}
+.ov-svg-value{font-size:12px;font-weight:900;fill:#263142;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+.ov-svg-rate-label{font-size:12px;font-weight:950;fill:#6a4f2e;paint-order:stroke;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round;}
+.ov-svg-xlabel{font-size:11px;font-weight:900;fill:#273142;}
+.ov-svg-axis,.ov-svg-axis-title{font-size:9px;font-weight:800;fill:#697386;}
+.ov-svg-rate-axis{text-anchor:start;}
+body:not(.light-mode) .ov-combo-svg-wrap{background:rgba(0,0,0,.11);}
+body:not(.light-mode) .ov-combo-legend{color:#f3ede4;}
+body:not(.light-mode) .ov-svg-grid{stroke:rgba(230,220,205,.12);}
+body:not(.light-mode) .ov-svg-axis-line{stroke:rgba(230,220,205,.26);}
+body:not(.light-mode) .ov-svg-first{fill:#bda986;}
+body:not(.light-mode) .ov-svg-inj{fill:#8e7e66;}
+body:not(.light-mode) .ov-svg-line{stroke:#e0c99e;}
+body:not(.light-mode) .ov-svg-dot{fill:#e0c99e;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-value{fill:#f8f3eb;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-rate-label{fill:#f0d8ad;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-xlabel{fill:#f4eee5;}
+body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill:#bfb6aa;}
+@media(max-width:760px){.ov-combo-svg{min-width:680px}.ov-combo-svg-wrap{overflow-x:auto}.ov-combo-legend{justify-content:flex-start}}
+
+</style>
+
+<style id="doctor-bit-ui-final-override">
+#doctorBitAgeChartModal,#doctorBitAgeOverviewModal{
+  z-index:150000!important;
+  background:rgba(36,34,30,.72)!important;
+  backdrop-filter:blur(7px)!important;
+  -webkit-backdrop-filter:blur(7px)!important;
+}
+#doctorBitAgeChartModal .modal,
+#doctorBitAgeOverviewModal .modal{
+  background:#fbfaf7!important;
+  color:#172033!important;
+  border:1px solid #d8cdbd!important;
+  box-shadow:0 30px 90px rgba(35,30,24,.34)!important;
+}
+#doctorBitAgeChartModal .modal-header,
+#doctorBitAgeOverviewModal .modal-header{
+  background:#f0ebe1!important;
+  border-bottom:1px solid #d8cdbd!important;
+}
+#doctorBitAgeChartModal .modal-title,
+#doctorBitAgeOverviewModal .modal-title,
+#doctorBitAgeChartModal .age-dash-card h3,
+#doctorBitAgeOverviewModal .age-overview-panel h3{
+  color:#172033!important;
+}
+#doctorBitAgeChartModal .pill,#doctorBitAgeOverviewModal .pill{
+  color:#6a5638!important;background:#fbfaf7!important;border-color:#d8cdbd!important;
+}
+#doctorBitAgeChartModal .modal-body,#doctorBitAgeOverviewModal .modal-body{
+  background:#fbfaf7!important;color:#172033!important;
+}
+#doctorBitAgeChartModal .age-dash-card,
+#doctorBitAgeChartModal .age-dash-kpi,
+#doctorBitAgeChartModal .insight,
+#doctorBitAgeChartModal .opp-card,
+#doctorBitAgeOverviewModal .age-overview-kpi,
+#doctorBitAgeOverviewModal .age-overview-panel,
+#doctorBitAgeOverviewModal .ov-insight,
+#doctorBitAgeOverviewModal .ov-consult-card{
+  background:#fff!important;border-color:#ded3c3!important;color:#172033!important;
+}
+#doctorBitAgeChartModal .age-dash-kpi strong,
+#doctorBitAgeChartModal .consult-label,#doctorBitAgeChartModal .consult-value,
+#doctorBitAgeChartModal .first-age,#doctorBitAgeChartModal .rate-badge,
+#doctorBitAgeChartModal .inj-col .pct,#doctorBitAgeChartModal .retention-value,
+#doctorBitAgeOverviewModal .age-overview-kpi strong,
+#doctorBitAgeOverviewModal .ov-consult-card b{
+  color:#172033!important;
+}
+#doctorBitAgeChartModal .age-dash-kpi span,
+#doctorBitAgeChartModal .age-dash-kpi small,
+#doctorBitAgeChartModal .age-dash-card .desc,
+#doctorBitAgeChartModal .age-dash-note,
+#doctorBitAgeOverviewModal .ov-desc,
+#doctorBitAgeOverviewModal .age-overview-help,
+#doctorBitAgeOverviewModal .age-overview-kpi span,
+#doctorBitAgeOverviewModal .age-overview-kpi small{
+  color:#657083!important;opacity:1!important;
+}
+#doctorBitAgeChartModal select,#doctorBitAgeOverviewModal select{
+  background:#fff!important;color:#172033!important;border-color:#cdbb9f!important;
+}
+#doctorBitAgeChartModal button,#doctorBitAgeOverviewModal button{
+  background:#fff!important;color:#49361f!important;border-color:#cbb99d!important;
+}
+#doctorBitAgeChartModal .first-mini,#doctorBitAgeChartModal .consult-track,
+#doctorBitAgeChartModal .inj-col .vbar-wrap,#doctorBitAgeChartModal .retention-bar,
+#doctorBitAgeChartModal .delta-track{
+  background:#eee9e1!important;border-color:#ded3c3!important;
+}
+#doctorBitAgeChartModal .first-num{
+  color:#1f2937!important;background:rgba(255,255,255,.94)!important;
+  border-color:rgba(122,101,72,.20)!important;text-shadow:none!important;
+}
+#doctorBitAgeChartModal table th,#doctorBitAgeOverviewModal table th{
+  background:linear-gradient(180deg,#e8dfd2,#ddd1c0)!important;color:#3f3122!important;
+}
+#doctorBitAgeChartModal table td,#doctorBitAgeOverviewModal table td{
+  background:#fff!important;color:#172033!important;
+}
+#doctorBitAgeOverviewModal .ov-donut:after{background:#fff!important}
+#doctorBitAgeOverviewModal .ov-combo-svg-wrap{background:#fffdf9!important}
+#doctorBitAgeOverviewModal .ov-svg-value{fill:#263142!important;stroke:#fff!important}
+#doctorBitAgeOverviewModal .ov-svg-rate-label{fill:#6a4f2e!important;stroke:#fff!important}
+#doctorBitAgeOverviewModal .ov-svg-xlabel{fill:#273142!important}
+#doctorBitAgeOverviewModal .ov-svg-axis,#doctorBitAgeOverviewModal .ov-svg-axis-title{fill:#697386!important}
+#doctorBitAgeOverviewModal .ov-svg-grid{stroke:rgba(120,100,75,.14)!important}
+#doctorBitAgeOverviewModal .ov-svg-axis-line{stroke:rgba(120,100,75,.30)!important}
+#doctorBitAgeOverviewModal .ov-svg-first{fill:#a89572!important}
+#doctorBitAgeOverviewModal .ov-svg-inj{fill:#d3c6ae!important}
+#doctorBitAgeOverviewModal .ov-svg-line{stroke:#765d3c!important}
+#doctorBitAgeOverviewModal .ov-svg-dot{fill:#765d3c!important;stroke:#fff!important}
+
+/* 비트 한눈에 보기처럼 넓은 PC 화면을 최대한 활용 */
+#doctorBitAgeOverviewModal .age-overview-modal{width:min(1820px,98vw)!important;max-height:96vh!important}
+#doctorBitAgeChartModal .modal{width:min(1640px,98vw)!important;max-height:96vh!important}
+#doctorBitAgeOverviewModal .age-overview-grid{grid-template-columns:1fr 1.55fr 1fr!important}
+@media(max-width:1100px){
+  #doctorBitAgeOverviewModal .age-overview-grid{grid-template-columns:1fr!important}
+}
+</style>
+
+
+<style id="doctor-age-popup-final-fix">
+/* ===== 의사랑 연령대 분석: 비트처럼 화면 위에 독립 팝업 표시 ===== */
+#doctorBitAgeChartModal,
+#doctorBitAgeOverviewModal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  margin:0 !important;
+  padding:14px !important;
+  display:none;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  overflow:auto !important;
+  z-index:2147483000 !important;
+  background:rgba(48,47,44,.82) !important;
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+#doctorBitAgeChartModal.jinsul-open,
+#doctorBitAgeOverviewModal.jinsul-open{display:flex !important}
+
+#doctorBitAgeChartModal > .modal{
+  position:relative !important;
+  width:min(1600px,calc(100vw - 28px)) !important;
+  max-width:none !important;
+  height:auto !important;
+  max-height:none !important;
+  min-height:calc(100vh - 28px) !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+  background:#fbfaf7 !important;
+  color:#172033 !important;
+  border:1px solid #d7c9b5 !important;
+  border-radius:26px !important;
+  box-shadow:0 32px 100px rgba(0,0,0,.34) !important;
+}
+#doctorBitAgeOverviewModal > .modal{
+  position:relative !important;
+  width:min(1840px,calc(100vw - 28px)) !important;
+  max-width:none !important;
+  height:auto !important;
+  max-height:none !important;
+  min-height:calc(100vh - 28px) !important;
+  margin:0 auto !important;
+  overflow:visible !important;
+  background:#fbfaf7 !important;
+  color:#172033 !important;
+  border:1px solid #d7c9b5 !important;
+  border-radius:26px !important;
+  box-shadow:0 32px 100px rgba(0,0,0,.34) !important;
+}
+#doctorBitAgeChartModal .modal-header,
+#doctorBitAgeOverviewModal .modal-header{
+  position:sticky !important;
+  top:0 !important;
+  z-index:30 !important;
+  background:#f1ece2 !important;
+  color:#172033 !important;
+  border-bottom:1px solid #ddd1c0 !important;
+  border-radius:26px 26px 0 0 !important;
+  padding:18px 22px !important;
+}
+#doctorBitAgeChartModal .modal-body,
+#doctorBitAgeOverviewModal .modal-body{
+  display:block !important;
+  overflow:visible !important;
+  max-height:none !important;
+  background:#fbfaf7 !important;
+  color:#172033 !important;
+}
+#doctorBitAgeChartModal .modal-title,
+#doctorBitAgeOverviewModal .modal-title{color:#172033 !important;font-weight:950 !important}
+#doctorBitAgeChartModal .pill,
+#doctorBitAgeOverviewModal .pill{color:#6e5737 !important;background:#fff !important;border-color:#d7c9b5 !important}
+
+/* 모든 텍스트 대비 강화 */
+#doctorBitAgeChartModal *,
+#doctorBitAgeOverviewModal *{text-shadow:none !important}
+#doctorBitAgeChartModal .age-dash-note,
+#doctorBitAgeChartModal .desc,
+#doctorBitAgeChartModal .age-dash-kpi span,
+#doctorBitAgeChartModal .age-dash-kpi small,
+#doctorBitAgeOverviewModal .ov-desc,
+#doctorBitAgeOverviewModal .age-overview-help,
+#doctorBitAgeOverviewModal .age-overview-kpi span,
+#doctorBitAgeOverviewModal .age-overview-kpi small{
+  color:#596577 !important;
+  opacity:1 !important;
+  font-weight:650 !important;
+}
+#doctorBitAgeChartModal .age-dash-card,
+#doctorBitAgeChartModal .age-dash-kpi,
+#doctorBitAgeChartModal .insight,
+#doctorBitAgeChartModal .opp-card,
+#doctorBitAgeOverviewModal .age-overview-panel,
+#doctorBitAgeOverviewModal .age-overview-kpi,
+#doctorBitAgeOverviewModal .ov-insight,
+#doctorBitAgeOverviewModal .ov-consult-card{
+  background:#fff !important;
+  color:#172033 !important;
+  border-color:#ded3c3 !important;
+}
+#doctorBitAgeChartModal .age-dash-card h3,
+#doctorBitAgeChartModal .age-dash-kpi strong,
+#doctorBitAgeChartModal .consult-label,
+#doctorBitAgeChartModal .consult-value,
+#doctorBitAgeChartModal .first-age,
+#doctorBitAgeChartModal .rate-badge,
+#doctorBitAgeChartModal .inj-col .pct,
+#doctorBitAgeChartModal .retention-value,
+#doctorBitAgeOverviewModal .age-overview-panel h3,
+#doctorBitAgeOverviewModal .age-overview-kpi strong,
+#doctorBitAgeOverviewModal .ov-consult-card b,
+#doctorBitAgeOverviewModal .ov-insight{
+  color:#172033 !important;
+}
+#doctorBitAgeChartModal select,
+#doctorBitAgeOverviewModal select{
+  background:#fff !important;color:#172033 !important;border-color:#cdbb9f !important;
+}
+#doctorBitAgeChartModal button,
+#doctorBitAgeOverviewModal button{
+  background:#fff !important;color:#4b3922 !important;border-color:#cbb99d !important;
+}
+
+/* 막대그래프 값: 흰색 글자 제거 */
+#doctorBitAgeChartModal .first-num{
+  color:#172033 !important;
+  background:rgba(255,255,255,.96) !important;
+  border:1px solid #d8cdbd !important;
+  text-shadow:none !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .first-mini,
+#doctorBitAgeChartModal .consult-track,
+#doctorBitAgeChartModal .inj-col .vbar-wrap,
+#doctorBitAgeChartModal .retention-bar,
+#doctorBitAgeChartModal .delta-track{
+  background:#eee9e1 !important;
+  border-color:#ded3c3 !important;
+}
+
+/* 연령 분포 막대 - 연령대별 서로 다른 색상 */
+#doctorBitAgeChartModal .consult-row.age-color-0 .consult-fill{background:#6f95c8 !important}
+#doctorBitAgeChartModal .consult-row.age-color-1 .consult-fill{background:#8d79cf !important}
+#doctorBitAgeChartModal .consult-row.age-color-2 .consult-fill{background:#65ad9d !important}
+#doctorBitAgeChartModal .consult-row.age-color-3 .consult-fill{background:#df9966 !important}
+#doctorBitAgeChartModal .consult-row.age-color-4 .consult-fill{background:#cf7891 !important}
+#doctorBitAgeChartModal .consult-row.age-color-5 .consult-fill{background:#7391c2 !important}
+#doctorBitAgeChartModal .consult-row.age-color-6 .consult-fill{background:#b29a70 !important}
+#doctorBitAgeChartModal .consult-row.age-color-7 .consult-fill{background:#9aa0a8 !important}
+
+/* 히트맵 비율에 따라 색상 차이 강화 */
+#doctorBitAgeChartModal .age-heat .heat-1{background:#f5f3ee !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-2{background:#eee4d5 !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-3{background:#ddc7a5 !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-4{background:#c1a16f !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-5{background:#90724a !important;color:#fff !important}
+
+/* 한눈에 보기 도넛/표/복합그래프 */
+#doctorBitAgeOverviewModal .ov-donut:after{background:#fff !important}
+#doctorBitAgeOverviewModal .ov-donut-center{color:#172033 !important}
+#doctorBitAgeOverviewModal .ov-combo-svg-wrap{background:#fffdf9 !important;border-color:#ded3c3 !important}
+#doctorBitAgeOverviewModal .ov-svg-value{fill:#172033 !important;stroke:#fff !important}
+#doctorBitAgeOverviewModal .ov-svg-rate-label{fill:#7a5324 !important;stroke:#fff !important}
+#doctorBitAgeOverviewModal .ov-svg-xlabel{fill:#172033 !important}
+#doctorBitAgeOverviewModal .ov-svg-axis,
+#doctorBitAgeOverviewModal .ov-svg-axis-title{fill:#647083 !important}
+#doctorBitAgeOverviewModal .ov-svg-first{fill:#9e8a66 !important}
+#doctorBitAgeOverviewModal .ov-svg-inj{fill:#d2c3a8 !important}
+#doctorBitAgeOverviewModal .ov-svg-line{stroke:#c66516 !important}
+#doctorBitAgeOverviewModal .ov-svg-dot{fill:#c66516 !important;stroke:#fff !important}
+#doctorBitAgeOverviewModal table th{background:#e8e0d3 !important;color:#3c3023 !important}
+#doctorBitAgeOverviewModal table td{background:#fff !important;color:#172033 !important}
+
+/* 분포에 따라 도넛 범례 색상 표시 */
+.ov-age-legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+@media(max-width:900px){
+  #doctorBitAgeChartModal,#doctorBitAgeOverviewModal{padding:6px !important}
+  #doctorBitAgeChartModal > .modal,#doctorBitAgeOverviewModal > .modal{width:calc(100vw - 12px) !important}
+}
+</style>
+
+
+<style id="doctor-age-dashboard-polish-v10">
+/* =========================================================
+   의사랑 연령대 분석 팝업 최종 보정
+   - 텍스트 가독성 강화
+   - 주사 횟수 분포 막대 강제 표시
+   - sticky/개별 스크롤 제거
+   - 비트 화면과 동일한 밝은 분석 UI
+   ========================================================= */
+
+/* 팝업은 오버레이 하나만 스크롤 */
+html.jinsul-analysis-open,
+body.jinsul-analysis-open{
+  overflow:hidden !important;
+}
+#doctorBitAgeChartModal,
+#doctorBitAgeOverviewModal{
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  align-items:flex-start !important;
+  padding:14px !important;
+}
+#doctorBitAgeChartModal > .modal,
+#doctorBitAgeOverviewModal > .modal{
+  overflow:visible !important;
+  max-height:none !important;
+  height:auto !important;
+}
+
+/* 헤더가 따로 떠다니지 않도록 sticky 제거 */
+#doctorBitAgeChartModal .modal-header,
+#doctorBitAgeOverviewModal .modal-header{
+  position:relative !important;
+  top:auto !important;
+  z-index:2 !important;
+  display:flex !important;
+  flex-direction:row !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:18px !important;
+  padding:20px 24px !important;
+  background:#eee9df !important;
+  border-bottom:1px solid #d8cdbd !important;
+}
+#doctorBitAgeChartModal .modal-header > div:first-child,
+#doctorBitAgeOverviewModal .modal-header > div:first-child{
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+#doctorBitAgeChartModal .modal-actions,
+#doctorBitAgeOverviewModal .modal-actions{
+  flex:0 0 auto !important;
+  align-self:center !important;
+}
+#doctorBitAgeChartModal .modal-title,
+#doctorBitAgeOverviewModal .modal-title{
+  font-size:23px !important;
+  line-height:1.28 !important;
+  font-weight:950 !important;
+  letter-spacing:-.035em !important;
+  color:#172033 !important;
+  margin:0 0 7px !important;
+}
+#doctorBitAgeChartModal .pill,
+#doctorBitAgeOverviewModal .pill{
+  display:inline-flex !important;
+  width:auto !important;
+  max-width:100% !important;
+  white-space:normal !important;
+  font-size:12px !important;
+  line-height:1.45 !important;
+  padding:5px 10px !important;
+  color:#675438 !important;
+  background:#fbfaf7 !important;
+  border:1px solid #d8cdbd !important;
+}
+
+/* 본문 기본 글자 */
+#doctorBitAgeChartModal .modal-body,
+#doctorBitAgeOverviewModal .modal-body{
+  overflow:visible !important;
+  max-height:none !important;
+  color:#172033 !important;
+  font-size:14px !important;
+}
+#doctorBitAgeChartModal .age-dash-note,
+#doctorBitAgeOverviewModal .age-overview-help{
+  color:#505b6b !important;
+  font-size:12.5px !important;
+  line-height:1.65 !important;
+  font-weight:650 !important;
+}
+#doctorBitAgeChartModal .age-dash-filter label,
+#doctorBitAgeOverviewModal .age-overview-toolbar label{
+  color:#344054 !important;
+  font-size:12.5px !important;
+  font-weight:900 !important;
+}
+
+/* KPI */
+#doctorBitAgeChartModal .age-dash-kpi,
+#doctorBitAgeOverviewModal .age-overview-kpi{
+  background:#fff !important;
+  border:1px solid #ddd2c4 !important;
+  box-shadow:0 5px 14px rgba(80,61,37,.045) !important;
+}
+#doctorBitAgeChartModal .age-dash-kpi span,
+#doctorBitAgeOverviewModal .age-overview-kpi span{
+  color:#586375 !important;
+  font-size:12px !important;
+  font-weight:850 !important;
+}
+#doctorBitAgeChartModal .age-dash-kpi strong,
+#doctorBitAgeOverviewModal .age-overview-kpi strong{
+  color:#101828 !important;
+  font-size:27px !important;
+  font-weight:950 !important;
+  line-height:1.1 !important;
+}
+#doctorBitAgeChartModal .age-dash-kpi small,
+#doctorBitAgeOverviewModal .age-overview-kpi small{
+  color:#725a38 !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+}
+
+/* 카드 제목/설명 */
+#doctorBitAgeChartModal .age-dash-card,
+#doctorBitAgeOverviewModal .age-overview-panel{
+  background:#fff !important;
+  border:1px solid #ddd2c4 !important;
+  box-shadow:0 4px 12px rgba(80,61,37,.035) !important;
+}
+#doctorBitAgeChartModal .age-dash-card h3,
+#doctorBitAgeOverviewModal .age-overview-panel h3{
+  color:#162033 !important;
+  font-size:18px !important;
+  line-height:1.35 !important;
+  font-weight:950 !important;
+  letter-spacing:-.025em !important;
+}
+#doctorBitAgeChartModal .age-dash-card .desc,
+#doctorBitAgeOverviewModal .age-overview-panel .ov-desc{
+  color:#5a6575 !important;
+  opacity:1 !important;
+  font-size:12px !important;
+  font-weight:650 !important;
+  line-height:1.6 !important;
+}
+
+/* 모든 표 sticky 제거: 스크롤할 때 헤더가 카드 밖으로 따라오지 않음 */
+#doctorBitAgeChartModal table th,
+#doctorBitAgeChartModal table td,
+#doctorBitAgeOverviewModal table th,
+#doctorBitAgeOverviewModal table td{
+  position:static !important;
+  top:auto !important;
+  color:#172033 !important;
+  font-weight:750 !important;
+}
+#doctorBitAgeChartModal table th,
+#doctorBitAgeOverviewModal table th{
+  background:#e9e2d7 !important;
+  color:#3b3023 !important;
+  font-weight:950 !important;
+}
+
+/* ① 환자 분포 */
+#doctorBitAgeChartModal .consult-label,
+#doctorBitAgeChartModal .consult-value{
+  color:#172033 !important;
+  font-size:12.5px !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .consult-track{
+  height:22px !important;
+  background:#ece8e1 !important;
+  border:1px solid #ded6ca !important;
+}
+#doctorBitAgeChartModal .consult-fill{
+  min-width:3px !important;
+  opacity:1 !important;
+}
+
+/* ② 초진/초진주사/처방률 */
+#doctorBitAgeChartModal .first-head{
+  color:#465264 !important;
+  opacity:1 !important;
+  font-size:11.5px !important;
+  font-weight:900 !important;
+}
+#doctorBitAgeChartModal .first-age{
+  color:#172033 !important;
+  font-size:12.5px !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .first-mini{
+  height:23px !important;
+  overflow:visible !important;
+  background:#ece8e1 !important;
+  border:1px solid #ded6ca !important;
+}
+#doctorBitAgeChartModal .first-mini > i{
+  display:block !important;
+  height:100% !important;
+  min-width:2px !important;
+  opacity:1 !important;
+}
+#doctorBitAgeChartModal .first-mini:not(.inj) > i{
+  background:#b4a17e !important;
+}
+#doctorBitAgeChartModal .first-mini.inj > i{
+  background:#d1c2a6 !important;
+}
+#doctorBitAgeChartModal .first-num{
+  color:#172033 !important;
+  background:rgba(255,255,255,.97) !important;
+  border:1px solid #d7ccbc !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.04) !important;
+  font-size:10.5px !important;
+  font-weight:950 !important;
+  text-shadow:none !important;
+}
+#doctorBitAgeChartModal .rate-badge{
+  color:#654a26 !important;
+  font-size:12.5px !important;
+  font-weight:950 !important;
+}
+
+/* ③ 관계도 */
+#doctorBitAgeChartModal .relation-summary b{
+  color:#5c6573 !important;
+  font-size:10.5px !important;
+  font-weight:850 !important;
+}
+#doctorBitAgeChartModal .relation-summary strong{
+  color:#172033 !important;
+  font-size:14px !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .relation-chart{
+  background:#fdfcf9 !important;
+  border-color:#ded3c3 !important;
+}
+#doctorBitAgeChartModal .relation-axis-x,
+#doctorBitAgeChartModal .relation-axis-y,
+#doctorBitAgeChartModal .relation-zone{
+  color:#596577 !important;
+  opacity:1 !important;
+  font-weight:850 !important;
+}
+#doctorBitAgeChartModal .relation-item{
+  background:#fff !important;
+  border-color:#ded3c3 !important;
+}
+#doctorBitAgeChartModal .relation-item-head b{
+  color:#172033 !important;
+  font-size:12.5px !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .relation-item p{
+  color:#465264 !important;
+  font-size:11.5px !important;
+  font-weight:650 !important;
+  line-height:1.55 !important;
+}
+
+/* ★ 주사 횟수 분포: 막대가 반드시 보이도록 재정의 */
+#doctorBitAgeChartModal .inj-dist,
+#doctorBitAgeOverviewModal .inj-dist{
+  display:grid !important;
+  grid-template-columns:repeat(8,minmax(38px,1fr)) !important;
+  gap:10px !important;
+  height:220px !important;
+  min-height:220px !important;
+  align-items:end !important;
+  padding:8px 4px 0 !important;
+}
+#doctorBitAgeChartModal .inj-col,
+#doctorBitAgeOverviewModal .inj-col{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  height:100% !important;
+  min-height:0 !important;
+  gap:5px !important;
+}
+#doctorBitAgeChartModal .inj-col .pct,
+#doctorBitAgeOverviewModal .inj-col .pct{
+  color:#172033 !important;
+  font-size:12px !important;
+  font-weight:950 !important;
+  line-height:1 !important;
+}
+#doctorBitAgeChartModal .inj-col .vbar-wrap,
+#doctorBitAgeOverviewModal .inj-col .vbar-wrap{
+  display:flex !important;
+  align-items:flex-end !important;
+  width:34px !important;
+  height:150px !important;
+  min-height:150px !important;
+  overflow:hidden !important;
+  border-radius:10px 10px 5px 5px !important;
+  background:#eeeae3 !important;
+  border:1px solid #e0d8cc !important;
+}
+#doctorBitAgeChartModal .inj-col .vbar,
+#doctorBitAgeOverviewModal .inj-col .vbar{
+  display:block !important;
+  width:100% !important;
+  min-height:0 !important;
+  background:linear-gradient(180deg,#c9b995 0%,#8e7855 100%) !important;
+  border-radius:9px 9px 0 0 !important;
+  opacity:1 !important;
+  transition:none !important;
+}
+#doctorBitAgeChartModal .inj-col .lab,
+#doctorBitAgeOverviewModal .inj-col .lab{
+  color:#344054 !important;
+  opacity:1 !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+}
+
+/* 히트맵 단계별 색 */
+#doctorBitAgeChartModal .age-heat .heat-1,
+#doctorBitAgeOverviewModal .age-heat .heat-1{background:#f6f3ee !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-2,
+#doctorBitAgeOverviewModal .age-heat .heat-2{background:#eee4d5 !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-3,
+#doctorBitAgeOverviewModal .age-heat .heat-3{background:#ddc7a5 !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-4,
+#doctorBitAgeOverviewModal .age-heat .heat-4{background:#bea06f !important;color:#172033 !important}
+#doctorBitAgeChartModal .age-heat .heat-5,
+#doctorBitAgeOverviewModal .age-heat .heat-5{background:#8e7149 !important;color:#fff !important}
+
+/* 1회 종료 / 반복치료 / 델타 */
+#doctorBitAgeChartModal .retention-legend{
+  color:#596577 !important;
+  opacity:1 !important;
+  font-weight:750 !important;
+}
+#doctorBitAgeChartModal .retention-value,
+#doctorBitAgeChartModal .delta-value{
+  color:#172033 !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .delta-value.pos{color:#6f522c !important}
+#doctorBitAgeChartModal .delta-value.neg{color:#5e6673 !important;opacity:1 !important}
+
+/* 자동 인사이트 */
+#doctorBitAgeChartModal .insight,
+#doctorBitAgeChartModal .opp-card,
+#doctorBitAgeOverviewModal .ov-insight,
+#doctorBitAgeOverviewModal .ov-consult-card{
+  background:#fffdf9 !important;
+  border-color:#ded3c3 !important;
+}
+#doctorBitAgeChartModal .insight b,
+#doctorBitAgeChartModal .opp-card b{
+  color:#725a38 !important;
+  opacity:1 !important;
+  font-weight:900 !important;
+}
+#doctorBitAgeChartModal .insight span,
+#doctorBitAgeChartModal .opp-card strong,
+#doctorBitAgeOverviewModal .ov-consult-card b{
+  color:#172033 !important;
+  font-weight:950 !important;
+}
+#doctorBitAgeChartModal .insight small,
+#doctorBitAgeChartModal .opp-card small,
+#doctorBitAgeOverviewModal .ov-consult-card p{
+  color:#596577 !important;
+  opacity:1 !important;
+  font-weight:650 !important;
+}
+
+/* 한눈에 보기 */
+#doctorBitAgeOverviewModal .age-overview-body{
+  background:#fbfaf7 !important;
+}
+#doctorBitAgeOverviewModal .ov-donut:after{
+  background:#fff !important;
+}
+#doctorBitAgeOverviewModal .ov-donut-center{
+  color:#172033 !important;
+  font-weight:900 !important;
+}
+#doctorBitAgeOverviewModal .ov-donut-center b{
+  color:#101828 !important;
+  font-size:19px !important;
+}
+#doctorBitAgeOverviewModal .ov-mini-table th,
+#doctorBitAgeOverviewModal .ov-mini-table td{
+  font-size:10.5px !important;
+  padding:6px !important;
+}
+#doctorBitAgeOverviewModal .ov-combo-legend{
+  color:#465264 !important;
+  font-size:10.5px !important;
+  font-weight:850 !important;
+}
+#doctorBitAgeOverviewModal .ov-combo-svg-wrap{
+  background:#fffdf9 !important;
+  border-color:#ded3c3 !important;
+}
+#doctorBitAgeOverviewModal .ov-svg-value{
+  fill:#172033 !important;
+  stroke:#fff !important;
+  stroke-width:3px !important;
+}
+#doctorBitAgeOverviewModal .ov-svg-rate-label{
+  fill:#9b531f !important;
+  stroke:#fff !important;
+  stroke-width:3px !important;
+}
+#doctorBitAgeOverviewModal .ov-svg-xlabel{fill:#172033 !important}
+#doctorBitAgeOverviewModal .ov-svg-axis,
+#doctorBitAgeOverviewModal .ov-svg-axis-title{fill:#596577 !important}
+#doctorBitAgeOverviewModal .ov-svg-line{stroke:#c86822 !important;stroke-width:2.5px !important}
+#doctorBitAgeOverviewModal .ov-svg-dot{fill:#c86822 !important;stroke:#fff !important}
+
+/* 전체 화면에서 내부 개별 스크롤바/고정요소 제거 */
+#doctorBitAgeChartModal .age-dash-card,
+#doctorBitAgeOverviewModal .age-overview-panel,
+#doctorBitAgeChartModal .relation-list,
+#doctorBitAgeChartModal .room-compare,
+#doctorBitAgeOverviewModal .room-compare,
+#doctorBitAgeOverviewModal .ov-mini-table{
+  overflow:visible !important;
+  max-height:none !important;
+}
+
+/* 작은 화면은 팝업 자체만 스크롤 */
+@media(max-width:900px){
+  #doctorBitAgeChartModal .modal-header,
+  #doctorBitAgeOverviewModal .modal-header{
+    align-items:flex-start !important;
+    flex-direction:column !important;
+  }
+  #doctorBitAgeChartModal .modal-actions,
+  #doctorBitAgeOverviewModal .modal-actions{
+    align-self:flex-start !important;
+  }
+}
+</style>
+
+</head>
     <body>
         <div class="jinsul-floating-actions no-print" aria-label="화면 이동 및 테마 전환">
             <button type="button" class="jinsul-float-btn" onclick="goBack()" title="이전 페이지로 이동">← 뒤로가기</button>
@@ -1772,6 +2853,8 @@
                 <h3 class="card-title">
                     <span>📊 연령대별 통계 (진료실별)</span>
                     <span class="toolbar no-print">
+                        <button type="button" class="age-analysis-btn" onclick="return JINSULDoctorAge.openGraph(event)">📈 결과값 그래프로 보기</button>
+                        <button type="button" class="age-analysis-btn" onclick="return JINSULDoctorAge.openOverview(event)">🧭 한눈에 보기</button>
                         <button type="button" onclick="copyTable('#byAgeOutput')">📋 복사</button>
                         <button type="button" onclick="openFullTable('#byAgeOutput', '연령대별 통계')">전체화면</button>
                     </span>
@@ -1779,7 +2862,32 @@
                 <div id="byAgeOutput"></div>
             </div>
         </div>
-        <div class="full-modal" id="fullModal" aria-hidden="true">
+        
+<div class="age-dash-modal" id="ageDashModal" aria-hidden="true">
+  <div class="age-dash-shell">
+    <div class="age-dash-head">
+      <div>
+        <div class="age-dash-title" id="ageDashTitle">📈 연령대별 통계 · 컨설팅 분석 대시보드</div>
+        <div class="age-dash-sub">환자구성 · 초진/주사 전환 · 주사횟수 · 진료실 비교</div>
+      </div>
+      <div class="age-dash-head-actions">
+        <button type="button" onclick="closeAgeDashboard()">닫기</button>
+      </div>
+    </div>
+    <div class="age-dash-body">
+      <div class="age-scope-row">
+        <div class="age-scope-field">
+          <label for="ageDashScope">분석 범위</label>
+          <select id="ageDashScope"></select>
+        </div>
+        <div class="age-scope-note">전체 병원 또는 진료실을 선택하면 아래 지표와 그래프가 즉시 변경됩니다.<br>연령대 그래프는 의사랑 초진·신환 환자를 기준으로 계산합니다.</div>
+      </div>
+      <div id="ageDashContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="full-modal" id="fullModal" aria-hidden="true">
             <div class="full-inner">
                 <div class="full-head">
                     <div class="full-title" id="fullTitle">통계표</div>
@@ -2893,6 +4001,7 @@
                 const byAge = computeAgeBandStats(merged);
                 window.__latestStats = stats;
                 window.__latestByAge = byAge;
+                window.__latestPatients = Array.from(patients.values());
                 renderCharts(stats);
                 const overall = stats.find(s => s['구분'] === '전체');
                 if (overall) {
@@ -3183,5 +4292,908 @@
             }
             );
         </script>
-    </body>
+    
+<script>
+(function(){
+  const AGE_ORDER = ['0-18세 미만','18세 이상~20대','30대','40대','50대','60대','70대 이상','미상'];
+  function esc(v){ return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function pct(v){ const n=parseFloat(String(v??'').replace('%','')); return Number.isFinite(n)?n:0; }
+  function num(v){ const n=parseFloat(String(v??'').replace(/,/g,'')); return Number.isFinite(n)?n:0; }
+  function fmtN(v,d=0){ return Number(v||0).toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function ageShort(s){
+    return {'0-18세 미만':'0~17세','18세 이상~20대':'18~20대','70대 이상':'70대이상'}[s] || s;
+  }
+  function allStats(){ return Array.isArray(window.__latestStats)?window.__latestStats:[]; }
+  function allAge(){ return Array.isArray(window.__latestByAge)?window.__latestByAge:[]; }
+  function getScopes(){
+    const stats=allStats();
+    const rooms=stats.map(r=>r['구분']).filter(Boolean);
+    const unique=[...new Set(['전체',...rooms])];
+    return unique.filter((v,i,a)=>a.indexOf(v)===i);
+  }
+  function selectedRows(scope){
+    return allAge().filter(r=>r['진료실']===scope && r['연령대']!=='전체')
+      .sort((a,b)=>AGE_ORDER.indexOf(a['연령대'])-AGE_ORDER.indexOf(b['연령대']));
+  }
+  function selectedTotalAge(scope){ return allAge().find(r=>r['진료실']===scope && r['연령대']==='전체'); }
+  function selectedStats(scope){ return allStats().find(r=>r['구분']===scope) || null; }
+
+  function relationInterpret(row, avgInitial, avgRate){
+    const initial=num(row['초진환자수']), rate=pct(row['초진 주사처방률']);
+    const size=initial>=avgInitial?'초진 규모가 큰 편':'초진 규모가 작은 편';
+    const conv=rate>=avgRate?'처방률은 높은 편':'처방률은 낮은 편';
+    let action='';
+    if(initial<avgInitial && rate>=avgRate) action='유입 규모는 작지만 전환 효율이 좋습니다. 신규환자 유입 확대 시 주사환자 증가 가능성이 큽니다.';
+    else if(initial>=avgInitial && rate<avgRate) action='초진 유입은 충분하지만 전환율이 낮습니다. 설명·권유 과정과 진료실 프로세스 점검 우선순위가 높습니다.';
+    else if(initial>=avgInitial && rate>=avgRate) action='유입과 전환이 모두 양호한 핵심 연령층입니다. 현재 패턴 유지와 재내원 관리가 중요합니다.';
+    else action='유입과 전환이 모두 낮아 타깃 여부를 먼저 판단한 뒤 개선 전략을 정하는 것이 좋습니다.';
+    return `${size}이고 ${conv}입니다. ${action}`;
+  }
+
+  function relationSVG(rows){
+    if(!rows.length) return '<div class="age-empty">표 계산 후 그래프가 표시됩니다.</div>';
+    const W=980,H=390, left=54,right=48,top=42,bottom=62;
+    const innerW=W-left-right, innerH=H-top-bottom;
+    const maxCnt=Math.max(...rows.flatMap(r=>[num(r['초진환자수']),num(r['초진 주사환자수'])]),1);
+    const n=rows.length, groupW=innerW/n, barW=Math.min(28,groupW*.24);
+    const yCount=v=>top+innerH-(v/maxCnt)*innerH;
+    const yRate=v=>top+innerH-(v/100)*innerH;
+    let s=`<svg class="age-relation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="연령대별 초진 환자, 초진 주사, 처방률 관계 그래프">`;
+    for(let i=0;i<=4;i++){ const y=top+innerH*(i/4), val=Math.round(maxCnt*(1-i/4)); s+=`<line class="age-svg-grid" x1="${left}" y1="${y}" x2="${W-right}" y2="${y}"/><text class="age-svg-tick" x="${left-8}" y="${y+4}" text-anchor="end">${val}</text><text class="age-svg-tick" x="${W-right+8}" y="${y+4}">${Math.round(100*(1-i/4))}%</text>`; }
+    s+=`<line class="age-svg-axis" x1="${left}" y1="${top+innerH}" x2="${W-right}" y2="${top+innerH}"/>`;
+    const pts=[];
+    rows.forEach((r,i)=>{
+      const cx=left+groupW*(i+.5), a=num(r['초진환자수']), inj=num(r['초진 주사환자수']), rate=pct(r['초진 주사처방률']);
+      const h1=top+innerH-yCount(a), h2=top+innerH-yCount(inj);
+      const x1=cx-barW-3, x2=cx+3;
+      s+=`<rect class="age-svg-bar1" x="${x1}" y="${yCount(a)}" width="${barW}" height="${h1}" rx="6"/><rect class="age-svg-bar2" x="${x2}" y="${yCount(inj)}" width="${barW}" height="${h2}" rx="6"/>`;
+      s+=`<text class="age-svg-count" x="${x1+barW/2}" y="${Math.max(top+12,yCount(a)-7)}" text-anchor="middle">${a}</text><text class="age-svg-count" x="${x2+barW/2}" y="${Math.max(top+12,yCount(inj)-7)}" text-anchor="middle">${inj}</text>`;
+      s+=`<text class="age-svg-label" x="${cx}" y="${H-27}" text-anchor="middle">${esc(ageShort(r['연령대']))}</text>`;
+      pts.push([cx,yRate(rate),rate]);
+    });
+    const path=pts.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' ');
+    s+=`<path class="age-svg-line" d="${path}"/>`;
+    pts.forEach(p=>{s+=`<circle class="age-svg-dot" cx="${p[0]}" cy="${p[1]}" r="5"/><text class="age-svg-rate" x="${p[0]}" y="${Math.max(18,p[1]-10)}" text-anchor="middle">${p[2]}%</text>`});
+    s+=`<text class="age-svg-tick" x="${left}" y="19">막대: 초진환자 / 초진주사</text><text class="age-svg-tick" x="${W-right}" y="19" text-anchor="end">선: 초진 주사처방률</text></svg>`;
+    return s;
+  }
+
+  function ageDistribution(rows){
+    const total=rows.reduce((s,r)=>s+num(r['초진환자수']),0) || 1;
+    return `<div class="age-bars">${rows.map(r=>{const v=num(r['초진환자수']),rate=v/total*100;return `<div class="age-bar-row"><div class="age-bar-label">${esc(ageShort(r['연령대']))}</div><div class="age-bar-track"><div class="age-bar-fill" style="width:${Math.max(rate,1)}%"></div></div><div class="age-bar-val">${rate.toFixed(1)}%</div></div>`}).join('')}</div>`;
+  }
+
+  function repeatBars(totalRow){
+    const keys=[['주사 1회(%)','1회'],['2회(%)','2회'],['3회(%)','3회'],['4회(%)','4회'],['5회(%)','5회'],['6회(%)','6회'],['7회(%)','7회'],['8회 이상(%)','8회+']];
+    return `<div class="age-bars">${keys.map(([k,l])=>{const v=pct(totalRow?.[k]);return `<div class="age-bar-row"><div class="age-bar-label">${l}</div><div class="age-bar-track"><div class="age-bar-fill" style="width:${v}%"></div></div><div class="age-bar-val">${v}%</div></div>`}).join('')}</div>`;
+  }
+
+  function heatmap(rows){
+    const keys=[['주사 1회(%)','1회'],['2회(%)','2회'],['3회(%)','3회'],['4회(%)','4회'],['5회(%)','5회'],['6회(%)','6회'],['7회(%)','7회'],['8회 이상(%)','8회+']];
+    let h='<div class="age-heatmap"><table><thead><tr><th>연령대</th>'+keys.map(k=>`<th>${k[1]}</th>`).join('')+'</tr></thead><tbody>';
+    rows.forEach(r=>{
+      h+=`<tr><td>${esc(ageShort(r['연령대']))}</td>`;
+      keys.forEach(([k])=>{const v=pct(r[k]), alpha=.06+.50*(v/100);h+=`<td class="hm" style="background:rgba(190,169,139,${alpha.toFixed(2)})">${v}%</td>`});
+      h+='</tr>';
+    });
+    return h+'</tbody></table></div>';
+  }
+
+  function relationList(rows){
+    if(!rows.length) return '';
+    const avgInitial=rows.reduce((s,r)=>s+num(r['초진환자수']),0)/rows.length;
+    const totalInitial=rows.reduce((s,r)=>s+num(r['초진환자수']),0);
+    const totalInj=rows.reduce((s,r)=>s+num(r['초진 주사환자수']),0);
+    const avgRate=totalInitial?totalInj/totalInitial*100:0;
+    return `<div style="border:1px solid var(--border);border-radius:16px;overflow:hidden">${rows.map(r=>{
+      const init=num(r['초진환자수']), inj=num(r['초진 주사환자수']), rate=pct(r['초진 주사처방률']);
+      let badge= rate>=avgRate?'평균↑':'평균↓';
+      return `<div class="age-rel-card"><div class="age-rel-name">${esc(ageShort(r['연령대']))}</div><div class="age-rel-text">${esc(relationInterpret(r,avgInitial,avgRate))}<span class="age-badge">${badge} ${Math.abs(rate-avgRate).toFixed(0)}%p</span></div><div class="age-rel-num">초진 ${init}명</div><div class="age-rel-num">주사 ${inj}명</div><div class="age-rel-rate">${rate}%</div></div>`;
+    }).join('')}</div>`;
+  }
+
+  function roomTable(){
+    const rows=allStats().filter(r=>r['구분'] && r['구분']!=='전체');
+    if(!rows.length) return '<div class="age-empty">진료실별 결과가 없습니다.</div>';
+    return `<div class="age-room-compare"><table><thead><tr><th>진료실</th><th>총환자수</th><th>초진환자</th><th>초진주사</th><th>초진 처방률</th><th>초진 재내원율</th><th>초진 평균내원</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r['구분'])}</td><td>${fmtN(num(r['총환자수']))}</td><td>${fmtN(num(r['초진환자수']))}</td><td>${fmtN(num(r['초진 주사환자수']))}</td><td>${esc(r['초진 주사처방률'])}</td><td>${esc(r['초진 재내원율'])}</td><td>${esc(r['초진 평균 내원횟수'])}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+
+  function consultCards(rows, totalRow, scope){
+    if(!rows.length) return '';
+    const maxInit=[...rows].sort((a,b)=>num(b['초진환자수'])-num(a['초진환자수']))[0];
+    const maxRate=[...rows].sort((a,b)=>pct(b['초진 주사처방률'])-pct(a['초진 주사처방률']))[0];
+    const minRate=[...rows].filter(r=>num(r['초진환자수'])>=3).sort((a,b)=>pct(a['초진 주사처방률'])-pct(b['초진 주사처방률']))[0]||rows[0];
+    const maxRevisit=[...rows].sort((a,b)=>pct(b['초진 재내원율(2회 이상)'])-pct(a['초진 재내원율(2회 이상)']))[0];
+    return `<div class="age-consult-grid">
+      <div class="age-consult"><strong>👥 초진 유입 최대 · ${esc(ageShort(maxInit['연령대']))}</strong>초진 ${num(maxInit['초진환자수'])}명, 주사 ${num(maxInit['초진 주사환자수'])}명, 처방률 ${esc(maxInit['초진 주사처방률'])}. 핵심 신규환자층입니다.</div>
+      <div class="age-consult"><strong>💉 처방률 최고 · ${esc(ageShort(maxRate['연령대']))}</strong>초진 주사처방률 ${esc(maxRate['초진 주사처방률'])}. 단, 환자 규모가 작으면 비율이 크게 흔들릴 수 있어 건수와 함께 확인합니다.</div>
+      <div class="age-consult"><strong>🎯 전환 개선 후보 · ${esc(ageShort(minRate['연령대']))}</strong>초진 ${num(minRate['초진환자수'])}명 중 주사 ${num(minRate['초진 주사환자수'])}명, 처방률 ${esc(minRate['초진 주사처방률'])}. 초진 규모 대비 전환 여지를 확인할 수 있습니다.</div>
+      <div class="age-consult"><strong>🔁 재내원율 최고 · ${esc(ageShort(maxRevisit['연령대']))}</strong>초진 재내원율 ${esc(maxRevisit['초진 재내원율(2회 이상)'])}. 치료 지속성과 재내원 관리가 상대적으로 강한 연령층입니다.</div>
+    </div>`;
+  }
+
+  function buildDashboard(scope,mode){
+    const rows=selectedRows(scope), totalAge=selectedTotalAge(scope), stat=selectedStats(scope);
+    if(!rows.length || !stat) return '<div class="age-empty">먼저 의사랑 외래/주사 파일을 업로드하고 통계를 계산해주세요.</div>';
+    const totalInitial=num(stat['초진환자수']), totalInj=num(stat['초진 주사환자수']);
+    const kpis=`<div class="age-kpis">
+      <div class="age-kpi"><div class="k-label">총환자수</div><div class="k-value">${fmtN(num(stat['총환자수']))}명</div><div class="k-sub">선택 범위 고유 환자</div></div>
+      <div class="age-kpi"><div class="k-label">초진 환자</div><div class="k-value">${fmtN(totalInitial)}명</div><div class="k-sub">초진·신환 기준</div></div>
+      <div class="age-kpi"><div class="k-label">초진 주사</div><div class="k-value">${fmtN(totalInj)}명</div><div class="k-sub">${esc(stat['초진 주사처방률'])} 처방률</div></div>
+      <div class="age-kpi"><div class="k-label">초진 주사 처방률</div><div class="k-value">${esc(stat['초진 주사처방률'])}</div><div class="k-sub">초진 환자 기준</div></div>
+      <div class="age-kpi"><div class="k-label">초진 재내원율</div><div class="k-value">${esc(stat['초진 재내원율'])}</div><div class="k-sub">2회 이상 내원</div></div>
+      <div class="age-kpi"><div class="k-label">평균 주사횟수</div><div class="k-value">${esc(stat['초진 주사치료 평균 주사횟수'])}회</div><div class="k-sub">주사환자 기준</div></div>
+    </div>`;
+    const main=`<div class="age-dash-grid">
+      <section class="age-panel"><h4>① 초진 환자 연령대 분포</h4><div class="desc">의사랑 초진·신환 환자 중 연령대별 구성 비율입니다.</div>${ageDistribution(rows)}</section>
+      <section class="age-panel"><h4>② 주사 횟수 분포</h4><div class="desc">초진 당일 주사환자의 기간 내 총 주사횟수 분포입니다.</div>${repeatBars(totalAge)}</section>
+      <section class="age-panel wide"><h4>③ 초진 환자 · 초진 주사 · 처방률 관계</h4><div class="desc">막대는 초진/초진주사 규모, 선은 처방률입니다. ‘초진주사 수가 적다’가 환자 유입 부족 때문인지, 낮은 전환 때문인지 함께 판단합니다.</div><div class="age-relation-wrap"><div>${relationSVG(rows)}</div><div class="age-insights">${consultCards(rows,totalAge,scope)}</div></div></section>
+      <section class="age-panel wide"><h4>④ 연령대별 관계 해석</h4><div class="desc">각 연령대의 초진 규모와 주사 전환 효율을 병원 평균과 비교해 자동 해석합니다.</div>${relationList(rows)}</section>
+      <section class="age-panel"><h4>⑤ 연령대별 n회 주사 비율</h4><div class="desc">연령별 반복치료 패턴을 한눈에 비교합니다.</div>${heatmap(rows)}</section>
+      <section class="age-panel"><h4>⑥ 진료실별 핵심 지표</h4><div class="desc">진료실별 환자 규모와 초진 주사 전환·재내원 차이를 비교합니다.</div>${roomTable()}</section>
+      <section class="age-panel wide"><h4>⑦ 컨설팅 포인트 요약</h4><div class="desc">현재 업로드된 결과값만으로 자동 선정한 우선 확인 포인트입니다.</div>${consultCards(rows,totalAge,scope)}</section>
+    </div>`;
+    if(mode==='overview') return kpis+main;
+    return kpis+`<div class="age-dash-grid">
+      <section class="age-panel"><h4>① 연령대별 환자 분포</h4><div class="desc">선택 범위에서 어떤 연령층의 초진 환자가 많은지 확인합니다.</div>${ageDistribution(rows)}</section>
+      <section class="age-panel"><h4>② 초진 환자 · 초진 주사 · 처방률</h4><div class="desc">연령대별 신규환자 규모와 주사 전환 차이를 함께 비교합니다.</div>${relationSVG(rows)}</section>
+      <section class="age-panel"><h4>③ 주사 횟수 분포</h4><div class="desc">초진 당일 주사환자가 기간 내 총 몇 회 주사를 받았는지 비교합니다.</div>${repeatBars(totalAge)}</section>
+      <section class="age-panel"><h4>④ 연령대별 n회 주사 비율</h4><div class="desc">1회 종료와 반복치료 패턴을 연령대별로 비교합니다.</div>${heatmap(rows)}</section>
+      <section class="age-panel wide"><h4>⑤ 초진 규모 · 주사 전환 관계 해석</h4><div class="desc">초진주사 수가 적은 이유가 환자 유입 부족인지, 처방률 저하인지 자동으로 구분합니다.</div>${relationList(rows)}</section>
+      <section class="age-panel wide"><h4>⑥ 진료실별 핵심 지표 비교</h4><div class="desc">진료실별 환자 규모와 초진 주사 전환·재내원 차이를 비교합니다.</div>${roomTable()}</section>
+      <section class="age-panel wide"><h4>⑦ 컨설팅 포인트 요약</h4><div class="desc">현재 업로드된 의사랑 데이터에서 우선 확인할 지점을 자동으로 정리합니다.</div>${consultCards(rows,totalAge,scope)}</section>
+    </div>`;
+  }
+
+  window.openAgeDashboard=function(mode){
+    const modal=document.getElementById('ageDashModal'), scope=document.getElementById('ageDashScope');
+    if(!modal||!scope) return;
+    const scopes=getScopes();
+    scope.innerHTML=scopes.map(s=>`<option value="${esc(s)}">${esc(s==='전체'?'전체 병원':s)}</option>`).join('');
+    scope.value='전체';
+    modal.dataset.mode=mode||'graphs';
+    document.getElementById('ageDashTitle').textContent = mode==='overview' ? '🧭 연령대별 통계 · 한눈에 보기' : '📈 연령대별 통계 · 컨설팅 분석 대시보드';
+    document.getElementById('ageDashContent').innerHTML=buildDashboard(scope.value,modal.dataset.mode);
+    modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  };
+  window.closeAgeDashboard=function(){
+    const modal=document.getElementById('ageDashModal'); if(!modal)return;
+    modal.classList.remove('active');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';
+  };
+  document.addEventListener('DOMContentLoaded',()=>{
+    const scope=document.getElementById('ageDashScope'), modal=document.getElementById('ageDashModal');
+    if(scope) scope.addEventListener('change',()=>{document.getElementById('ageDashContent').innerHTML=buildDashboard(scope.value,modal?.dataset.mode||'graphs')});
+    if(modal) modal.addEventListener('click',e=>{if(e.target===modal) closeAgeDashboard()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape' && modal?.classList.contains('active')) closeAgeDashboard()});
+  });
+})();
+</script>
+
+
+<!-- ===== 의사랑: 비트 UI 동일 결과값 그래프 보기 ===== -->
+<div id="doctorBitAgeChartModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="doctorBitAgeChartModalTitle" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="doctorBitAgeChartModalTitle">📈 연령대별 통계 · 컨설팅 분석 대시보드</div>
+        <div class="pill">환자구성 · 초진/주사 전환 · 주사횟수 · 진료실 비교</div>
+      </div>
+      <div class="modal-actions"><button class="secondary" type="button" onclick="closeDoctorBitGraphModal()">닫기</button></div>
+    </div>
+    <div class="modal-body">
+      <div class="age-dash-toolbar">
+        <div class="age-dash-filter">
+          <label for="doctorBitAgeDashboardRoom">분석 범위</label>
+          <select id="doctorBitAgeDashboardRoom"></select>
+        </div>
+        <div class="age-dash-note">전체 또는 진료실을 선택하면 아래 그래프가 자동으로 변경됩니다.<br>의사랑 연령대 통계와 동일한 계산 결과를 시각화합니다.</div>
+      </div>
+      <div id="doctorBitAgeDashboardContent"><div class="age-dash-empty">통계 계산 후 분석 그래프를 확인할 수 있습니다.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 의사랑: 비트 UI 동일 한눈에 보기 ===== -->
+<div id="doctorBitAgeOverviewModal" class="modal-backdrop age-overview-backdrop" role="dialog" aria-modal="true" aria-labelledby="doctorBitAgeOverviewModalTitle" style="display:none">
+  <div class="modal age-overview-modal">
+    <div class="modal-header age-overview-header">
+      <div>
+        <div class="modal-title" id="doctorBitAgeOverviewModalTitle">🧭 연령대별 통계 · 한눈에 보기</div>
+        <div class="pill">환자구성 · 초진/주사 전환 · 반복치료 · 진료실 비교 · 컨설팅 포인트</div>
+      </div>
+      <div class="modal-actions"><button class="secondary" type="button" onclick="closeDoctorBitOverviewModal()">닫기</button></div>
+    </div>
+    <div class="modal-body age-overview-body">
+      <div class="age-overview-toolbar">
+        <label>분석 범위<select id="doctorBitAgeOverviewRoom"></select></label>
+        <div class="age-overview-help">선택한 전체 병원 또는 진료실 기준으로 핵심 지표를 한 화면에 요약합니다.</div>
+      </div>
+      <div id="doctorBitAgeOverviewContent"><div class="age-dash-empty">통계 계산 후 한눈에 보기를 사용할 수 있습니다.</div></div>
+    </div>
+  </div>
+</div>
+
+
+<script id="doctor-bit-dashboard-js">
+(function(){
+  function q(id){return document.getElementById(id);}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function n(v){if(v===null||v===undefined||v===''||v==='-')return 0;const x=parseFloat(String(v).replace(/,/g,'').replace('%',''));return Number.isFinite(x)?x:0;}
+  function p(v){return `${Math.round(n(v)*10)/10}%`;}
+  function shortAge(a){
+    const map={'0-18세 미만':'0~10대','18세 이상~20대':'20대','70대 이상':'70대이상'};
+    return map[a]||a||'미상';
+  }
+  function ageRank(a){return ['0~10대','20대','30대','40대','50대','60대','70대이상','미상'].indexOf(shortAge(a));}
+  function roomOf(r){return r?.['진료실']||r?.['구분']||'전체';}
+
+  function doctorStats(){return Array.isArray(window.__latestStats)?window.__latestStats:[];}
+  function doctorAgeRaw(){return Array.isArray(window.__latestByAge)?window.__latestByAge:[];}
+  function doctorPatients(){return Array.isArray(window.__latestPatients)?window.__latestPatients:[];}
+
+  function statFor(room){return doctorStats().find(x=>x['구분']===room)||null;}
+
+  function adaptAgeRow(r){
+    return {
+      '구분':roomOf(r),
+      '연령대':shortAge(r['연령대']),
+      '총환자수':n(r['초진환자수']),
+      '초진':n(r['초진환자수']),
+      '초진주사':n(r['초진 주사환자수']),
+      '초진 주사처방률':r['초진 주사처방률']||'0%',
+      '환자당 평균 내원횟수':r['초진 평균 내원횟수']||'-',
+      '초진 주사 재진율':r['초진 재내원율(2회 이상)']||'-',
+      '초진 주사 평균 횟수':r['초진 주사치료 평균 주사횟수']||'-',
+      '초진 주사 평균 내원 횟수':r['초진 평균 내원횟수']||'-',
+      '1회 주사 비율':r['주사 1회(%)']||'0%',
+      '2회 주사 비율':r['2회(%)']||'0%',
+      '3회 주사 비율':r['3회(%)']||'0%',
+      '4회 주사 비율':r['4회(%)']||'0%',
+      '5회 주사 비율':r['5회(%)']||'0%',
+      '6회 주사 비율':r['6회(%)']||'0%',
+      '7회 주사 비율':r['7회(%)']||'0%',
+      '8회 이상 주사 비율':r['8회 이상(%)']||'0%'
+    };
+  }
+  function rows(room){
+    return doctorAgeRaw().filter(r=>roomOf(r)===room && r['연령대']!=='전체').map(adaptAgeRow)
+      .sort((a,b)=>ageRank(a['연령대'])-ageRank(b['연령대']));
+  }
+  function overall(room){
+    const raw=doctorAgeRaw().find(r=>roomOf(r)===room && r['연령대']==='전체');
+    if(!raw)return null;
+    const a=adaptAgeRow(raw), s=statFor(room);
+    if(s){
+      a['총환자수']=n(s['총환자수']);
+      a['환자당 평균 내원횟수']=s['환자당 평균내원횟수']||a['환자당 평균 내원횟수'];
+      a['초진 주사 재진율']=s['초진 주사환자 재진률(2회 이상)']||s['초진 재내원율']||a['초진 주사 재진율'];
+      a['초진 주사 평균 내원 횟수']=s['초진 주사치료 평균 내원횟수']||s['초진 평균 내원횟수']||a['초진 주사 평균 내원 횟수'];
+    }
+    return a;
+  }
+  function rooms(){
+    const arr=doctorAgeRaw().map(roomOf).filter(Boolean);
+    return [...new Set(['전체',...arr])].filter((x,i,a)=>a.indexOf(x)===i)
+      .sort((a,b)=>a==='전체'?-1:b==='전체'?1:String(a).localeCompare(String(b),'ko',{numeric:true}));
+  }
+
+  // 외래 완료환자 전체 연령 분포. 없으면 연령대별 초진 데이터를 fallback.
+  function ageBandFromAge(age){
+    const v=Number(age);
+    if(!Number.isFinite(v))return '미상';
+    if(v<18)return '0~10대';
+    if(v<30)return '20대';
+    if(v<40)return '30대';
+    if(v<50)return '40대';
+    if(v<60)return '50대';
+    if(v<70)return '60대';
+    return '70대이상';
+  }
+  function patientDistribution(room){
+    const pts=doctorPatients();
+    if(!pts.length){
+      return rows(room).map(r=>({label:r['연령대'],count:n(r['초진'])}));
+    }
+    const map=new Map();
+    pts.forEach(pt=>{
+      if(room!=='전체' && String(pt.room)!==room)return;
+      const band=ageBandFromAge(pt.age);
+      map.set(band,(map.get(band)||0)+1);
+    });
+    return ['0~10대','20대','30대','40대','50대','60대','70대이상','미상']
+      .filter(k=>map.get(k)>0).map(k=>({label:k,count:map.get(k)}));
+  }
+
+  function heatClass(v){const x=n(v);return x>=75?'heat-5':x>=50?'heat-4':x>=25?'heat-3':x>0?'heat-2':'heat-1';}
+  function barRows(rs,key,unit='명'){
+    const vals=rs.map(r=>n(r[key])),max=Math.max(0,...vals);
+    if(!rs.length)return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    return '<div class="consult-bars">'+rs.map((r,i)=>{
+      const v=vals[i],w=max?Math.max(v?2:0,Math.min(100,v/max*100)):0;
+      return `<div class="consult-row"><div class="consult-label">${esc(r['연령대'])}</div><div class="consult-track"><div class="consult-fill" style="width:${w}%"></div></div><div class="consult-value">${v.toLocaleString()}${unit}</div></div>`;
+    }).join('')+'</div>';
+  }
+  function firstRows(rs){
+    const mf=Math.max(0,...rs.map(r=>n(r['초진']))),mi=Math.max(0,...rs.map(r=>n(r['초진주사'])));
+    return `<div class="first-grid"><div></div><div class="first-head">초진 환자</div><div class="first-head">초진 주사</div><div class="first-head">처방률</div></div>`+
+      rs.map(r=>{const f=n(r['초진']),inj=n(r['초진주사']),rate=n(r['초진 주사처방률']);
+      return `<div class="first-grid"><div class="first-age">${esc(r['연령대'])}</div><div class="first-mini"><i style="width:${mf?f/mf*100:0}%"></i><span class="first-num">${f}명</span></div><div class="first-mini inj"><i style="width:${mi?inj/mi*100:0}%"></i><span class="first-num">${inj}명</span></div><div class="rate-badge">${rate}%</div></div>`}).join('');
+  }
+  function injectionDist(o){
+    const keys=['1회 주사 비율','2회 주사 비율','3회 주사 비율','4회 주사 비율','5회 주사 비율','6회 주사 비율','7회 주사 비율','8회 이상 주사 비율'];
+    const labs=['1회','2회','3회','4회','5회','6회','7회','8회+'],vals=keys.map(k=>n(o?.[k])),max=Math.max(1,...vals);
+    return '<div class="inj-dist">'+vals.map((v,i)=>`<div class="inj-col"><div class="pct">${v}%</div><div class="vbar-wrap"><div class="vbar" style="height:${Math.max(v?4:0,v/max*100)}%"></div></div><div class="lab">${labs[i]}</div></div>`).join('')+'</div>';
+  }
+  function heatTable(rs){
+    const keys=['1회 주사 비율','2회 주사 비율','3회 주사 비율','4회 주사 비율','5회 주사 비율','6회 주사 비율','7회 주사 비율','8회 이상 주사 비율'];
+    const labs=['1회','2회','3회','4회','5회','6회','7회','8회+'];
+    return `<table class="age-heat"><thead><tr><th>연령대</th>${labs.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`+
+      rs.map(r=>`<tr><td><b>${esc(r['연령대'])}</b></td>${keys.map(k=>{const v=n(r[k]);return `<td class="heat-cell ${heatClass(v)}">${v}%</td>`}).join('')}</tr>`).join('')+'</tbody></table>';
+  }
+  function retention(rs){
+    return `<div class="retention-legend"><span><i class="one"></i>1회 종료</span><span><i class="multi"></i>2회 이상 지속</span></div><div class="retention-rows">`+
+      rs.map(r=>{const one=Math.max(0,Math.min(100,n(r['1회 주사 비율']))),multi=Math.max(0,100-one);
+      return `<div class="retention-row"><div class="consult-label">${esc(r['연령대'])}</div><div class="retention-bar"><div class="retention-one" style="width:${one}%"></div><div class="retention-multi" style="width:${multi}%"></div></div><div class="retention-value">${multi.toFixed(0)}%</div></div>`}).join('')+'</div>';
+  }
+  function delta(rs,o){
+    const base=n(o?.['초진 주사처방률']),ds=rs.map(r=>n(r['초진 주사처방률'])-base),max=Math.max(10,...ds.map(Math.abs));
+    return `<div class="retention-legend">전체 평균 ${base}% 대비 연령대별 처방률 차이입니다.</div><div class="delta-rows">`+
+      rs.map((r,i)=>{const d=ds[i],w=Math.min(50,Math.abs(d)/max*50);
+      return `<div class="delta-row"><div class="consult-label">${esc(r['연령대'])}</div><div class="delta-track"><i class="delta-mid"></i>${d>=0?`<i class="delta-fill-pos" style="width:${w}%"></i>`:`<i class="delta-fill-neg" style="width:${w}%"></i>`}</div><div class="delta-value ${d>=0?'pos':'neg'}">${d>=0?'+':''}${d.toFixed(0)}%p</div></div>`}).join('')+'</div>';
+  }
+  function roomCompare(){
+    const list=doctorStats().filter(r=>r['구분']&&r['구분']!=='전체').sort((a,b)=>String(a['구분']).localeCompare(String(b['구분']),'ko',{numeric:true}));
+    if(!list.length)return '<div class="age-dash-empty">진료실별 비교 데이터가 없습니다.</div>';
+    const head=['진료실','총환자수','초진 주사처방률','초진 재내원율','평균 주사횟수'];
+    let x='<div class="room-compare">'+head.map(h=>`<div class="rh">${h}</div>`).join('');
+    list.forEach((r,i)=>{const last=i===list.length-1?' last-row':'';
+      x+=`<div class="room-name${last}">${esc(r['구분'])}</div><div class="${last}">${n(r['총환자수']).toLocaleString()}명</div><div class="${last}">${r['초진 주사처방률']||'-'}</div><div class="${last}">${r['초진 재내원율']||'-'}</div><div class="${last}">${r['초진 주사치료 평균 주사횟수']||'-'}회</div>`;
+    });
+    return x+'</div>';
+  }
+  function roomVolume(){
+    const list=doctorStats().filter(r=>r['구분']&&r['구분']!=='전체');
+    if(!list.length)return '<div class="age-dash-empty">진료실별 데이터가 없습니다.</div>';
+    const max=Math.max(1,...list.map(r=>n(r['총환자수'])));
+    return '<div class="consult-bars">'+list.map(r=>`<div class="consult-row"><div class="consult-label">${esc(r['구분'])}</div><div class="consult-track"><div class="consult-fill" style="width:${n(r['총환자수'])/max*100}%"></div></div><div class="consult-value">${n(r['총환자수'])}명</div></div>`).join('')+'</div>';
+  }
+
+  function relation(rs,o){
+    if(!rs.length)return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    const avgFirst=rs.reduce((s,r)=>s+n(r['초진']),0)/rs.length;
+    const base=n(o['초진 주사처방률']);
+    const maxFirst=Math.max(1,...rs.map(r=>n(r['초진'])));
+    const maxInj=Math.max(1,...rs.map(r=>n(r['초진주사'])));
+    const items=rs.map(r=>{
+      const f=n(r['초진']),inj=n(r['초진주사']),rate=n(r['초진 주사처방률']);
+      const x=8+(f/maxFirst)*84,y=8+(rate/100)*84,size=16+(inj/maxInj)*25;
+      const tag=f>=avgFirst?(rate>=base?'규모↑ · 전환↑':'규모↑ · 전환↓'):(rate>=base?'규모↓ · 전환↑':'규모↓ · 전환↓');
+      let text='';
+      if(f<avgFirst&&rate>=base) text='초진 환자 규모는 작지만 처방률은 높은 편입니다. 신규환자 유입을 늘리면 주사 환자 증가 여지가 있습니다.';
+      else if(f>=avgFirst&&rate<base) text='초진 환자 유입은 충분하지만 처방률이 평균보다 낮습니다. 설명·권유 과정의 점검 후보입니다.';
+      else if(f>=avgFirst&&rate>=base) text='초진 유입과 주사 전환이 모두 높은 핵심 연령층입니다.';
+      else text='초진 규모와 전환이 모두 낮아 타깃 연령층인지 먼저 확인할 필요가 있습니다.';
+      return {r,f,inj,rate,x,y,size,tag,text};
+    });
+    return `<div class="relation-summary">
+      <div><b>전체 평균 처방률</b><strong>${base}%</strong></div>
+      <div><b>연령대 평균 초진</b><strong>${avgFirst.toFixed(1)}명</strong></div>
+      <div><b>처방률 최고</b><strong>${esc(items.slice().sort((a,b)=>b.rate-a.rate)[0]?.r['연령대']||'-')} ${items.slice().sort((a,b)=>b.rate-a.rate)[0]?.rate||0}%</strong></div>
+      <div><b>초진 규모 최대</b><strong>${esc(items.slice().sort((a,b)=>b.f-a.f)[0]?.r['연령대']||'-')} ${items.slice().sort((a,b)=>b.f-a.f)[0]?.f||0}명</strong></div>
+      </div><div class="relation-wrap"><div class="relation-chart">
+      <div class="relation-axis-y">초진 주사 처방률 ↑</div><div class="relation-axis-x">초진 환자 규모 →</div>
+      <div class="relation-avg-v" style="left:${8+(avgFirst/maxFirst)*84}%"></div>
+      <div class="relation-avg-h" style="bottom:${8+(base/100)*84}%"></div>
+      <div class="relation-zone" style="left:56px;top:34px">규모↓ · 전환↑</div><div class="relation-zone" style="right:28px;top:34px">규모↑ · 전환↑</div>
+      <div class="relation-zone" style="left:56px;bottom:42px">규모↓ · 전환↓</div><div class="relation-zone" style="right:28px;bottom:42px">규모↑ · 전환↓</div>
+      ${items.map(x=>`<div class="relation-point" style="left:${x.x}%;bottom:${x.y}%;width:${x.size}px;height:${x.size}px" title="${esc(x.r['연령대'])}: 초진 ${x.f}명 / 주사 ${x.inj}명 / ${x.rate}%"><span>${esc(x.r['연령대'])}</span></div>`).join('')}
+      </div><div class="relation-list">${items.map(x=>`<div class="relation-item"><div class="relation-item-head"><b>${esc(x.r['연령대'])}</b><span class="relation-tag">${x.tag}</span></div><p>초진 <strong>${x.f}명</strong> · 초진주사 <strong>${x.inj}명</strong> · 처방률 <strong>${x.rate}%</strong><br>${x.text}</p></div>`).join('')}</div></div>`;
+  }
+  function insights(rs,o){
+    if(!rs.length)return '';
+    const topPat=rs.slice().sort((a,b)=>n(b['초진'])-n(a['초진']))[0];
+    const topRate=rs.slice().sort((a,b)=>n(b['초진 주사처방률'])-n(a['초진 주사처방률']))[0];
+    const topRev=rs.slice().sort((a,b)=>n(b['초진 주사 재진율'])-n(a['초진 주사 재진율']))[0];
+    return `<div class="insight-list">
+      <div class="insight"><b>핵심 초진 연령층</b><span>${esc(topPat['연령대'])}</span><small>초진 ${n(topPat['초진'])}명으로 가장 많습니다.</small></div>
+      <div class="insight"><b>주사 처방률 최고</b><span>${esc(topRate['연령대'])} · ${p(topRate['초진 주사처방률'])}</span><small>환자 규모와 함께 해석해야 합니다.</small></div>
+      <div class="insight"><b>재내원율 최고</b><span>${esc(topRev['연령대'])} · ${p(topRev['초진 주사 재진율'])}</span><small>의사랑 초진 재내원율 기준입니다.</small></div>
+    </div>`;
+  }
+  function opportunity(rs,o){
+    if(!rs.length)return '';
+    const base=n(o['초진 주사처방률']),avg=rs.reduce((s,r)=>s+n(r['초진']),0)/rs.length;
+    const improve=rs.filter(r=>n(r['초진'])>=avg&&n(r['초진 주사처방률'])<base).sort((a,b)=>n(b['초진'])-n(a['초진']))[0];
+    const attract=rs.filter(r=>n(r['초진'])<avg&&n(r['초진 주사처방률'])>=base).sort((a,b)=>n(b['초진 주사처방률'])-n(a['초진 주사처방률']))[0];
+    const visit=rs.slice().sort((a,b)=>n(b['환자당 평균 내원횟수'])-n(a['환자당 평균 내원횟수']))[0];
+    const multi=rs.slice().sort((a,b)=>(100-n(b['1회 주사 비율']))-(100-n(a['1회 주사 비율'])))[0];
+    const cards=[
+      ['전환 개선 후보',improve?.['연령대']||'-',improve?`초진 ${n(improve['초진'])}명 · 처방률 ${p(improve['초진 주사처방률'])}`:'뚜렷한 후보 없음'],
+      ['유입 확대 후보',attract?.['연령대']||'-',attract?`규모는 작지만 처방률 ${p(attract['초진 주사처방률'])}`:'뚜렷한 후보 없음'],
+      ['내원 강도 최고',visit?.['연령대']||'-',visit?`${n(visit['환자당 평균 내원횟수']).toFixed(2)}회`:'-'],
+      ['반복치료 비중 최고',multi?.['연령대']||'-',multi?`2회 이상 ${(100-n(multi['1회 주사 비율'])).toFixed(0)}%`:'-']
+    ];
+    return `<div class="opportunity-grid">${cards.map(c=>`<div class="opp-card"><b>${c[0]}</b><strong>${esc(c[1])}</strong><small>${c[2]}</small></div>`).join('')}</div>`;
+  }
+
+  function graphRender(){
+    const content=q('doctorBitAgeDashboardContent'),room=q('doctorBitAgeDashboardRoom')?.value||'전체',rs=rows(room),o=overall(room);
+    if(!o){content.innerHTML='<div class="age-dash-empty">선택한 범위의 통계 데이터가 없습니다.</div>';return;}
+    const dist=patientDistribution(room),sum=dist.reduce((s,x)=>s+x.count,0)||1;
+    const distHtml='<div class="consult-bars">'+dist.map(x=>`<div class="consult-row"><div class="consult-label">${esc(x.label)}</div><div class="consult-track"><div class="consult-fill" style="width:${x.count/sum*100}%"></div></div><div class="consult-value">${(x.count/sum*100).toFixed(1)}%</div></div>`).join('')+'</div>';
+    const kpis=[
+      ['총환자수',`${n(o['총환자수']).toLocaleString()}명`,'선택 범위 고유 환자'],
+      ['초진 환자',`${n(o['초진']).toLocaleString()}명`,'초진·신환'],
+      ['초진 주사',`${n(o['초진주사']).toLocaleString()}명`,`${p(o['초진 주사처방률'])} 처방률`],
+      ['초진 재내원율',p(o['초진 주사 재진율']),'2회 이상 내원'],
+      ['평균 주사횟수',`${n(o['초진 주사 평균 횟수']).toFixed(2)}회`,`평균 내원 ${n(o['초진 주사 평균 내원 횟수']).toFixed(2)}회`]
+    ];
+    content.innerHTML=`<div class="age-dash-kpis">${kpis.map(([l,v,s])=>`<div class="age-dash-kpi"><span>${l}</span><strong>${v}</strong><small>${s}</small></div>`).join('')}</div>
+    <div class="age-dash-grid">
+      <section class="age-dash-card"><h3>① 연령대별 환자 분포</h3><div class="desc">외래 완료환자 기준 연령대별 고유 환자 구성을 확인합니다.</div>${distHtml}</section>
+      <section class="age-dash-card"><h3>② 초진 환자 · 초진 주사 · 처방률</h3><div class="desc">연령대별 신규환자 규모와 주사 전환 차이를 동시에 비교합니다.</div>${firstRows(rs)}</section>
+      <section class="age-dash-card wide"><h3>③ 초진 환자 규모 × 초진 주사 처방률 관계도</h3><div class="desc">초진 주사 숫자만 보지 않고 초진 환자 수와 처방률을 동시에 비교합니다. 점 크기는 초진 주사 환자 수입니다.</div>${relation(rs,o)}</section>
+      <section class="age-dash-card"><h3>④ 주사 횟수 분포</h3><div class="desc">초진 당일 주사환자가 기간 내 총 몇 회 주사를 받았는지 비율입니다.</div>${injectionDist(o)}</section>
+      <section class="age-dash-card"><h3>⑤ 연령대별 n회 주사 비율</h3><div class="desc">진한 셀일수록 해당 횟수 비중이 높습니다.</div>${heatTable(rs)}</section>
+      <section class="age-dash-card"><h3>⑥ 1회 종료 vs 2회 이상 지속</h3><div class="desc">1회 주사 후 종료와 2회 이상 반복치료 비중을 비교합니다.</div>${retention(rs)}</section>
+      <section class="age-dash-card"><h3>⑦ 전체 평균 대비 주사 처방률</h3><div class="desc">전체 처방률보다 전환이 강한/약한 연령대를 %p로 비교합니다.</div>${delta(rs,o)}</section>
+      <section class="age-dash-card"><h3>⑧ 초진 평균 내원횟수</h3><div class="desc">연령대별 초진 환자의 기간 내 평균 내원횟수입니다.</div>${barRows(rs,'환자당 평균 내원횟수','회')}</section>
+      <section class="age-dash-card"><h3>⑨ 초진 재내원율</h3><div class="desc">초진환자가 기간 내 2회 이상 내원한 비율입니다.</div>${barRows(rs,'초진 주사 재진율','%')}</section>
+      <section class="age-dash-card wide"><h3>⑩ 컨설팅 관점 핵심 포인트</h3><div class="desc">환자 유입, 주사 전환, 재내원 차이를 빠르게 찾기 위한 자동 요약입니다.</div>${insights(rs,o)}</section>
+      <section class="age-dash-card wide"><h3>⑪ 추가 점검 후보</h3><div class="desc">환자 규모와 처방률을 함께 보고 우선 살펴볼 연령대를 자동 표시합니다.</div>${opportunity(rs,o)}</section>
+      <section class="age-dash-card"><h3>⑫ 진료실별 환자 규모</h3><div class="desc">진료실별 전체 고유 환자수를 비교합니다.</div>${roomVolume()}</section>
+      <section class="age-dash-card"><h3>⑬ 진료실별 핵심 비교</h3><div class="desc">환자 규모, 초진 주사 전환, 재내원을 진료실별로 비교합니다.</div>${roomCompare()}</section>
+    </div>`;
+  }
+
+  function donutGradient(dist){
+    const colors=['#7c9ac7','#9887d4','#86b8a8','#e1a06e','#d1859d','#7e99c8','#baa47c','#bbb'];
+    const total=dist.reduce((s,x)=>s+x.count,0)||1;let acc=0,parts=[];
+    dist.forEach((x,i)=>{const a=acc/total*100;acc+=x.count;const z=acc/total*100;parts.push(`${colors[i%colors.length]} ${a}% ${z}%`)});
+    return `conic-gradient(${parts.join(',')})`;
+  }
+  function comboSVG(rs){
+    if(!rs.length)return '<div class="age-dash-empty">표시할 연령대 데이터가 없습니다.</div>';
+    const f=rs.map(r=>n(r['초진'])),inj=rs.map(r=>n(r['초진주사'])),rate=rs.map(r=>Math.max(0,Math.min(100,n(r['초진 주사처방률']))));
+    const max=Math.max(1,...f,...inj),W=920,H=300,left=46,right=48,top=34,bottom=58,pw=W-left-right,ph=H-top-bottom,gw=pw/rs.length,bw=Math.min(28,gw*.22),gap=Math.min(8,gw*.07);
+    const cy=v=>top+ph-(v/max)*ph,ry=v=>top+ph-(v/100)*ph;
+    let grid='';[0,25,50,75,100].forEach(v=>{const y=ry(v);grid+=`<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" class="ov-svg-grid"/><text x="${W-right+10}" y="${y+4}" class="ov-svg-axis ov-svg-rate-axis">${v}%</text>`});
+    [0,Math.round(max/2),max].forEach(v=>grid+=`<text x="${left-10}" y="${cy(v)+4}" text-anchor="end" class="ov-svg-axis">${v}</text>`);
+    let bars='',pts=[],dots='',labels='';
+    rs.forEach((r,i)=>{const cx=left+gw*(i+.5),fh=f[i]/max*ph,ih=inj[i]/max*ph,fy=top+ph-fh,iy=top+ph-ih,x1=cx-gap/2-bw,x2=cx+gap/2,py=ry(rate[i]);
+      bars+=`<rect x="${x1}" y="${fy}" width="${bw}" height="${fh}" rx="5" class="ov-svg-bar ov-svg-first"/><rect x="${x2}" y="${iy}" width="${bw}" height="${ih}" rx="5" class="ov-svg-bar ov-svg-inj"/><text x="${x1+bw/2}" y="${Math.max(top+12,fy-7)}" text-anchor="middle" class="ov-svg-value">${f[i]}</text><text x="${x2+bw/2}" y="${Math.max(top+12,iy-7)}" text-anchor="middle" class="ov-svg-value">${inj[i]}</text>`;
+      pts.push(`${cx},${py}`);dots+=`<circle cx="${cx}" cy="${py}" r="5" class="ov-svg-dot"/><text x="${cx}" y="${Math.max(top+12,py-10)}" text-anchor="middle" class="ov-svg-rate-label">${rate[i]}%</text>`;
+      labels+=`<text x="${cx}" y="${H-24}" text-anchor="middle" class="ov-svg-xlabel">${esc(r['연령대'])}</text>`;
+    });
+    return `<div><div class="ov-combo-legend"><span><i></i>초진 환자</span><span><i class="inj"></i>초진 주사</span><span><i class="rate"></i>초진 주사 처방률</span></div><div class="ov-combo-svg-wrap"><svg class="ov-combo-svg" viewBox="0 0 ${W} ${H}">${grid}<line x1="${left}" y1="${top+ph}" x2="${W-right}" y2="${top+ph}" class="ov-svg-axis-line"/>${bars}<polyline points="${pts.join(' ')}" class="ov-svg-line"/>${dots}${labels}</svg></div></div>`;
+  }
+  function overviewInsights(rs,o){
+    if(!rs.length)return '';
+    const topFirst=rs.slice().sort((a,b)=>n(b['초진'])-n(a['초진']))[0],topRate=rs.slice().sort((a,b)=>n(b['초진 주사처방률'])-n(a['초진 주사처방률']))[0],base=n(o['초진 주사처방률']);
+    const avg=rs.reduce((s,r)=>s+n(r['초진']),0)/rs.length;
+    const candidate=rs.filter(r=>n(r['초진'])>=avg&&n(r['초진 주사처방률'])<base).sort((a,b)=>n(b['초진'])-n(a['초진']))[0];
+    return `<div class="ov-insights">
+      <div class="ov-insight"><b>📌 초진 규모 최대 · ${esc(topFirst?.['연령대']||'-')}</b>초진 ${n(topFirst?.['초진'])}명, 처방률 ${p(topFirst?.['초진 주사처방률'])}. 신규 유입의 중심 연령층입니다.</div>
+      <div class="ov-insight"><b>✅ 처방률 최고 · ${esc(topRate?.['연령대']||'-')}</b>초진 주사 처방률 ${p(topRate?.['초진 주사처방률'])}로 가장 높습니다.</div>
+      <div class="ov-insight"><b>🎯 전환 개선 후보 · ${esc(candidate?.['연령대']||'-')}</b>${candidate?`초진 ${n(candidate['초진'])}명인데 처방률은 ${p(candidate['초진 주사처방률'])}로 전체 ${base}%보다 낮습니다.`:'뚜렷한 전환 개선 후보가 없습니다.'}</div>
+    </div>`;
+  }
+  function overviewRender(){
+    const content=q('doctorBitAgeOverviewContent'),room=q('doctorBitAgeOverviewRoom')?.value||'전체',rs=rows(room),o=overall(room);
+    if(!o){content.innerHTML='<div class="age-dash-empty">선택 범위 데이터가 없습니다.</div>';return;}
+    const dist=patientDistribution(room),sum=dist.reduce((s,x)=>s+x.count,0)||1;
+    const distTable=`<table class="ov-mini-table"><thead><tr><th>연령대</th><th>환자수</th><th>비율</th></tr></thead><tbody>${dist.map(x=>`<tr><td>${esc(x.label)}</td><td>${x.count}</td><td>${(x.count/sum*100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+    const kpis=[
+      ['총환자수',`${n(o['총환자수']).toLocaleString()}명`,'선택 범위 고유 환자'],
+      ['초진 환자',`${n(o['초진'])}명`,'초진·신환'],
+      ['초진 주사',`${n(o['초진주사'])}명`,`${p(o['초진 주사처방률'])} 처방률`],
+      ['초진 주사 처방률',p(o['초진 주사처방률']),'초진 환자 기준'],
+      ['초진 재내원율',p(o['초진 주사 재진율']),'2회 이상 내원'],
+      ['평균 주사횟수',`${n(o['초진 주사 평균 횟수']).toFixed(2)}회`,`평균 내원 ${n(o['초진 주사 평균 내원 횟수']).toFixed(2)}회`]
+    ];
+    const topPatient=dist.slice().sort((a,b)=>b.count-a.count)[0];
+    const topRate=rs.slice().sort((a,b)=>n(b['초진 주사처방률'])-n(a['초진 주사처방률']))[0];
+    const topRevisit=rs.slice().sort((a,b)=>n(b['초진 주사 재진율'])-n(a['초진 주사 재진율']))[0];
+    const topMulti=rs.slice().sort((a,b)=>(100-n(b['1회 주사 비율']))-(100-n(a['1회 주사 비율'])))[0];
+    content.innerHTML=`<div class="age-overview-kpis">${kpis.map(([l,v,s])=>`<div class="age-overview-kpi"><span>${l}</span><strong>${v}</strong><small>${s}</small></div>`).join('')}</div>
+    <div class="age-overview-grid">
+      <section class="age-overview-panel"><h3>① 연령대별 환자 분포</h3><div class="ov-desc">전체 외래환자 중 연령대별 구성 비율</div><div class="ov-age-dist"><div class="ov-donut" style="background:${donutGradient(dist)}"><div class="ov-donut-center">전체<b>${n(o['총환자수'])}명</b></div></div>${distTable}</div></section>
+      <section class="age-overview-panel wide2"><h3>② 초진 환자 · 초진 주사 · 처방률 관계</h3><div class="ov-desc">막대는 초진/초진주사 규모, 점·선은 처방률입니다. 규모와 전환 효율을 동시에 비교합니다.</div><div class="ov-combo">${comboSVG(rs)}${overviewInsights(rs,o)}</div></section>
+      <section class="age-overview-panel"><h3>③ 주사 횟수 분포</h3><div class="ov-desc">초진 주사환자 기준 기간 내 총 주사횟수</div>${injectionDist(o)}</section>
+      <section class="age-overview-panel"><h3>④ 연령대별 n회 주사 비율</h3><div class="ov-desc">반복치료 패턴을 셀 진하기로 비교</div>${heatTable(rs)}</section>
+      <section class="age-overview-panel"><h3>⑤ 진료실별 핵심 지표</h3><div class="ov-desc">환자 규모 · 처방률 · 재내원율 · 평균 주사횟수</div>${roomCompare()}</section>
+      <section class="age-overview-panel full"><h3>⑥ 컨설팅 포인트 요약</h3><div class="ov-desc">현재 데이터에서 바로 점검할 만한 포인트를 압축해 보여줍니다.</div><div class="ov-consult-cards">
+        <div class="ov-consult-card"><span>핵심 고객층</span><b>${esc(topPatient?.label||'-')}</b><p>전체 외래환자 규모가 가장 큰 연령층입니다.</p></div>
+        <div class="ov-consult-card"><span>처방률 최고</span><b>${esc(topRate?.['연령대']||'-')}</b><p>초진 환자의 주사 전환 효율이 가장 높습니다.</p></div>
+        <div class="ov-consult-card"><span>재내원율 최고</span><b>${esc(topRevisit?.['연령대']||'-')}</b><p>초진 후 2회 이상 내원 비중이 가장 높습니다.</p></div>
+        <div class="ov-consult-card"><span>반복치료 비중 최고</span><b>${esc(topMulti?.['연령대']||'-')}</b><p>2회 이상 주사로 이어지는 비중이 상대적으로 높습니다.</p></div>
+        <div class="ov-consult-card"><span>전체 평균 처방률</span><b>${p(o['초진 주사처방률'])}</b><p>각 연령대 전환 수준의 기준선입니다.</p></div>
+      </div></section>
+    </div>`;
+  }
+
+  function fillSelect(id){
+    const el=q(id);if(!el)return;
+    const current=el.value||'전체';
+    el.innerHTML=rooms().map(r=>`<option value="${esc(r)}">${r==='전체'?'전체 병원':esc(r)}</option>`).join('');
+    el.value=rooms().includes(current)?current:'전체';
+  }
+  window.openDoctorBitGraphModal=function(){
+    if(!doctorAgeRaw().length){alert('먼저 의사랑 파일을 업로드하여 통계를 계산해주세요.');return;}
+    fillSelect('doctorBitAgeDashboardRoom');
+    q('doctorBitAgeChartModal').style.display='flex';
+    graphRender();
+  };
+  window.closeDoctorBitGraphModal=function(){const m=q('doctorBitAgeChartModal');if(m)m.style.display='none';};
+  window.openDoctorBitOverviewModal=function(){
+    if(!doctorAgeRaw().length){alert('먼저 의사랑 파일을 업로드하여 통계를 계산해주세요.');return;}
+    fillSelect('doctorBitAgeOverviewRoom');
+    q('doctorBitAgeOverviewModal').style.display='flex';
+    overviewRender();
+  };
+  window.closeDoctorBitOverviewModal=function(){const m=q('doctorBitAgeOverviewModal');if(m)m.style.display='none';};
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    q('doctorBitAgeDashboardRoom')?.addEventListener('change',graphRender);
+    q('doctorBitAgeOverviewRoom')?.addEventListener('change',overviewRender);
+    q('doctorBitAgeChartModal')?.addEventListener('click',e=>{if(e.target===q('doctorBitAgeChartModal'))closeDoctorBitGraphModal();});
+    q('doctorBitAgeOverviewModal')?.addEventListener('click',e=>{if(e.target===q('doctorBitAgeOverviewModal'))closeDoctorBitOverviewModal();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDoctorBitGraphModal();closeDoctorBitOverviewModal();}});
+  });
+})();
+</script>
+
+
+<script id="doctor-age-popup-controller-final">
+(function(){
+  const $ = id => document.getElementById(id);
+
+  function ageRows(){ return Array.isArray(window.__latestByAge) ? window.__latestByAge : []; }
+
+  function ensureData(){
+    if(!ageRows().length){
+      alert('먼저 의사랑 파일을 업로드하여 통계를 계산해주세요.');
+      return false;
+    }
+    return true;
+  }
+
+  function forceOpen(id){
+    const el=$(id);
+    if(!el) return false;
+    el.style.setProperty('display','flex','important');
+    el.classList.add('jinsul-open');
+    el.setAttribute('aria-hidden','false');
+    document.documentElement.style.overflow='hidden';
+    document.body.style.overflow='hidden';
+    requestAnimationFrame(()=>el.scrollTop=0);
+    return true;
+  }
+  function forceClose(id){
+    const el=$(id);
+    if(!el) return;
+    el.classList.remove('jinsul-open');
+    el.style.setProperty('display','none','important');
+    el.setAttribute('aria-hidden','true');
+    document.documentElement.style.overflow='';
+    document.body.style.overflow='';
+  }
+
+  function colorizeDistribution(){
+    // 결과값 그래프의 ① 연령대별 환자 분포 막대
+    const root=$('doctorBitAgeDashboardContent');
+    if(root){
+      const firstCard=root.querySelector('.age-dash-card');
+      if(firstCard){
+        [...firstCard.querySelectorAll('.consult-row')].forEach((row,i)=>{
+          row.classList.add('age-color-'+(i%8));
+        });
+      }
+    }
+    // 한눈에 보기 표 범례에 도넛 색상 추가
+    const ov=$('doctorBitAgeOverviewContent');
+    if(ov){
+      const colors=['#6f95c8','#8d79cf','#65ad9d','#df9966','#cf7891','#7391c2','#b29a70','#9aa0a8'];
+      [...ov.querySelectorAll('.ov-mini-table tbody tr')].forEach((tr,i)=>{
+        const td=tr.querySelector('td');
+        if(td && !td.querySelector('.ov-age-legend-dot')){
+          td.insertAdjacentHTML('afterbegin',`<span class="ov-age-legend-dot" style="background:${colors[i%colors.length]}"></span>`);
+        }
+      });
+    }
+  }
+
+  function refreshGraph(){
+    try{
+      // 기존 의사랑 비트 UI 렌더 함수는 이전 스크립트 내부에 있으므로
+      // 기존 open 함수가 먼저 콘텐츠를 생성하게 한 뒤 팝업만 강제 fixed로 표시
+      if(typeof window.__doctorGraphRefresh==='function') window.__doctorGraphRefresh();
+    }catch(e){ console.error(e); }
+    setTimeout(colorizeDistribution,0);
+  }
+
+  // 기존 함수 저장 후 래핑. 이렇게 하면 내부 렌더 로직은 그대로 유지하면서 표시 방식만 비트처럼 팝업으로 고정.
+  const oldGraph = window.openDoctorBitGraphModal;
+  const oldOverview = window.openDoctorBitOverviewModal;
+  const oldCloseGraph = window.closeDoctorBitGraphModal;
+  const oldCloseOverview = window.closeDoctorBitOverviewModal;
+
+  window.JINSULDoctorAge = {
+    openGraph(ev){
+      if(ev){ev.preventDefault();ev.stopPropagation();}
+      if(!ensureData()) return false;
+      try{ if(typeof oldGraph==='function') oldGraph(); }catch(e){ console.error('graph render:',e); }
+      forceOpen('doctorBitAgeChartModal');
+      setTimeout(colorizeDistribution,20);
+      return false;
+    },
+    openOverview(ev){
+      if(ev){ev.preventDefault();ev.stopPropagation();}
+      if(!ensureData()) return false;
+      try{ if(typeof oldOverview==='function') oldOverview(); }catch(e){ console.error('overview render:',e); }
+      forceOpen('doctorBitAgeOverviewModal');
+      setTimeout(colorizeDistribution,20);
+      return false;
+    },
+    closeGraph(){
+      try{ if(typeof oldCloseGraph==='function') oldCloseGraph(); }catch(e){}
+      forceClose('doctorBitAgeChartModal');
+    },
+    closeOverview(){
+      try{ if(typeof oldCloseOverview==='function') oldCloseOverview(); }catch(e){}
+      forceClose('doctorBitAgeOverviewModal');
+    }
+  };
+
+  // 닫기 버튼도 새 controller로 통일
+  document.addEventListener('DOMContentLoaded',()=>{
+    const gm=$('doctorBitAgeChartModal'), om=$('doctorBitAgeOverviewModal');
+    if(gm){
+      gm.querySelectorAll('button').forEach(btn=>{
+        if((btn.textContent||'').trim()==='닫기') btn.onclick=()=>JINSULDoctorAge.closeGraph();
+      });
+      gm.addEventListener('click',e=>{if(e.target===gm)JINSULDoctorAge.closeGraph();});
+    }
+    if(om){
+      om.querySelectorAll('button').forEach(btn=>{
+        if((btn.textContent||'').trim()==='닫기') btn.onclick=()=>JINSULDoctorAge.closeOverview();
+      });
+      om.addEventListener('click',e=>{if(e.target===om)JINSULDoctorAge.closeOverview();});
+    }
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){
+        JINSULDoctorAge.closeGraph();
+        JINSULDoctorAge.closeOverview();
+      }
+    });
+  });
+})();
+</script>
+
+
+<script id="doctor-age-dashboard-polish-js-v10">
+(function(){
+  const $=id=>document.getElementById(id);
+
+  function setPageLock(on){
+    document.documentElement.classList.toggle('jinsul-analysis-open',!!on);
+    document.body.classList.toggle('jinsul-analysis-open',!!on);
+  }
+
+  function colorizeAgeBars(root){
+    if(!root)return;
+    const colors=['#6f95c8','#8d79cf','#65ad9d','#db9967','#c17c92','#7d97c5','#b29a70','#9aa0a8'];
+    // 첫 번째 분포 카드만 연령별 고유 색상
+    const cards=[...root.querySelectorAll('.age-dash-card')];
+    const distCard=cards.find(c=>(c.querySelector('h3')?.textContent||'').includes('연령대별 환자 분포'));
+    if(distCard){
+      [...distCard.querySelectorAll('.consult-row')].forEach((row,i)=>{
+        const fill=row.querySelector('.consult-fill');
+        if(fill) fill.style.setProperty('background',colors[i%colors.length],'important');
+      });
+    }
+    // 한눈에 보기 연령 표 색 점
+    const ovRows=[...root.querySelectorAll('.ov-mini-table tbody tr')];
+    ovRows.forEach((tr,i)=>{
+      const td=tr.querySelector('td');
+      if(td && !td.querySelector('.ov-age-legend-dot')){
+        td.insertAdjacentHTML('afterbegin',`<span class="ov-age-legend-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:${colors[i%colors.length]}"></span>`);
+      }
+    });
+  }
+
+  function repairInjectionBars(root){
+    if(!root)return;
+    root.querySelectorAll('.inj-dist').forEach(box=>{
+      const cols=[...box.querySelectorAll('.inj-col')];
+      cols.forEach(col=>{
+        const pctEl=col.querySelector('.pct');
+        const bar=col.querySelector('.vbar');
+        const value=parseFloat((pctEl?.textContent||'0').replace('%',''))||0;
+        if(bar){
+          // 값이 0이면 0, 값이 있으면 최소 5% 높이를 확보
+          const h=value<=0?0:Math.max(5,Math.min(100,value));
+          bar.style.setProperty('height',h+'%','important');
+          bar.style.setProperty('display','block','important');
+          bar.style.setProperty('visibility','visible','important');
+          bar.style.setProperty('opacity','1','important');
+        }
+      });
+    });
+  }
+
+  function normalizePopup(root){
+    if(!root)return;
+    colorizeAgeBars(root);
+    repairInjectionBars(root);
+    // 모든 테이블 sticky 해제
+    root.querySelectorAll('th,td').forEach(el=>{
+      el.style.setProperty('position','static','important');
+      el.style.removeProperty('top');
+    });
+  }
+
+  function refreshAll(){
+    normalizePopup($('doctorBitAgeDashboardContent'));
+    normalizePopup($('doctorBitAgeOverviewContent'));
+  }
+
+  // 기존 controller가 있으면 표시 직후 보정
+  const timer=setInterval(()=>{
+    const gm=$('doctorBitAgeChartModal'),om=$('doctorBitAgeOverviewModal');
+    if(gm?.classList.contains('jinsul-open') || gm?.style.display==='flex'){
+      setPageLock(true); normalizePopup($('doctorBitAgeDashboardContent'));
+    }
+    if(om?.classList.contains('jinsul-open') || om?.style.display==='flex'){
+      setPageLock(true); normalizePopup($('doctorBitAgeOverviewContent'));
+    }
+    if((!gm || (gm.style.display==='none'&&!gm.classList.contains('jinsul-open'))) &&
+       (!om || (om.style.display==='none'&&!om.classList.contains('jinsul-open')))){
+      setPageLock(false);
+    }
+  },250);
+
+  // 셀렉트 변경 뒤 다시 스타일링
+  document.addEventListener('change',e=>{
+    if(e.target?.id==='doctorBitAgeDashboardRoom' || e.target?.id==='doctorBitAgeOverviewRoom'){
+      setTimeout(refreshAll,10);
+      setTimeout(refreshAll,80);
+    }
+  });
+
+  // 버튼 클릭 후 렌더 타이밍 보정
+  document.addEventListener('click',e=>{
+    const t=e.target.closest?.('.age-analysis-btn');
+    if(t){
+      setTimeout(refreshAll,20);
+      setTimeout(refreshAll,120);
+    }
+  });
+
+  // 닫기 시 스크롤 잠금 해제
+  document.addEventListener('click',e=>{
+    if((e.target.textContent||'').trim()==='닫기'){
+      setTimeout(()=>setPageLock(false),20);
+    }
+  });
+})();
+</script>
+
+
+<style id="doctor-graph-count-label-final-v11">
+/* ===== 결과값 그래프로 보기 ② 초진/초진주사 명수 라벨 최종 보정 =====
+   기존 .first-num 규칙보다 우선되도록 파일 맨 마지막에 배치 */
+#doctorBitAgeChartModal.jinsul-open #doctorBitAgeDashboardContent .first-grid .first-mini{
+  position:relative !important;
+  overflow:hidden !important;
+}
+#doctorBitAgeChartModal.jinsul-open #doctorBitAgeDashboardContent .first-grid .first-mini .first-num{
+  position:absolute !important;
+  top:50% !important;
+  right:7px !important;
+  left:auto !important;
+  transform:translateY(-50%) !important;
+  z-index:50 !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  min-width:39px !important;
+  width:auto !important;
+  height:22px !important;
+  padding:0 7px !important;
+  margin:0 !important;
+
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  background:rgba(255,255,255,.98) !important;
+  border:1px solid #bdaa8d !important;
+  border-radius:999px !important;
+  box-shadow:0 2px 5px rgba(56,43,26,.16) !important;
+
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif !important;
+  font-size:11.5px !important;
+  line-height:20px !important;
+  font-weight:950 !important;
+  letter-spacing:-.02em !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  text-shadow:none !important;
+  mix-blend-mode:normal !important;
+  filter:none !important;
+}
+/* 막대가 라벨을 덮지 못하도록 */
+#doctorBitAgeChartModal.jinsul-open #doctorBitAgeDashboardContent .first-grid .first-mini > i{
+  position:absolute !important;
+  left:0 !important;
+  top:0 !important;
+  bottom:0 !important;
+  z-index:1 !important;
+}
+/* 초진/주사 막대 색상 대비도 조금 강화 */
+#doctorBitAgeChartModal.jinsul-open #doctorBitAgeDashboardContent .first-grid .first-mini:not(.inj) > i{
+  background:#a99671 !important;
+}
+#doctorBitAgeChartModal.jinsul-open #doctorBitAgeDashboardContent .first-grid .first-mini.inj > i{
+  background:#c9b997 !important;
+}
+</style>
+
+
+<script id="doctor-graph-count-label-final-js-v11">
+(function(){
+  function fixLabels(){
+    const root=document.getElementById('doctorBitAgeDashboardContent');
+    if(!root)return;
+    root.querySelectorAll('.first-mini .first-num').forEach(el=>{
+      const S=el.style;
+      S.setProperty('color','#111827','important');
+      S.setProperty('-webkit-text-fill-color','#111827','important');
+      S.setProperty('background','rgba(255,255,255,.98)','important');
+      S.setProperty('border','1px solid #bdaa8d','important');
+      S.setProperty('box-shadow','0 2px 5px rgba(56,43,26,.16)','important');
+      S.setProperty('font-size','11.5px','important');
+      S.setProperty('font-weight','950','important');
+      S.setProperty('text-shadow','none','important');
+      S.setProperty('opacity','1','important');
+      S.setProperty('visibility','visible','important');
+      S.setProperty('z-index','50','important');
+      S.setProperty('top','50%','important');
+      S.setProperty('right','7px','important');
+      S.setProperty('left','auto','important');
+      S.setProperty('transform','translateY(-50%)','important');
+      S.setProperty('height','22px','important');
+      S.setProperty('min-width','39px','important');
+      S.setProperty('padding','0 7px','important');
+      S.setProperty('display','flex','important');
+      S.setProperty('align-items','center','important');
+      S.setProperty('justify-content','center','important');
+    });
+  }
+
+  // 버튼/필터 렌더 뒤 여러 타이밍에서 재적용
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.age-analysis-btn')){
+      [20,80,180,400].forEach(ms=>setTimeout(fixLabels,ms));
+    }
+  });
+  document.addEventListener('change',e=>{
+    if(e.target?.id==='doctorBitAgeDashboardRoom'){
+      [10,60,160].forEach(ms=>setTimeout(fixLabels,ms));
+    }
+  });
+
+  // 모달 열려 있는 동안 DOM이 다시 그려져도 자동 적용
+  const target=document.getElementById('doctorBitAgeChartModal');
+  if(target && window.MutationObserver){
+    const obs=new MutationObserver(()=>fixLabels());
+    obs.observe(target,{childList:true,subtree:true});
+  }
+  setTimeout(fixLabels,0);
+})();
+</script>
+
+</body>
 </html>
