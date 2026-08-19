@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -910,6 +911,132 @@ body.light-mode input[type=file]{
 }
 </style>
 
+
+<style id="summary-fit-and-memo-toggle">
+/* ===== 2026-08-19 비트 요약통계: 한 화면 표시 + 기타 메모 기본 숨김 ===== */
+#summaryCard{
+  width:min(1880px, calc(100vw - 28px));
+  max-width:none !important;
+  margin-left:50%;
+  transform:translateX(-50%);
+}
+#summaryOutput{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:hidden !important;
+  overflow-y:visible !important;
+}
+#summaryOutput table{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  table-layout:fixed !important;
+}
+#summaryOutput th,#summaryOutput td{
+  min-width:0 !important;
+  width:auto !important;
+  padding:9px 3px !important;
+  font-size:clamp(8px,.57vw,11px) !important;
+  line-height:1.22 !important;
+  letter-spacing:-.045em !important;
+  white-space:normal !important;
+  word-break:keep-all !important;
+  overflow-wrap:anywhere !important;
+}
+#summaryOutput th:first-child,#summaryOutput td:first-child{
+  width:7.2% !important;
+  padding-left:5px !important;
+  padding-right:5px !important;
+}
+#summaryOutput thead tr.summary-group-row th{
+  height:38px;
+  padding:8px 3px !important;
+  font-size:clamp(8px,.62vw,11px) !important;
+}
+#summaryOutput thead tr.summary-column-row th{
+  top:38px;
+  padding:7px 2px !important;
+  font-size:clamp(7.5px,.54vw,10px) !important;
+  line-height:1.2 !important;
+}
+#summaryMemoToggleBtn.active{
+  background:rgba(190,169,139,.28) !important;
+  border-color:rgba(190,169,139,.75) !important;
+}
+body.light-mode #summaryMemoToggleBtn.active{
+  background:#8b6f47 !important;
+  color:#fff !important;
+  border-color:#725735 !important;
+}
+@media(max-width:1180px){
+  #summaryCard{width:calc(100vw - 16px);}
+  #summaryOutput th,#summaryOutput td{font-size:clamp(7px,.72vw,9.5px) !important;padding:7px 2px !important;}
+  #summaryOutput thead tr.summary-column-row th{font-size:clamp(6.7px,.68vw,9px) !important;}
+}
+@media(max-width:760px){
+  #summaryCard{width:calc(100vw - 10px);}
+  #summaryOutput th,#summaryOutput td{font-size:6.6px !important;padding:6px 1px !important;letter-spacing:-.06em !important;}
+  #summaryOutput thead tr.summary-column-row th{font-size:6.2px !important;}
+  #summaryOutput th:first-child,#summaryOutput td:first-child{width:8.5% !important;}
+}
+</style>
+
+<style id="summary-balance-adjustment">
+/* ===== 2026-08-19 요약 통계 크기 균형 조정 =====
+   다른 통계 카드와 동일한 폭/여백을 사용하면서 가로 스크롤 없이 한 화면 표시 */
+#summaryCard{
+  width:100% !important;
+  max-width:none !important;
+  margin-left:0 !important;
+  transform:none !important;
+}
+#summaryCard .section-head{
+  margin-bottom:14px !important;
+}
+#summaryCard .section-head h2{
+  font-size:24px !important;
+}
+#summaryCard .section-head p{
+  font-size:14px !important;
+}
+#summaryOutput{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:hidden !important;
+}
+#summaryOutput table{
+  width:100% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+}
+#summaryOutput th,#summaryOutput td{
+  padding:8px 2px !important;
+  font-size:clamp(7.2px,.54vw,9.6px) !important;
+  line-height:1.18 !important;
+  letter-spacing:-.055em !important;
+}
+#summaryOutput thead tr.summary-group-row th{
+  height:36px !important;
+  padding:8px 2px !important;
+  font-size:clamp(7.8px,.57vw,10px) !important;
+}
+#summaryOutput thead tr.summary-column-row th{
+  top:36px !important;
+  padding:7px 1px !important;
+  font-size:clamp(6.9px,.50vw,9px) !important;
+}
+#summaryOutput th:first-child,#summaryOutput td:first-child{
+  width:7.4% !important;
+}
+@media(max-width:1180px){
+  #summaryCard{width:100% !important;}
+  #summaryOutput th,#summaryOutput td{font-size:7.2px !important;padding:7px 1px !important;}
+  #summaryOutput thead tr.summary-column-row th{font-size:6.6px !important;}
+}
+@media(max-width:760px){
+  #summaryCard{width:100% !important;}
+}
+</style>
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
@@ -1049,6 +1176,7 @@ body.light-mode input[type=file]{
           <p>의사랑 통계와 동일한 순서와 그룹으로 초진·재진·전체 환자 지표를 확인합니다.</p>
         </div>
         <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="summaryMemoToggleBtn" onclick="toggleSummaryMemoColumn()" type="button">기타 메모 보기</button>
           <button class="secondary mini-btn" onclick="copyTable('summaryOutput')" type="button">표 복사</button>
           <button class="secondary mini-btn" onclick="downloadTableXlsx('summaryOutput','비트_요약통계.xlsx')" type="button">엑셀 다운로드</button>
           <button class="secondary mini-btn" onclick="toggleTableFullscreen('summaryCard')" type="button">전체화면</button>
@@ -1097,7 +1225,7 @@ body.light-mode input[type=file]{
 <script>
   /* ================= 공통 유틸 ================= */
   const AGE_ORDER = ["0~10대","20대","30대","40대","50대","60대","70대이상","전체"];
-  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'' };
+  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'', summaryMemoVisible:false, summaryTableRows:null };
 
   function pad2(n){ return String(n).padStart(2,'0'); }
   
@@ -1842,6 +1970,7 @@ body.light-mode input[type=file]{
   }
 
   function renderSummaryTable(allRows){
+    state.summaryTableRows = allRows;
     const rows = allRows.filter(r=>r["연령대"]==="전체");
     if(!rows.length){ document.getElementById('summaryOutput').innerHTML=""; return; }
 
@@ -1878,7 +2007,7 @@ body.light-mode input[type=file]{
       {key:"7회 내원 비율", label:"7회 내원율", group:"distribution"},
       {key:"8회 이상 내원 비율", label:"8회 이상 내원율", group:"distribution"},
       {key:"특정 키워드 포함 메모 수", label:"특정 키워드 포함 메모 수", group:"etc"}
-    ].filter(c=>rows.some(r=>c.key in r));
+    ].filter(c=>rows.some(r=>c.key in r) && (state.summaryMemoVisible || c.key!=="특정 키워드 포함 메모 수"));
 
     // 진료실 평균(균등)은 기존 계산방식을 그대로 유지
     const roomRows = rows.filter(r=>/진료실$/.test(r["구분"]) && r["구분"]!=="전체");
@@ -1932,6 +2061,16 @@ body.light-mode input[type=file]{
     }).join('');
 
     document.getElementById('summaryOutput').innerHTML=`<table><thead>${groupHead}${columnHead}</thead><tbody>${tbody}</tbody></table>`;
+    const memoBtn=document.getElementById('summaryMemoToggleBtn');
+    if(memoBtn){
+      memoBtn.textContent=state.summaryMemoVisible ? '기타 메모 숨기기' : '기타 메모 보기';
+      memoBtn.classList.toggle('active', state.summaryMemoVisible);
+    }
+  }
+
+  function toggleSummaryMemoColumn(){
+    state.summaryMemoVisible=!state.summaryMemoVisible;
+    if(state.summaryTableRows) renderSummaryTable(state.summaryTableRows);
   }
 
   function renderAgeTable(result){
