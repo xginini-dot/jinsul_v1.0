@@ -1037,6 +1037,72 @@ body.light-mode #summaryMemoToggleBtn.active{
   #summaryCard{width:100% !important;}
 }
 </style>
+
+<style id="jinsul-summary-age-pc-v3">
+/* ===== 2026-08-19 요약/연령대 표 PC 한화면 확장 ===== */
+@media (min-width:1200px){
+  header{max-width:1580px!important}
+  .wrap{width:min(96vw,1580px)!important;max-width:1580px!important}
+}
+/* 요약/연령대 카드의 표 컨테이너는 가로 스크롤 제거 */
+#summaryOutput,
+#ageOutput,
+#ageTable,
+#ageStatsOutput,
+[id*="age"] .table-wrap,
+[id*="age"] .table-container{
+  overflow-x:hidden!important;
+  max-width:100%!important;
+}
+#summaryOutput table,
+#ageOutput table,
+#ageTable table,
+#ageStatsOutput table{
+  width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+}
+#summaryOutput th,#summaryOutput td,
+#ageOutput th,#ageOutput td,
+#ageTable th,#ageTable td,
+#ageStatsOutput th,#ageStatsOutput td{
+  padding:8px 5px!important;
+  font-size:10.5px!important;
+  line-height:1.28!important;
+  word-break:keep-all!important;
+  overflow-wrap:anywhere!important;
+}
+@media (min-width:1450px){
+  #summaryOutput th,#summaryOutput td,
+  #ageOutput th,#ageOutput td,
+  #ageTable th,#ageTable td,
+  #ageStatsOutput th,#ageStatsOutput td{font-size:11px!important;padding:9px 6px!important}
+}
+/* 기타 메모 컬럼 숨김 토글 대상 */
+.hide-keyword-memo-col .keyword-memo-col{display:none!important}
+</style>
+
+
+<style id="age-memo-direct-fix-v5">
+/* ===== 2026-08-19 연령대별 통계 메모 토글 직접 렌더링 수정 ===== */
+#ageMemoToggleBtn.active{
+  background:rgba(190,169,139,.28) !important;
+  border-color:rgba(190,169,139,.75) !important;
+}
+body.light-mode #ageMemoToggleBtn.active{
+  background:#8b6f47 !important;
+  color:#fff !important;
+  border-color:#725735 !important;
+}
+#ageCard #output{overflow-x:hidden!important;max-width:100%!important;}
+#ageCard #output table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;}
+#ageCard #output th,#ageCard #output td{
+  min-width:0!important;width:auto!important;padding:8px 4px!important;
+  font-size:clamp(8px,.58vw,10.5px)!important;line-height:1.25!important;
+  word-break:keep-all!important;overflow-wrap:anywhere!important;white-space:normal!important;
+}
+@media(min-width:1450px){#ageCard #output th,#ageCard #output td{font-size:10.5px!important;padding:9px 5px!important;}}
+</style>
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
@@ -1189,6 +1255,7 @@ body.light-mode #summaryMemoToggleBtn.active{
       <div class="section-head">
         <h2>📋 연령대별 통계</h2>
         <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="ageMemoToggleBtn" onclick="toggleAgeMemoColumn()" type="button">기타 메모 보기</button>
           <button class="secondary mini-btn" onclick="copyTable('output')" type="button">표 복사</button>
           <button class="secondary mini-btn" onclick="downloadTableXlsx('output','비트_연령대별통계.xlsx')" type="button">엑셀 다운로드</button>
           <button class="secondary mini-btn" onclick="toggleTableFullscreen('ageCard')" type="button">전체화면</button>
@@ -1225,7 +1292,7 @@ body.light-mode #summaryMemoToggleBtn.active{
 <script>
   /* ================= 공통 유틸 ================= */
   const AGE_ORDER = ["0~10대","20대","30대","40대","50대","60대","70대이상","전체"];
-  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'', summaryMemoVisible:false, summaryTableRows:null };
+  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'', summaryMemoVisible:false, summaryTableRows:null, ageMemoVisible:false, ageTableRows:null };
 
   function pad2(n){ return String(n).padStart(2,'0'); }
   
@@ -2074,6 +2141,7 @@ body.light-mode #summaryMemoToggleBtn.active{
   }
 
   function renderAgeTable(result){
+    state.ageTableRows = result;
     result.sort((a,b)=>{
       if(a["구분"]!==b["구분"]) return a["구분"].localeCompare(b["구분"]);
       const ORDER=["0~10대","20대","30대","40대","50대","60대","70대이상","전체"];
@@ -2091,7 +2159,7 @@ body.light-mode #summaryMemoToggleBtn.active{
       "5회 주사 비율","6회 주사 비율","7회 주사 비율","8회 이상 주사 비율",
       "특정 키워드 포함 메모 수"
     ];
-    const cols=desired.filter(col=>result.some(r=>col in r));
+    const cols=desired.filter(col=>result.some(r=>col in r) && (state.ageMemoVisible || col!=="특정 키워드 포함 메모 수"));
     if(!cols.length){ document.getElementById('output').innerHTML=""; return; }
 
     const groupRows={}; result.forEach(r=>{ groupRows[r["구분"]] = (groupRows[r["구분"]]||0)+1; });
@@ -2111,6 +2179,16 @@ body.light-mode #summaryMemoToggleBtn.active{
     });
     html+='</tbody></table>';
     document.getElementById('output').innerHTML=html;
+    const memoBtn=document.getElementById('ageMemoToggleBtn');
+    if(memoBtn){
+      memoBtn.textContent=state.ageMemoVisible ? '기타 메모 숨기기' : '기타 메모 보기';
+      memoBtn.classList.toggle('active', state.ageMemoVisible);
+    }
+  }
+
+  function toggleAgeMemoColumn(){
+    state.ageMemoVisible=!state.ageMemoVisible;
+    if(state.ageTableRows) renderAgeTable(state.ageTableRows);
   }
   
   function getAgeGroup(raw){
@@ -2404,5 +2482,8 @@ body.light-mode #summaryMemoToggleBtn.active{
     if(e.target.id==='oneshotModal') hideOneshotModal();
   });
 </script>
+
+
+
 </body>
 </html>
