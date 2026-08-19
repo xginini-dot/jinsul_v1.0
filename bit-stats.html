@@ -1103,6 +1103,247 @@ body.light-mode #ageMemoToggleBtn.active{
 }
 @media(min-width:1450px){#ageCard #output th,#ageCard #output td{font-size:10.5px!important;padding:9px 5px!important;}}
 </style>
+
+<style id="age-chart-view-v1">
+/* ===== 2026-08-19 연령대별 결과 그래프 보기 ===== */
+#ageChartModal{z-index:130;}
+#ageChartModal .modal{width:min(1280px,96vw);max-height:92vh;}
+.age-chart-controls{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:12px;margin-bottom:14px;}
+.age-chart-control{display:flex;flex-direction:column;gap:6px;}
+.age-chart-control label{margin:0;font-size:11px;font-weight:900;color:var(--muted);}
+.age-chart-control select{
+  width:100%;height:42px;border-radius:13px;border:1px solid rgba(190,169,139,.34);
+  background:rgba(0,0,0,.18);color:var(--text);padding:0 12px;outline:none;font-weight:800;
+}
+body.light-mode .age-chart-control select{background:#fff;color:#172033;border-color:#cdbb9f;}
+.age-chart-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:2px 0 16px;}
+.age-chart-kpi{border:1px solid rgba(190,169,139,.24);border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.05);}
+.age-chart-kpi span{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:7px;}
+.age-chart-kpi strong{display:block;color:var(--text);font-size:22px;letter-spacing:-.04em;}
+body.light-mode .age-chart-kpi{background:#fbfaf7;border-color:#ddd1c0;}
+body.light-mode .age-chart-kpi span{color:#667085!important;}
+body.light-mode .age-chart-kpi strong{color:#172033!important;}
+.age-chart-panel{border:1px solid rgba(190,169,139,.22);border-radius:18px;padding:16px;background:rgba(0,0,0,.10);}
+body.light-mode .age-chart-panel{background:#fff;border-color:#ddd3c5;}
+.age-chart-panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:14px;}
+.age-chart-panel-title{font-weight:900;font-size:16px;color:var(--text);}
+.age-chart-panel-sub{font-size:11px;color:var(--muted);text-align:right;}
+.age-bars{display:flex;flex-direction:column;gap:9px;}
+.age-bar-row{display:grid;grid-template-columns:92px minmax(0,1fr) 74px;gap:10px;align-items:center;}
+.age-bar-label{font-size:12px;font-weight:900;color:var(--text);text-align:right;white-space:nowrap;}
+.age-bar-track{height:22px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(190,169,139,.10);}
+.age-bar-fill{height:100%;min-width:0;border-radius:999px;background:linear-gradient(90deg,var(--gold3),var(--gold2));transition:width .28s ease;}
+.age-bar-value{text-align:right;font-size:12px;font-weight:900;color:var(--text);white-space:nowrap;}
+body.light-mode .age-bar-track{background:#ece6dc;border-color:#e1d8ca;}
+body.light-mode .age-bar-fill{background:linear-gradient(90deg,#94744c,#c4aa7e);}
+body.light-mode .age-bar-label,body.light-mode .age-bar-value,body.light-mode .age-chart-panel-title{color:#172033!important;}
+.age-chart-empty{padding:36px 12px;text-align:center;color:var(--muted);font-size:13px;}
+.age-chart-quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
+.age-chart-quick button{min-height:32px;padding:0 10px;font-size:11px;border-radius:999px;}
+@media(max-width:800px){
+  .age-chart-controls{grid-template-columns:1fr;}
+  .age-chart-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .age-bar-row{grid-template-columns:76px minmax(0,1fr) 62px;gap:7px;}
+}
+</style>
+
+
+<style id="age-consulting-dashboard-v2">
+/* ===== 연령대별 컨설팅 분석 그래프 v2 ===== */
+#ageChartModal .modal{width:min(1480px,97vw);max-height:94vh}
+#ageChartModal .modal-body{padding:18px 20px 24px}
+.age-dash-toolbar{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.age-dash-filter{min-width:230px}
+.age-dash-filter label{display:block;margin:0 0 6px;font-size:12px;font-weight:900;color:var(--muted)}
+.age-dash-filter select{width:100%;height:42px;border-radius:13px;border:1px solid rgba(190,169,139,.34);background:rgba(0,0,0,.18);color:var(--text);padding:0 12px;font-weight:900;outline:none}
+body.light-mode .age-dash-filter select{background:#fff;color:#172033;border-color:#cdbb9f}
+.age-dash-note{font-size:12px;color:var(--muted);line-height:1.55;text-align:right}
+.age-dash-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.age-dash-kpi{border:1px solid rgba(190,169,139,.24);border-radius:17px;padding:13px 14px;background:rgba(255,255,255,.05)}
+.age-dash-kpi span{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px}.age-dash-kpi strong{display:block;font-size:23px;color:var(--text);letter-spacing:-.04em}.age-dash-kpi small{display:block;margin-top:5px;color:var(--gold2);font-size:10px;font-weight:800}
+body.light-mode .age-dash-kpi{background:#fbfaf7;border-color:#ddd1c0} body.light-mode .age-dash-kpi strong{color:#172033} body.light-mode .age-dash-kpi span{color:#667085}
+.age-dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.age-dash-card{border:1px solid rgba(190,169,139,.22);border-radius:19px;padding:16px;background:rgba(0,0,0,.10);min-width:0}.age-dash-card.wide{grid-column:1/-1}
+body.light-mode .age-dash-card{background:#fff;border-color:#ddd3c5}
+.age-dash-card h3{margin:0;font-size:16px;color:var(--text)}.age-dash-card .desc{margin:5px 0 14px;font-size:11px;color:var(--muted);line-height:1.5}
+body.light-mode .age-dash-card h3{color:#172033!important}
+.consult-bars{display:flex;flex-direction:column;gap:9px}.consult-row{display:grid;grid-template-columns:74px minmax(0,1fr) 76px;gap:9px;align-items:center}.consult-label{font-size:11px;font-weight:900;color:var(--text);text-align:right;white-space:nowrap}.consult-track{height:18px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(190,169,139,.10)}.consult-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold3),var(--gold2));min-width:0}.consult-value{text-align:right;font-size:11px;font-weight:900;color:var(--text);white-space:nowrap}
+body.light-mode .consult-track{background:#ece6dc;border-color:#e1d8ca} body.light-mode .consult-fill{background:linear-gradient(90deg,#94744c,#c4aa7e)} body.light-mode .consult-label,body.light-mode .consult-value{color:#172033!important}
+.first-grid{display:grid;grid-template-columns:74px minmax(0,1fr) minmax(0,1fr) 64px;gap:8px;align-items:center;margin-bottom:8px}.first-head{font-size:10px;color:var(--muted);font-weight:900;text-align:center}.first-age{font-size:11px;font-weight:900;text-align:right;color:var(--text)}.first-mini{height:18px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}.first-mini > i{display:block;height:100%;border-radius:999px;background:var(--viz-series-1, #bea98b)}.first-mini.inj > i{background:linear-gradient(90deg,var(--gold3),var(--gold2))}.first-num{font-size:10px;font-weight:900;color:var(--text);position:absolute;right:7px;top:2px;text-shadow:0 1px 2px rgba(0,0,0,.45)}.rate-badge{font-size:10px;font-weight:900;text-align:right;color:var(--gold2)}
+body.light-mode .first-mini{background:#ece6dc}body.light-mode .first-num{color:#172033}body.light-mode .first-age{color:#172033}
+.inj-dist{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;align-items:end;height:190px;padding-top:6px}.inj-col{display:flex;height:100%;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0}.inj-col .pct{font-size:11px;font-weight:900;color:var(--text)}.inj-col .vbar-wrap{width:72%;max-width:48px;height:130px;display:flex;align-items:flex-end;border-radius:10px 10px 5px 5px;background:rgba(255,255,255,.06);overflow:hidden}.inj-col .vbar{width:100%;border-radius:9px 9px 0 0;background:linear-gradient(180deg,var(--gold2),var(--gold3));min-height:0}.inj-col .lab{font-size:10px;font-weight:900;color:var(--muted);text-align:center;white-space:nowrap}
+body.light-mode .inj-col .vbar-wrap{background:#eee8de}body.light-mode .inj-col .pct{color:#172033}
+.age-heat{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:0!important}.age-heat th,.age-heat td{padding:7px 5px!important;font-size:10px!important}.age-heat .heat-cell{font-weight:900;border-radius:7px}.age-heat .heat-1{background:rgba(190,169,139,.08)!important}.age-heat .heat-2{background:rgba(190,169,139,.15)!important}.age-heat .heat-3{background:rgba(190,169,139,.24)!important}.age-heat .heat-4{background:rgba(190,169,139,.34)!important}.age-heat .heat-5{background:rgba(190,169,139,.46)!important}
+body.light-mode .age-heat .heat-1{background:#f8f5f0!important} body.light-mode .age-heat .heat-2{background:#f1e9dd!important} body.light-mode .age-heat .heat-3{background:#e8dbc8!important} body.light-mode .age-heat .heat-4{background:#ddc9aa!important} body.light-mode .age-heat .heat-5{background:#cdb38a!important;color:#342719!important}
+.room-compare{display:grid;grid-template-columns:125px repeat(4,minmax(90px,1fr));gap:0;border:1px solid rgba(190,169,139,.18);border-radius:14px;overflow:hidden}.room-compare > div{padding:9px 8px;border-right:1px solid rgba(190,169,139,.12);border-bottom:1px solid rgba(190,169,139,.12);font-size:11px;text-align:center}.room-compare .rh{font-weight:900;background:rgba(190,169,139,.13);color:var(--text)}.room-compare .room-name{font-weight:900;color:var(--gold2);text-align:left}.room-compare .last-row{border-bottom:0}.insight-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.insight{border-radius:14px;padding:12px;border:1px solid rgba(190,169,139,.18);background:rgba(255,255,255,.035)}.insight b{display:block;color:var(--gold2);font-size:11px;margin-bottom:5px}.insight span{display:block;color:var(--text);font-size:13px;font-weight:900;line-height:1.45}.insight small{display:block;color:var(--muted);font-size:10px;margin-top:5px;line-height:1.4}
+body.light-mode .insight{background:#fbfaf7;border-color:#e1d7c9}body.light-mode .insight span{color:#172033}
+.age-dash-empty{padding:50px 10px;text-align:center;color:var(--muted)}
+/* ===== 연령대 컨설팅 대시보드 가독성 강화 ===== */
+#ageChartModal .modal-header{padding:20px 24px}
+#ageChartModal .modal-title{font-size:20px;letter-spacing:-.03em}
+#ageChartModal .pill{font-size:12px;font-weight:900}
+#ageChartModal .modal-body{font-size:14px;color:var(--text)}
+.age-dash-toolbar{margin-bottom:18px}.age-dash-filter label{font-size:13px;color:var(--text)}
+.age-dash-filter select{font-size:14px}.age-dash-note{font-size:13px;color:var(--text);opacity:.72;line-height:1.65}
+.age-dash-kpis{gap:12px;margin-bottom:16px}.age-dash-kpi{padding:16px 17px}.age-dash-kpi span{font-size:12px;color:var(--text);opacity:.72}.age-dash-kpi strong{font-size:27px;line-height:1.15}.age-dash-kpi small{font-size:11px;color:var(--text);opacity:.68}
+.age-dash-grid{gap:16px}.age-dash-card{padding:19px 20px}.age-dash-card h3{font-size:17px;line-height:1.35}.age-dash-card .desc{font-size:12.5px;color:var(--text);opacity:.68;line-height:1.6;margin:6px 0 16px}
+.consult-bars{gap:11px}.consult-row{grid-template-columns:86px minmax(0,1fr) 84px;gap:11px}.consult-label{font-size:12.5px}.consult-track{height:21px}.consult-value{font-size:12.5px}
+.first-grid{grid-template-columns:86px minmax(0,1fr) minmax(0,1fr) 70px;gap:10px;margin-bottom:10px}.first-head{font-size:11.5px;color:var(--text);opacity:.72}.first-age{font-size:12.5px}.first-mini{height:22px}.first-num{font-size:11px;top:3px;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.72)}.rate-badge{font-size:12px;color:var(--text)}
+body.light-mode .first-age,body.light-mode .first-head,body.light-mode .rate-badge{color:#172033!important}body.light-mode .first-num{color:#fff!important}
+.inj-dist{height:220px;gap:10px}.inj-col .pct{font-size:12.5px}.inj-col .vbar-wrap{height:150px}.inj-col .lab{font-size:11.5px;color:var(--text);opacity:.72}
+.age-heat th,.age-heat td{padding:9px 6px!important;font-size:11.5px!important}.room-compare > div{padding:11px 9px;font-size:12px}.insight{padding:14px}.insight b{font-size:12px}.insight span{font-size:14px}.insight small{font-size:11.5px;line-height:1.55}
+body.light-mode .age-dash-card .desc,body.light-mode .age-dash-note,body.light-mode .age-dash-kpi span,body.light-mode .age-dash-kpi small,body.light-mode .inj-col .lab{color:#596577!important;opacity:1!important}
+body.light-mode .consult-label,body.light-mode .consult-value,body.light-mode .inj-col .pct{color:#172033!important}
+/* 추가 분석 그래프 */
+.retention-rows,.delta-rows{display:flex;flex-direction:column;gap:11px}.retention-row{display:grid;grid-template-columns:86px minmax(0,1fr) 78px;gap:11px;align-items:center}.retention-bar{display:flex;height:24px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid rgba(190,169,139,.12)}.retention-one{background:rgba(190,169,139,.38)}.retention-multi{background:linear-gradient(90deg,var(--gold3),var(--gold2))}.retention-value{font-size:12px;font-weight:900;text-align:right;color:var(--text)}
+body.light-mode .retention-bar{background:#eee9e1}.retention-legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 12px;font-size:11.5px;color:var(--text);opacity:.72}.retention-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.retention-legend .one{background:rgba(190,169,139,.55)}.retention-legend .multi{background:var(--gold3)}
+.delta-row{display:grid;grid-template-columns:86px minmax(0,1fr) 76px;gap:11px;align-items:center}.delta-track{position:relative;height:24px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(190,169,139,.12);overflow:hidden}.delta-mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.38)}.delta-fill-pos,.delta-fill-neg{position:absolute;top:4px;height:14px;border-radius:999px}.delta-fill-pos{left:50%;background:linear-gradient(90deg,var(--gold3),var(--gold2))}.delta-fill-neg{right:50%;background:rgba(255,255,255,.28)}.delta-value{font-size:12px;font-weight:900;text-align:right}.delta-value.pos{color:var(--gold2)}.delta-value.neg{color:var(--text);opacity:.72}
+body.light-mode .delta-track{background:#f0ebe4}body.light-mode .delta-mid{background:#a79b8d}body.light-mode .delta-fill-neg{background:#b8b0a5}
+.opportunity-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.opp-card{border:1px solid rgba(190,169,139,.18);border-radius:14px;padding:13px;background:rgba(255,255,255,.035)}.opp-card b{display:block;font-size:11.5px;color:var(--text);opacity:.68;margin-bottom:6px}.opp-card strong{display:block;font-size:16px;color:var(--text);line-height:1.4}.opp-card small{display:block;margin-top:5px;font-size:11px;color:var(--text);opacity:.65;line-height:1.45}body.light-mode .opp-card{background:#fbfaf7;border-color:#e1d7c9}
+@media(max-width:1050px){.age-dash-kpis{grid-template-columns:repeat(3,1fr)}.age-dash-grid{grid-template-columns:1fr}.age-dash-card.wide{grid-column:auto}.insight-list{grid-template-columns:1fr}.opportunity-grid{grid-template-columns:repeat(2,1fr)}.room-compare{grid-template-columns:105px repeat(4,minmax(75px,1fr))}}
+@media(max-width:700px){.age-dash-kpis{grid-template-columns:repeat(2,1fr)}.consult-row,.retention-row,.delta-row{grid-template-columns:66px minmax(0,1fr) 66px}.first-grid{grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 56px}.inj-dist{gap:4px}.inj-col .lab{font-size:10px}.room-compare{overflow:auto;display:grid;grid-template-columns:90px repeat(4,90px)}.opportunity-grid{grid-template-columns:1fr}}
+</style>
+
+
+<style id="age-relationship-dashboard-v3">
+/* ===== 연령대 초진 규모 × 주사 전환 관계도 / 가독성 개선 ===== */
+#ageChartModal .first-num{
+  color:#1f2937!important;
+  text-shadow:none!important;
+  background:rgba(255,255,255,.90);
+  border:1px solid rgba(122,101,72,.20);
+  border-radius:999px;
+  padding:1px 6px;
+  top:1px;
+  right:4px;
+  line-height:17px;
+}
+body:not(.light-mode) #ageChartModal .first-num{
+  color:#f7f1e8!important;
+  background:rgba(20,20,20,.82);
+  border-color:rgba(216,199,172,.22);
+}
+#ageChartModal .first-mini{overflow:visible;margin-right:2px}
+#ageChartModal .first-mini>i{overflow:hidden}
+#ageChartModal .rate-badge{font-weight:950;font-size:13px}
+#ageChartModal .age-dash-card .desc{max-width:100%;font-weight:600}
+
+.relation-wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(310px,.75fr);gap:16px;align-items:stretch}
+.relation-chart{position:relative;min-height:360px;border:1px solid rgba(190,169,139,.20);border-radius:16px;background:rgba(255,255,255,.025);overflow:hidden;padding:26px 24px 34px 48px}
+body.light-mode .relation-chart{background:#fbfaf7;border-color:#e0d5c6}
+.relation-axis-y{position:absolute;left:8px;top:50%;transform:rotate(-90deg) translateY(-50%);transform-origin:left top;font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap}
+.relation-axis-x{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap}
+.relation-grid-v,.relation-grid-h{position:absolute;background:rgba(190,169,139,.18);pointer-events:none}
+.relation-grid-v{top:26px;bottom:34px;width:1px}.relation-grid-h{left:48px;right:24px;height:1px}
+.relation-avg-v{position:absolute;top:26px;bottom:34px;width:2px;border-left:2px dashed rgba(153,112,58,.55);pointer-events:none}
+.relation-avg-h{position:absolute;left:48px;right:24px;height:2px;border-top:2px dashed rgba(153,112,58,.55);pointer-events:none}
+.relation-avg-label{position:absolute;font-size:10px;font-weight:900;color:#765a37;background:rgba(255,255,255,.9);padding:2px 6px;border-radius:999px;border:1px solid rgba(190,169,139,.28);z-index:3}
+body:not(.light-mode) .relation-avg-label{color:#eadcc5;background:rgba(20,20,20,.88)}
+.relation-zone{position:absolute;font-size:10px;font-weight:900;color:var(--muted);opacity:.82;pointer-events:none}
+.relation-point{position:absolute;transform:translate(-50%,50%);border-radius:999px;border:2px solid rgba(255,255,255,.92);background:linear-gradient(135deg,#9a7a50,#d2bea0);box-shadow:0 6px 16px rgba(65,49,29,.20);display:flex;align-items:center;justify-content:center;font-weight:950;font-size:10px;color:#231b12;z-index:4;cursor:default}
+body:not(.light-mode) .relation-point{border-color:#2a241d;color:#17120d}
+.relation-point span{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:950;color:var(--text);background:rgba(255,255,255,.92);padding:2px 5px;border-radius:7px;border:1px solid rgba(190,169,139,.18)}
+body:not(.light-mode) .relation-point span{background:rgba(20,20,20,.88);color:#f7f1e8}
+.relation-list{display:flex;flex-direction:column;gap:9px}
+.relation-item{border:1px solid rgba(190,169,139,.20);border-radius:14px;padding:11px 12px;background:rgba(255,255,255,.035)}
+body.light-mode .relation-item{background:#fff;border-color:#e0d5c6}
+.relation-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.relation-item-head b{font-size:13px;color:var(--text)}.relation-tag{font-size:10px;font-weight:950;border-radius:999px;padding:3px 7px;background:rgba(190,169,139,.17);color:var(--gold2);white-space:nowrap}
+body.light-mode .relation-item-head b{color:#172033}.relation-item p{margin:0;font-size:11.5px;line-height:1.55;color:var(--text)}body.light-mode .relation-item p{color:#455164}.relation-item strong{color:#7a5d39}.relation-item .up{color:#2f6f45}.relation-item .down{color:#a3483f}
+.relation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}.relation-summary>div{border:1px solid rgba(190,169,139,.18);border-radius:12px;padding:10px;background:rgba(190,169,139,.06)}.relation-summary b{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}.relation-summary strong{font-size:14px;color:var(--text)}
+body.light-mode .relation-summary>div{background:#fbfaf7;border-color:#e0d5c6}body.light-mode .relation-summary strong{color:#172033}
+@media(max-width:950px){.relation-wrap{grid-template-columns:1fr}.relation-chart{min-height:330px}.relation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== 연령대별 한눈에 보기 대시보드 ===== */
+.age-overview-modal{width:min(1540px,96vw)!important;max-height:94vh!important;border-radius:24px!important;}
+.age-overview-body{padding:18px 20px 24px!important;background:var(--card,#fff);}
+.age-overview-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;}
+.age-overview-toolbar label{font-size:12px;font-weight:900;color:var(--text);display:flex;flex-direction:column;gap:7px;min-width:220px;}
+.age-overview-toolbar select{min-height:42px;border:1px solid var(--border);border-radius:12px;padding:0 12px;background:rgba(255,255,255,.05);color:inherit;font-weight:800;}
+.age-overview-help{font-size:12px;color:var(--muted);text-align:right;line-height:1.55;}
+.age-overview-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+.age-overview-kpi{border:1px solid var(--border);border-radius:16px;padding:13px 14px;background:rgba(255,255,255,.04);min-width:0;}
+.age-overview-kpi span{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;}
+.age-overview-kpi strong{font-size:22px;line-height:1.1;color:var(--text);letter-spacing:-.03em;}
+.age-overview-kpi small{display:block;margin-top:5px;font-size:10px;color:var(--muted);}
+.age-overview-grid{display:grid;grid-template-columns:1fr 1.55fr 1fr;gap:12px;align-items:stretch;}
+.age-overview-panel{border:1px solid var(--border);border-radius:18px;padding:14px;background:rgba(255,255,255,.035);overflow:hidden;}
+.age-overview-panel h3{margin:0 0 4px;font-size:15px;color:var(--text);}
+.age-overview-panel .ov-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.45;}
+.age-overview-panel.wide2{grid-column:span 2;}
+.age-overview-panel.full{grid-column:1/-1;}
+.ov-age-dist{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;}
+.ov-donut{width:140px;height:140px;border-radius:50%;position:relative;margin:auto;background:conic-gradient(var(--gold2) 0 25%,var(--gold3) 25% 50%,#9fa7b3 50% 75%,#d7cab6 75% 100%);}
+.ov-donut:after{content:"";position:absolute;inset:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);}
+.ov-donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2;color:var(--text);font-weight:900;font-size:11px;}
+.ov-donut-center b{font-size:18px;margin-top:2px;}
+.ov-mini-table{width:100%;border-collapse:collapse;min-width:0!important;}
+.ov-mini-table th,.ov-mini-table td{font-size:10px!important;padding:5px 6px!important;position:static!important;}
+.ov-combo{display:grid;grid-template-columns:1fr 230px;gap:14px;}
+.ov-combo-chart{position:relative;height:220px;padding:16px 10px 22px 26px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);}
+.ov-combo-row{position:absolute;left:32px;right:10px;bottom:24px;top:10px;display:flex;align-items:flex-end;gap:8px;}
+.ov-combo-item{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;position:relative;padding-bottom:22px;}
+.ov-bar{width:28%;min-width:8px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#bca989,#8e7959);position:relative;}
+.ov-bar.inj{background:linear-gradient(180deg,#d5c8b2,#b1a083);}
+.ov-bar span{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;color:var(--text);}
+.ov-combo-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;white-space:nowrap;color:var(--text);}
+.ov-rate-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:#7f6a49;border:2px solid var(--bg2);transform:translate(-50%,50%);z-index:4;}
+.ov-rate-dot em{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);font-style:normal;font-size:9px;font-weight:900;color:#6d5331;white-space:nowrap;}
+.ov-rate-line{position:absolute;height:2px;background:#7f6a49;transform-origin:left center;z-index:3;}
+.ov-insights{display:flex;flex-direction:column;gap:8px;}
+.ov-insight{border:1px solid var(--border);border-radius:12px;padding:9px 10px;font-size:10px;line-height:1.5;color:var(--text);background:rgba(255,255,255,.035);}
+.ov-insight b{display:block;font-size:11px;margin-bottom:2px;}
+.ov-injdist{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;height:170px;align-items:end;}
+.ov-injcol{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;}
+.ov-injcol .val{font-size:9px;font-weight:900;color:var(--text);}
+.ov-injcol .track{height:120px;width:22px;border-radius:8px;background:rgba(190,169,139,.14);display:flex;align-items:flex-end;overflow:hidden;}
+.ov-injcol .fill{width:100%;background:linear-gradient(180deg,var(--gold2),var(--gold3));border-radius:8px 8px 0 0;}
+.ov-injcol .lab{font-size:9px;color:var(--text);font-weight:800;}
+.ov-consult-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;}
+.ov-consult-card{border:1px solid var(--border);border-radius:14px;padding:10px 11px;background:rgba(255,255,255,.035);}
+.ov-consult-card span{font-size:9px;color:var(--muted);font-weight:800;}
+.ov-consult-card b{display:block;font-size:13px;color:var(--text);margin:4px 0;}
+.ov-consult-card p{font-size:9px;line-height:1.45;color:var(--muted);margin:0;}
+body.light-mode .age-overview-body{background:#fff;}
+body.light-mode .age-overview-kpi,body.light-mode .age-overview-panel,body.light-mode .ov-insight,body.light-mode .ov-consult-card{background:#fff;}
+body.light-mode .ov-donut:after{background:#fff;}
+body.light-mode .age-overview-toolbar select{background:#fff;color:#172033;}
+@media(max-width:1100px){.age-overview-kpis{grid-template-columns:repeat(3,1fr)}.age-overview-grid{grid-template-columns:1fr}.age-overview-panel.wide2,.age-overview-panel.full{grid-column:auto}.ov-combo{grid-template-columns:1fr}.ov-consult-cards{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== 한눈에 보기 ② 복합그래프 안정화 ===== */
+.ov-combo-svg-wrap{height:auto!important;min-height:0!important;padding:8px 8px 2px!important;border:1px solid var(--border)!important;border-radius:14px;background:rgba(255,255,255,.025);overflow:hidden;position:relative;}
+.ov-combo-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:2px 0 0;font-size:10px;font-weight:850;color:var(--text);}
+.ov-combo-legend span{display:inline-flex;align-items:center;gap:6px;}
+.ov-combo-legend i{display:inline-block;width:15px;height:8px;border-radius:3px;background:#aa9878;}
+.ov-combo-legend i.inj{background:#d2c5ae;}
+.ov-combo-legend i.rate{width:18px;height:2px;border-radius:999px;background:#7a6240;position:relative;}
+.ov-combo-legend i.rate:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:#7a6240;left:6px;top:-2px;}
+.ov-combo-svg{display:block;width:100%;height:auto;max-height:300px;overflow:visible;}
+.ov-svg-grid{stroke:rgba(120,100,75,.14);stroke-width:1;}
+.ov-svg-axis-line{stroke:rgba(120,100,75,.30);stroke-width:1.1;}
+.ov-svg-bar{opacity:.96;}
+.ov-svg-first{fill:#a89572;}
+.ov-svg-inj{fill:#d3c6ae;}
+.ov-svg-line{fill:none;stroke:#765d3c;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;}
+.ov-svg-dot{fill:#765d3c;stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke;}
+.ov-svg-value{font-size:12px;font-weight:900;fill:#263142;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+.ov-svg-rate-label{font-size:12px;font-weight:950;fill:#6a4f2e;paint-order:stroke;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round;}
+.ov-svg-xlabel{font-size:11px;font-weight:900;fill:#273142;}
+.ov-svg-axis,.ov-svg-axis-title{font-size:9px;font-weight:800;fill:#697386;}
+.ov-svg-rate-axis{text-anchor:start;}
+body:not(.light-mode) .ov-combo-svg-wrap{background:rgba(0,0,0,.11);}
+body:not(.light-mode) .ov-combo-legend{color:#f3ede4;}
+body:not(.light-mode) .ov-svg-grid{stroke:rgba(230,220,205,.12);}
+body:not(.light-mode) .ov-svg-axis-line{stroke:rgba(230,220,205,.26);}
+body:not(.light-mode) .ov-svg-first{fill:#bda986;}
+body:not(.light-mode) .ov-svg-inj{fill:#8e7e66;}
+body:not(.light-mode) .ov-svg-line{stroke:#e0c99e;}
+body:not(.light-mode) .ov-svg-dot{fill:#e0c99e;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-value{fill:#f8f3eb;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-rate-label{fill:#f0d8ad;stroke:#26221d;}
+body:not(.light-mode) .ov-svg-xlabel{fill:#f4eee5;}
+body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill:#bfb6aa;}
+@media(max-width:760px){.ov-combo-svg{min-width:680px}.ov-combo-svg-wrap{overflow-x:auto}.ov-combo-legend{justify-content:flex-start}}
+
+</style>
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
@@ -1255,6 +1496,8 @@ body.light-mode #ageMemoToggleBtn.active{
       <div class="section-head">
         <h2>📋 연령대별 통계</h2>
         <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="ageChartOpenBtn" type="button" onclick="window.__jinsulOpenAgeDashboard(event)">📈 결과값 그래프로 보기</button>
+          <button class="secondary mini-btn" id="ageOverviewOpenBtn" type="button" onclick="openAgeOverviewModal()">🧭 한눈에 보기</button>
           <button class="secondary mini-btn" id="ageMemoToggleBtn" onclick="toggleAgeMemoColumn()" type="button">기타 메모 보기</button>
           <button class="secondary mini-btn" onclick="copyTable('output')" type="button">표 복사</button>
           <button class="secondary mini-btn" onclick="downloadTableXlsx('output','비트_연령대별통계.xlsx')" type="button">엑셀 다운로드</button>
@@ -1263,6 +1506,47 @@ body.light-mode #ageMemoToggleBtn.active{
       </div>
       <div id="output"></div>
       <div id="warning" class="warn"></div>
+    </div>
+  </div>
+
+  <div id="ageChartModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="ageChartModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="ageChartModalTitle">📈 연령대별 통계 · 컨설팅 분석 대시보드</div>
+          <div class="pill">환자구성 · 초진/주사 전환 · 주사횟수 · 진료실 비교</div>
+        </div>
+        <div class="modal-actions"><button class="secondary" id="ageChartCloseBtn" type="button">닫기</button></div>
+      </div>
+      <div class="modal-body">
+        <div class="age-dash-toolbar">
+          <div class="age-dash-filter">
+            <label for="ageDashboardRoom">분석 범위</label>
+            <select id="ageDashboardRoom"></select>
+          </div>
+          <div class="age-dash-note">전체 또는 진료실을 선택하면 아래 그래프가 자동으로 변경됩니다.<br>연령 정보가 없는 환자는 연령대별 분포에서 제외될 수 있습니다.</div>
+        </div>
+        <div id="ageDashboardContent"><div class="age-dash-empty">통계 계산 후 분석 그래프를 확인할 수 있습니다.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ageOverviewModal" class="modal-backdrop age-overview-backdrop" role="dialog" aria-modal="true" aria-labelledby="ageOverviewModalTitle" style="display:none">
+    <div class="modal age-overview-modal">
+      <div class="modal-header age-overview-header">
+        <div>
+          <div class="modal-title" id="ageOverviewModalTitle">🧭 연령대별 통계 · 한눈에 보기</div>
+          <div class="pill">환자구성 · 초진/주사 전환 · 반복치료 · 진료실 비교 · 컨설팅 포인트</div>
+        </div>
+        <div class="modal-actions"><button class="secondary" type="button" onclick="closeAgeOverviewModal()">닫기</button></div>
+      </div>
+      <div class="modal-body age-overview-body">
+        <div class="age-overview-toolbar">
+          <label>분석 범위<select id="ageOverviewRoom"></select></label>
+          <div class="age-overview-help">선택한 전체 병원 또는 진료실 기준으로 핵심 지표를 한 화면에 요약합니다.</div>
+        </div>
+        <div id="ageOverviewContent"><div class="age-dash-empty">통계 계산 후 한눈에 보기를 사용할 수 있습니다.</div></div>
+      </div>
     </div>
   </div>
 
@@ -2191,6 +2475,506 @@ body.light-mode #ageMemoToggleBtn.active{
     if(state.ageTableRows) renderAgeTable(state.ageTableRows);
   }
   
+
+  /* ===== 그래프/대시보드 공통 HTML 이스케이프 ===== */
+  function escapeHTML(value){
+    return String(value ?? '').replace(/[&<>"']/g, function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+    });
+  }
+
+  /* ================= 연령대별 결과 그래프 ================= */
+  const AGE_CHART_METRICS=[
+    {key:'총환자수', label:'총환자수', unit:'명', type:'number'},
+    {key:'총내원수', label:'총내원수', unit:'회', type:'number'},
+    {key:'환자당 평균 내원횟수', label:'환자당 평균 내원횟수', unit:'회', type:'decimal'},
+    {key:'초진', label:'초진환자수', unit:'명', type:'number'},
+    {key:'초진주사', label:'초진 주사환자수', unit:'명', type:'number'},
+    {key:'초진 주사처방률', label:'초진 주사처방률', unit:'%', type:'percent'},
+    {key:'재진 환자수', label:'재진환자수', unit:'명', type:'number'},
+    {key:'재진', label:'재진 내원', unit:'회', type:'number'},
+    {key:'초진 주사 평균 횟수', label:'초진 주사 평균 횟수', unit:'회', type:'decimal'},
+    {key:'초진 주사 평균 내원 횟수', label:'초진 주사 평균 내원횟수', unit:'회', type:'decimal'},
+    {key:'초진 주사 재진율', label:'초진 주사 재진율', unit:'%', type:'percent'},
+    {key:'1회 주사 비율', label:'1회 주사 비율', unit:'%', type:'percent'},
+    {key:'2회 주사 비율', label:'2회 주사 비율', unit:'%', type:'percent'},
+    {key:'3회 주사 비율', label:'3회 주사 비율', unit:'%', type:'percent'},
+    {key:'4회 주사 비율', label:'4회 주사 비율', unit:'%', type:'percent'},
+    {key:'5회 주사 비율', label:'5회 주사 비율', unit:'%', type:'percent'},
+    {key:'6회 주사 비율', label:'6회 주사 비율', unit:'%', type:'percent'},
+    {key:'7회 주사 비율', label:'7회 주사 비율', unit:'%', type:'percent'},
+    {key:'8회 이상 주사 비율', label:'8회 이상 주사 비율', unit:'%', type:'percent'}
+  ];
+
+  function ageChartNumber(v){
+    if(v===null||v===undefined||v==='-'||v==='') return 0;
+    const n=parseFloat(String(v).replace(/,/g,'').replace('%',''));
+    return Number.isFinite(n)?n:0;
+  }
+  function ageChartFmt(v, metric){
+    if(metric.type==='percent') return `${Math.round(v*10)/10}%`;
+    if(metric.type==='decimal') return `${(Math.round(v*100)/100).toFixed(2)}회`;
+    return `${Math.round(v).toLocaleString()}${metric.unit||''}`;
+  }
+  function ageChartRooms(rows){
+    return [...new Set((rows||[]).map(r=>r['구분']).filter(v=>v && v!=='전체'))]
+      .sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true}));
+  }
+  function ageChartAges(rows){
+    const order=['0~10대','20대','30대','40대','50대','60대','70대이상'];
+    const set=new Set((rows||[]).map(r=>r['연령대']).filter(v=>v && v!=='전체'));
+    return order.filter(v=>set.has(v));
+  }
+  function getAgeChartScopeRow(rows, mode, target){
+    if(mode==='age') return (rows||[]).find(r=>r['구분']===target && r['연령대']==='전체') || null;
+    return (rows||[]).find(r=>r['구분']==='전체' && r['연령대']===target) || null;
+  }
+  function rebuildAgeChartTarget(){
+    const rows=state.ageTableRows||[];
+    const mode=document.getElementById('ageChartViewMode')?.value||'age';
+    const target=document.getElementById('ageChartTarget');
+    if(!target) return;
+    if(mode==='age'){
+      const opts=['전체',...ageChartRooms(rows)];
+      target.innerHTML=opts.map(v=>`<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join('');
+    }else{
+      const opts=['전체',...ageChartAges(rows)];
+      target.innerHTML=opts.map(v=>`<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join('');
+    }
+  }
+  function fillAgeChartMetricOptions(){
+    const sel=document.getElementById('ageChartMetric');
+    const rows=state.ageTableRows||[];
+    if(!sel) return;
+    const metrics=AGE_CHART_METRICS.filter(m=>rows.some(r=>m.key in r));
+    sel.innerHTML=metrics.map(m=>`<option value="${escapeHTML(m.key)}">${escapeHTML(m.label)}</option>`).join('');
+    if(metrics.some(m=>m.key==='총환자수')) sel.value='총환자수';
+  }
+  function renderAgeChartKpis(scopeRow){
+    const box=document.getElementById('ageChartKpis');
+    if(!box) return;
+    const kpis=[
+      ['총환자수','총환자수','명'],['총내원수','총내원수','회'],
+      ['초진 주사처방률','초진 주사처방률','%'],['초진 주사 재진율','초진 주사 재진율','%']
+    ];
+    box.innerHTML=kpis.map(([key,label,unit])=>{
+      let raw=scopeRow?.[key];
+      let value='-';
+      if(raw!==undefined && raw!==null && raw!==''){
+        if(String(raw).includes('%')) value=String(raw);
+        else if(unit==='%') value=`${ageChartNumber(raw)}%`;
+        else value=`${ageChartNumber(raw).toLocaleString()}${unit}`;
+      }
+      return `<div class="age-chart-kpi"><span>${label}</span><strong>${value}</strong></div>`;
+    }).join('');
+  }
+  function renderAgeChart(){
+    const rows=state.ageTableRows||[];
+    const bars=document.getElementById('ageChartBars');
+    if(!rows.length || !bars){
+      if(bars) bars.innerHTML='<div class="age-chart-empty">통계 계산 후 그래프를 확인할 수 있습니다.</div>';
+      return;
+    }
+    const mode=document.getElementById('ageChartViewMode')?.value||'age';
+    const target=document.getElementById('ageChartTarget')?.value||'전체';
+    const metricKey=document.getElementById('ageChartMetric')?.value||'총환자수';
+    const metric=AGE_CHART_METRICS.find(m=>m.key===metricKey)||AGE_CHART_METRICS[0];
+    let chartRows=[];
+    if(mode==='age'){
+      chartRows=rows.filter(r=>r['구분']===target && r['연령대']!=='전체');
+      const order=['0~10대','20대','30대','40대','50대','60대','70대이상'];
+      chartRows.sort((a,b)=>order.indexOf(a['연령대'])-order.indexOf(b['연령대']));
+    }else{
+      chartRows=rows.filter(r=>r['연령대']===target && r['구분']!=='전체');
+      chartRows.sort((a,b)=>String(a['구분']).localeCompare(String(b['구분']),'ko',{numeric:true}));
+    }
+    const values=chartRows.map(r=>ageChartNumber(r[metric.key]));
+    const max=Math.max(0,...values);
+    const denom=metric.type==='percent' ? Math.max(100,max) : max;
+    bars.innerHTML=chartRows.length ? chartRows.map((r,i)=>{
+      const v=values[i];
+      const pct=denom>0 ? Math.max(v>0?2:0,Math.min(100,v/denom*100)) : 0;
+      const label=mode==='age' ? r['연령대'] : r['구분'];
+      return `<div class="age-bar-row">
+        <div class="age-bar-label">${escapeHTML(label)}</div>
+        <div class="age-bar-track" title="${escapeHTML(metric.label)} ${escapeHTML(ageChartFmt(v,metric))}"><div class="age-bar-fill" style="width:${pct}%"></div></div>
+        <div class="age-bar-value">${escapeHTML(ageChartFmt(v,metric))}</div>
+      </div>`;
+    }).join('') : '<div class="age-chart-empty">선택한 기준에 표시할 데이터가 없습니다.</div>';
+
+    const title=document.getElementById('ageChartTitle');
+    const sub=document.getElementById('ageChartSub');
+    if(title) title.textContent=`${target} · ${metric.label}`;
+    if(sub) sub.textContent=mode==='age' ? '연령대별 비교' : '진료실별 비교';
+    renderAgeChartKpis(getAgeChartScopeRow(rows,mode,target));
+
+    const quick=document.getElementById('ageChartQuick');
+    if(quick){
+      const quickKeys=['총환자수','총내원수','초진 주사처방률','초진 주사 재진율','1회 주사 비율'];
+      quick.innerHTML=quickKeys.filter(k=>AGE_CHART_METRICS.some(m=>m.key===k) && rows.some(r=>k in r))
+        .map(k=>`<button type="button" class="secondary" data-age-metric="${escapeHTML(k)}">${escapeHTML(AGE_CHART_METRICS.find(m=>m.key===k).label)}</button>`).join('');
+      quick.querySelectorAll('[data-age-metric]').forEach(btn=>btn.addEventListener('click',()=>{
+        const sel=document.getElementById('ageChartMetric');
+        if(sel){ sel.value=btn.dataset.ageMetric; renderAgeChart(); }
+      }));
+    }
+  }
+  function openAgeChartModal(){
+    if(!state.ageTableRows || !state.ageTableRows.length){ alert('먼저 통계 파일을 업로드하여 계산해주세요.'); return; }
+    const modal=document.getElementById('ageChartModal');
+    if(!modal) return;
+    fillAgeChartMetricOptions();
+    const mode=document.getElementById('ageChartViewMode');
+    if(mode) mode.value='age';
+    rebuildAgeChartTarget();
+    modal.style.display='flex';
+    renderAgeChart();
+  }
+  function closeAgeChartModal(){
+    const modal=document.getElementById('ageChartModal');
+    if(modal) modal.style.display='none';
+  }
+
+
+  /* ===== 연령대별 컨설팅 분석 대시보드 v2 ===== */
+  function ageDashNum(v){
+    if(v===null||v===undefined||v===''||v==='-') return 0;
+    const n=parseFloat(String(v).replace(/,/g,'').replace('%',''));
+    return Number.isFinite(n)?n:0;
+  }
+  function ageDashPct(v){ return `${Math.round(ageDashNum(v)*10)/10}%`; }
+  function ageDashAgeRows(room){
+    const order=['0~10대','20대','30대','40대','50대','60대','70대이상'];
+    return (state.ageTableRows||[]).filter(r=>r['구분']===room && r['연령대']!=='전체')
+      .sort((a,b)=>order.indexOf(a['연령대'])-order.indexOf(b['연령대']));
+  }
+  function ageDashOverall(room){
+    return (state.ageTableRows||[]).find(r=>r['구분']===room && r['연령대']==='전체')||null;
+  }
+  function ageDashHeatClass(v){ const n=ageDashNum(v); return n>=75?'heat-5':n>=50?'heat-4':n>=25?'heat-3':n>0?'heat-2':'heat-1'; }
+  function ageDashBarRows(rows,key,unit='명'){
+    const vals=rows.map(r=>ageDashNum(r[key])); const max=Math.max(0,...vals);
+    if(!rows.length) return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    return '<div class="consult-bars">'+rows.map((r,i)=>{
+      const v=vals[i], pct=max?Math.max(v?2:0,Math.min(100,v/max*100)):0;
+      return `<div class="consult-row"><div class="consult-label">${escapeHTML(r['연령대'])}</div><div class="consult-track"><div class="consult-fill" style="width:${pct}%"></div></div><div class="consult-value">${v.toLocaleString()}${unit}</div></div>`;
+    }).join('')+'</div>';
+  }
+  function ageDashFirstRows(rows){
+    const maxFirst=Math.max(0,...rows.map(r=>ageDashNum(r['초진']))), maxInj=Math.max(0,...rows.map(r=>ageDashNum(r['초진주사'])));
+    return `<div class="first-grid"><div></div><div class="first-head">초진 환자</div><div class="first-head">초진 주사</div><div class="first-head">처방률</div></div>`+rows.map(r=>{
+      const f=ageDashNum(r['초진']), inj=ageDashNum(r['초진주사']), rate=ageDashNum(r['초진 주사처방률']);
+      const fw=maxFirst?f/maxFirst*100:0, iw=maxInj?inj/maxInj*100:0;
+      return `<div class="first-grid"><div class="first-age">${escapeHTML(r['연령대'])}</div><div class="first-mini"><i style="width:${fw}%"></i><span class="first-num">${f}명</span></div><div class="first-mini inj"><i style="width:${iw}%"></i><span class="first-num">${inj}명</span></div><div class="rate-badge">${rate}%</div></div>`;
+    }).join('');
+  }
+  function ageDashInjectionDist(overall){
+    const keys=['1회 주사 비율','2회 주사 비율','3회 주사 비율','4회 주사 비율','5회 주사 비율','6회 주사 비율','7회 주사 비율','8회 이상 주사 비율'];
+    const labs=['1회','2회','3회','4회','5회','6회','7회','8회+'];
+    const vals=keys.map(k=>ageDashNum(overall?.[k])); const max=Math.max(1,...vals);
+    return '<div class="inj-dist">'+vals.map((v,i)=>`<div class="inj-col"><div class="pct">${v}%</div><div class="vbar-wrap"><div class="vbar" style="height:${Math.max(v?4:0,v/max*100)}%"></div></div><div class="lab">${labs[i]}</div></div>`).join('')+'</div>';
+  }
+  function ageDashHeatTable(rows){
+    const keys=['1회 주사 비율','2회 주사 비율','3회 주사 비율','4회 주사 비율','5회 주사 비율','6회 주사 비율','7회 주사 비율','8회 이상 주사 비율'];
+    const labs=['1회','2회','3회','4회','5회','6회','7회','8회+'];
+    return `<table class="age-heat"><thead><tr><th>연령대</th>${labs.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`+rows.map(r=>`<tr><td><b>${escapeHTML(r['연령대'])}</b></td>${keys.map(k=>{const v=ageDashNum(r[k]);return `<td class="heat-cell ${ageDashHeatClass(v)}">${v}%</td>`}).join('')}</tr>`).join('')+'</tbody></table>';
+  }
+  function ageDashRoomCompare(){
+    const rows=(state.ageTableRows||[]).filter(r=>r['연령대']==='전체'&&r['구분']!=='전체').sort((a,b)=>String(a['구분']).localeCompare(String(b['구분']),'ko',{numeric:true}));
+    if(!rows.length) return '<div class="age-dash-empty">진료실별 비교 데이터가 없습니다.</div>';
+    const head=['진료실','총환자수','초진 주사처방률','초진 주사 재진율','평균 주사횟수'];
+    let html='<div class="room-compare">'+head.map(x=>`<div class="rh">${x}</div>`).join('');
+    rows.forEach((r,idx)=>{ const last=idx===rows.length-1?' last-row':''; html+=`<div class="room-name${last}">${escapeHTML(r['구분'])}</div><div class="${last}">${ageDashNum(r['총환자수']).toLocaleString()}명</div><div class="${last}">${ageDashPct(r['초진 주사처방률'])}</div><div class="${last}">${ageDashPct(r['초진 주사 재진율'])}</div><div class="${last}">${ageDashNum(r['초진 주사 평균 횟수']).toFixed(2)}회</div>`; });
+    return html+'</div>';
+  }
+  function ageDashRetention(rows){
+    if(!rows.length) return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    return `<div class="retention-legend"><span><i class="one"></i>1회 종료</span><span><i class="multi"></i>2회 이상 지속</span></div><div class="retention-rows">`+
+      rows.map(r=>{
+        const one=Math.max(0,Math.min(100,ageDashNum(r['1회 주사 비율'])));
+        const multi=Math.max(0,100-one);
+        return `<div class="retention-row"><div class="consult-label">${escapeHTML(r['연령대'])}</div><div class="retention-bar"><div class="retention-one" style="width:${one}%" title="1회 ${one}%"></div><div class="retention-multi" style="width:${multi}%" title="2회 이상 ${multi}%"></div></div><div class="retention-value">${multi.toFixed(0)}%</div></div>`;
+      }).join('')+'</div>';
+  }
+  function ageDashConversionDelta(rows,overall){
+    const base=ageDashNum(overall?.['초진 주사처방률']);
+    if(!rows.length) return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    const deltas=rows.map(r=>ageDashNum(r['초진 주사처방률'])-base);
+    const max=Math.max(10,...deltas.map(v=>Math.abs(v)));
+    return `<div class="retention-legend">전체 평균 ${base}% 대비 연령대별 처방률 차이입니다. 오른쪽은 평균보다 높고, 왼쪽은 낮습니다.</div><div class="delta-rows">`+
+      rows.map((r,i)=>{
+        const d=deltas[i], width=Math.min(50,Math.abs(d)/max*50);
+        const fill=d>=0?`<div class="delta-fill-pos" style="width:${width}%"></div>`:`<div class="delta-fill-neg" style="width:${width}%"></div>`;
+        return `<div class="delta-row"><div class="consult-label">${escapeHTML(r['연령대'])}</div><div class="delta-track"><div class="delta-mid"></div>${fill}</div><div class="delta-value ${d>=0?'pos':'neg'}">${d>=0?'+':''}${d.toFixed(0)}%p</div></div>`;
+      }).join('')+'</div>';
+  }
+  function ageDashOpportunity(rows,overall){
+    if(!rows.length) return '';
+    const baseRate=ageDashNum(overall?.['초진 주사처방률']);
+    const baseRevisit=ageDashNum(overall?.['초진 주사 재진율']);
+    const byPatients=rows.slice().sort((a,b)=>ageDashNum(b['총환자수'])-ageDashNum(a['총환자수']));
+    const highVolLowConv=byPatients.filter(r=>ageDashNum(r['초진 주사처방률'])<baseRate)[0]||null;
+    const lowRevisit=rows.filter(r=>ageDashNum(r['초진주사'])>0).slice().sort((a,b)=>ageDashNum(a['초진 주사 재진율'])-ageDashNum(b['초진 주사 재진율']))[0]||null;
+    const highVisits=rows.slice().sort((a,b)=>ageDashNum(b['환자당 평균 내원횟수'])-ageDashNum(a['환자당 평균 내원횟수']))[0]||null;
+    const repeat=rows.filter(r=>ageDashNum(r['초진주사'])>0).map(r=>({r,multi:Math.max(0,100-ageDashNum(r['1회 주사 비율']))})).sort((a,b)=>b.multi-a.multi)[0]||null;
+    return `<div class="opportunity-grid">
+      <div class="opp-card"><b>전환 개선 후보</b><strong>${escapeHTML(highVolLowConv?.['연령대']||'-')}</strong><small>환자 규모가 크면서 처방률이 전체 평균 ${baseRate}%보다 낮은 연령대를 우선 점검합니다.</small></div>
+      <div class="opp-card"><b>재내원 관리 후보</b><strong>${escapeHTML(lowRevisit?.['연령대']||'-')} ${lowRevisit?ageDashPct(lowRevisit['초진 주사 재진율']):''}</strong><small>주사 환자 중 재진율이 낮아 설명·예약·후속관리 점검 대상으로 볼 수 있습니다.</small></div>
+      <div class="opp-card"><b>내원 강도 최고</b><strong>${escapeHTML(highVisits?.['연령대']||'-')} ${highVisits?ageDashNum(highVisits['환자당 평균 내원횟수']).toFixed(2)+'회':''}</strong><small>환자당 평균 내원횟수가 가장 높은 연령대입니다.</small></div>
+      <div class="opp-card"><b>반복치료 비중 최고</b><strong>${escapeHTML(repeat?.r?.['연령대']||'-')} ${repeat?repeat.multi.toFixed(0)+'%':''}</strong><small>1회 종료를 제외한 2회 이상 주사 비중이 가장 높은 연령대입니다.</small></div>
+    </div>`;
+  }
+  function ageDashRoomVolumeBars(){
+    const rows=(state.ageTableRows||[]).filter(r=>r['연령대']==='전체'&&r['구분']!=='전체').sort((a,b)=>ageDashNum(b['총환자수'])-ageDashNum(a['총환자수']));
+    if(!rows.length) return '<div class="age-dash-empty">진료실별 데이터가 없습니다.</div>';
+    const max=Math.max(1,...rows.map(r=>ageDashNum(r['총환자수'])));
+    return '<div class="consult-bars">'+rows.map(r=>{const v=ageDashNum(r['총환자수']);return `<div class="consult-row"><div class="consult-label">${escapeHTML(r['구분'])}</div><div class="consult-track"><div class="consult-fill" style="width:${v/max*100}%"></div></div><div class="consult-value">${v.toLocaleString()}명</div></div>`}).join('')+'</div>';
+  }
+
+  function ageDashInsights(rows,overall){
+    if(!rows.length) return '';
+    const maxBy=(key)=>rows.slice().sort((a,b)=>ageDashNum(b[key])-ageDashNum(a[key]))[0];
+    const vol=maxBy('총환자수'), rate=maxBy('초진 주사처방률'), revisit=maxBy('초진 주사 재진율');
+    const one=ageDashNum(overall?.['1회 주사 비율']); const multi=Math.max(0,100-one);
+    return `<div class="insight-list">
+      <div class="insight"><b>환자 구성</b><span>${escapeHTML(vol?.['연령대']||'-')} 환자 비중이 가장 큼</span><small>${ageDashNum(vol?.['총환자수']).toLocaleString()}명 · 연령별 운영/마케팅 우선순위 참고</small></div>
+      <div class="insight"><b>초진 → 주사 전환</b><span>${escapeHTML(rate?.['연령대']||'-')} 처방률 ${ageDashPct(rate?.['초진 주사처방률'])}</span><small>연령대별 초진 설명·주사 전환 차이를 비교할 수 있습니다.</small></div>
+      <div class="insight"><b>치료 지속성</b><span>${escapeHTML(revisit?.['연령대']||'-')} 주사 후 재진율 ${ageDashPct(revisit?.['초진 주사 재진율'])}</span><small>선택 범위의 1회 주사 비율 ${one}% · 2회 이상 비중 약 ${multi}%</small></div>
+    </div>`;
+  }
+  function ageDashRelation(rows, overall){
+    if(!rows.length) return '<div class="age-dash-empty">표시할 데이터가 없습니다.</div>';
+    const firstVals=rows.map(r=>ageDashNum(r['초진']));
+    const injVals=rows.map(r=>ageDashNum(r['초진주사']));
+    const rates=rows.map(r=>ageDashNum(r['초진 주사처방률']));
+    const totalFirst=firstVals.reduce((a,b)=>a+b,0);
+    const avgFirst=firstVals.reduce((a,b)=>a+b,0)/Math.max(1,firstVals.length);
+    const avgRate=ageDashNum(overall?.['초진 주사처방률']);
+    const maxFirst=Math.max(1,...firstVals);
+    const maxInj=Math.max(1,...injVals);
+    const xAvg=48+(avgFirst/maxFirst)*calcRelationWidth();
+    function calcRelationWidth(){ return 48; }
+    const pointHtml=rows.map((r,i)=>{
+      const f=firstVals[i], inj=injVals[i], rate=rates[i];
+      const x=8+(f/maxFirst)*84;
+      const y=8+(Math.max(0,Math.min(100,rate))/100)*84;
+      const size=20+(inj/maxInj)*18;
+      return `<div class="relation-point" style="left:${x}%;bottom:${y}%;width:${size}px;height:${size}px" title="${escapeHTML(r['연령대'])} · 초진 ${f}명 · 초진주사 ${inj}명 · 처방률 ${rate}%"><span>${escapeHTML(r['연령대'])}</span></div>`;
+    }).join('');
+    const avgX=8+(avgFirst/maxFirst)*84;
+    const avgY=8+(Math.max(0,Math.min(100,avgRate))/100)*84;
+    const list=rows.map((r,i)=>{
+      const f=firstVals[i], inj=injVals[i], rate=rates[i];
+      const firstShare=totalFirst?f/totalFirst*100:0;
+      const diff=rate-avgRate;
+      const sizeLabel=f>=avgFirst?'초진 규모 높음':'초진 규모 낮음';
+      const convLabel=diff>=3?'전환 높음':diff<=-3?'전환 낮음':'전환 평균권';
+      const cls=diff>=0?'up':'down';
+      const interpret=f<avgFirst && diff>=3
+        ? `초진 환자는 상대적으로 적지만, 유입된 초진의 <strong>${rate}%</strong>가 주사로 전환되어 효율은 높은 편입니다.`
+        : f>=avgFirst && diff<0
+          ? `초진 환자 규모는 큰 편이지만 처방률이 전체 평균보다 <strong class="down">${Math.abs(diff).toFixed(0)}%p 낮아</strong> 전환 개선 여지가 있습니다.`
+          : f>=avgFirst && diff>=0
+            ? `초진 환자 규모와 처방률이 모두 평균 이상으로, 현재 핵심 유입·전환 연령층으로 볼 수 있습니다.`
+            : `초진 환자 규모와 처방률이 모두 평균 이하입니다. 환자 유입과 전환을 함께 확인할 필요가 있습니다.`;
+      return `<div class="relation-item"><div class="relation-item-head"><b>${escapeHTML(r['연령대'])}</b><span class="relation-tag">${sizeLabel} · ${convLabel}</span></div><p>초진 <strong>${f}명</strong> (${firstShare.toFixed(1)}%) → 초진주사 <strong>${inj}명</strong> · 처방률 <strong class="${cls}">${rate}% (${diff>=0?'+':''}${diff.toFixed(0)}%p)</strong><br>${interpret}</p></div>`;
+    }).join('');
+    const highEff=rows.slice().sort((a,b)=>ageDashNum(b['초진 주사처방률'])-ageDashNum(a['초진 주사처방률']))[0];
+    const highVol=rows.slice().sort((a,b)=>ageDashNum(b['초진'])-ageDashNum(a['초진']))[0];
+    const highInj=rows.slice().sort((a,b)=>ageDashNum(b['초진주사'])-ageDashNum(a['초진주사']))[0];
+    const bestOpp=rows.filter(r=>ageDashNum(r['초진'])>=avgFirst).sort((a,b)=>(avgRate-ageDashNum(b['초진 주사처방률']))-(avgRate-ageDashNum(a['초진 주사처방률'])))[0];
+    return `<div class="relation-summary">
+      <div><b>초진 규모 최대</b><strong>${escapeHTML(highVol?.['연령대']||'-')} ${ageDashNum(highVol?.['초진'])}명</strong></div>
+      <div><b>초진주사 최대</b><strong>${escapeHTML(highInj?.['연령대']||'-')} ${ageDashNum(highInj?.['초진주사'])}명</strong></div>
+      <div><b>처방률 최고</b><strong>${escapeHTML(highEff?.['연령대']||'-')} ${ageDashPct(highEff?.['초진 주사처방률'])}</strong></div>
+      <div><b>전환 점검 후보</b><strong>${escapeHTML(bestOpp?.['연령대']||'-')}</strong></div>
+    </div>
+    <div class="relation-wrap">
+      <div class="relation-chart">
+        <div class="relation-axis-y">초진 주사 처방률 ↑</div><div class="relation-axis-x">초진 환자 규모 →</div>
+        <div class="relation-grid-v" style="left:29%"></div><div class="relation-grid-v" style="left:50%"></div><div class="relation-grid-v" style="left:71%"></div>
+        <div class="relation-grid-h" style="bottom:29%"></div><div class="relation-grid-h" style="bottom:50%"></div><div class="relation-grid-h" style="bottom:71%"></div>
+        <div class="relation-avg-v" style="left:${avgX}%"></div><div class="relation-avg-h" style="bottom:${avgY}%"></div>
+        <span class="relation-avg-label" style="left:${Math.min(88,avgX+1)}%;bottom:35px">평균 초진 ${avgFirst.toFixed(1)}명</span>
+        <span class="relation-avg-label" style="left:52px;bottom:${Math.min(90,avgY+1)}%">평균 처방률 ${avgRate}%</span>
+        <span class="relation-zone" style="right:28px;top:31px">규모↑ · 전환↑</span><span class="relation-zone" style="left:54px;top:31px">규모↓ · 전환↑</span>
+        <span class="relation-zone" style="right:28px;bottom:38px">규모↑ · 전환↓</span><span class="relation-zone" style="left:54px;bottom:38px">규모↓ · 전환↓</span>
+        ${pointHtml}
+      </div>
+      <div class="relation-list">${list}</div>
+    </div>`;
+  }
+
+  function renderAgeConsultingDashboard(){
+    const content=document.getElementById('ageDashboardContent'); if(!content) return;
+    const room=document.getElementById('ageDashboardRoom')?.value||'전체';
+    const rows=ageDashAgeRows(room), overall=ageDashOverall(room);
+    if(!overall){content.innerHTML='<div class="age-dash-empty">선택한 범위의 통계 데이터가 없습니다.</div>';return;}
+    const ageSum=rows.reduce((s,r)=>s+ageDashNum(r['총환자수']),0);
+    const first=ageDashNum(overall['초진']), firstInj=ageDashNum(overall['초진주사']);
+    const kpis=[
+      ['총환자수',`${ageDashNum(overall['총환자수']).toLocaleString()}명`,'선택 범위 고유 환자'],
+      ['초진 환자',`${first.toLocaleString()}명`,'신환 + 90일초진'],
+      ['초진 주사',`${firstInj.toLocaleString()}명`,`${ageDashPct(overall['초진 주사처방률'])} 처방률`],
+      ['주사 후 재진율',ageDashPct(overall['초진 주사 재진율']),'초진 주사환자 재내원'],
+      ['평균 주사횟수',`${ageDashNum(overall['초진 주사 평균 횟수']).toFixed(2)}회`,`평균 내원 ${ageDashNum(overall['초진 주사 평균 내원 횟수']).toFixed(2)}회`]
+    ];
+    const distRows=rows.map(r=>({...r,__share:ageSum?Math.round(ageDashNum(r['총환자수'])/ageSum*1000)/10:0}));
+    const distHtml='<div class="consult-bars">'+distRows.map(r=>`<div class="consult-row"><div class="consult-label">${escapeHTML(r['연령대'])}</div><div class="consult-track"><div class="consult-fill" style="width:${r.__share}%"></div></div><div class="consult-value">${r.__share}%</div></div>`).join('')+'</div>';
+    content.innerHTML=`
+      <div class="age-dash-kpis">${kpis.map(([l,v,s])=>`<div class="age-dash-kpi"><span>${l}</span><strong>${v}</strong><small>${s}</small></div>`).join('')}</div>
+      <div class="age-dash-grid">
+        <section class="age-dash-card"><h3>① 연령대별 환자 분포</h3><div class="desc">선택 범위에서 어떤 연령층이 환자 구성을 주도하는지 확인합니다.</div>${distHtml}</section>
+        <section class="age-dash-card"><h3>② 초진 환자 · 초진 주사 · 처방률</h3><div class="desc">연령대별 신규환자 규모와 주사 전환 차이를 동시에 비교합니다. 숫자는 막대 안 흰색 대신 대비가 높은 라벨로 표시합니다.</div>${ageDashFirstRows(rows)}</section>
+        <section class="age-dash-card wide"><h3>③ 초진 환자 규모 × 초진 주사 처방률 관계도</h3><div class="desc">초진 주사 숫자만 보면 환자 규모가 큰 연령대가 유리해 보일 수 있습니다. 그래서 초진 환자 수와 처방률을 동시에 놓고 비교합니다. 점의 크기는 초진 주사 환자 수입니다.</div>${ageDashRelation(rows,overall)}</section>
+        <section class="age-dash-card"><h3>④ 주사 횟수 분포</h3><div class="desc">초진 당일 주사환자가 기간 내 총 몇 회 주사를 받았는지 비율입니다.</div>${ageDashInjectionDist(overall)}</section>
+        <section class="age-dash-card"><h3>⑤ 연령대별 n회 주사 비율</h3><div class="desc">진한 셀일수록 해당 횟수 비중이 높습니다. 1회 종료와 반복치료 패턴을 한눈에 볼 수 있습니다.</div>${ageDashHeatTable(rows)}</section>
+        <section class="age-dash-card"><h3>⑥ 1회 종료 vs 2회 이상 지속</h3><div class="desc">연령대별로 1회 주사 후 종료되는 비중과 2회 이상 반복치료로 이어지는 비중을 비교합니다. 오른쪽 수치는 2회 이상 비율입니다.</div>${ageDashRetention(rows)}</section>
+        <section class="age-dash-card"><h3>⑦ 전체 평균 대비 주사 처방률</h3><div class="desc">전체 처방률보다 전환이 강한 연령대와 약한 연령대를 %p 차이로 확인합니다.</div>${ageDashConversionDelta(rows,overall)}</section>
+        <section class="age-dash-card"><h3>⑧ 환자당 평균 내원횟수</h3><div class="desc">연령대별 내원 강도를 비교해 재방문이 활발한 핵심 연령층을 확인합니다.</div>${ageDashBarRows(rows,'환자당 평균 내원횟수','회')}</section>
+        <section class="age-dash-card"><h3>⑨ 초진 주사 후 재진율</h3><div class="desc">주사를 시작한 초진환자가 다시 내원한 비율입니다. 후속 예약·설명·치료 지속성을 확인하는 지표로 활용합니다.</div>${ageDashBarRows(rows,'초진 주사 재진율','%')}</section>
+        <section class="age-dash-card wide"><h3>⑩ 컨설팅 관점 핵심 포인트</h3><div class="desc">운영 개선 포인트를 빠르게 찾기 위한 자동 요약입니다. 인과관계가 아닌 현황 비교용으로 사용합니다.</div>${ageDashInsights(rows,overall)}</section>
+        <section class="age-dash-card wide"><h3>⑪ 추가 점검 후보</h3><div class="desc">환자 규모·주사 전환·재진·반복치료를 함께 보고 컨설팅 시 먼저 살펴볼 연령대를 자동으로 표시합니다.</div>${ageDashOpportunity(rows,overall)}</section>
+        <section class="age-dash-card"><h3>⑫ 진료실별 환자 규모</h3><div class="desc">진료실별 고유 환자수를 비교해 환자 배분과 진료실 편차를 확인합니다.</div>${ageDashRoomVolumeBars()}</section>
+        <section class="age-dash-card"><h3>⑬ 진료실별 핵심 비교</h3><div class="desc">전체 기간 기준으로 환자 규모, 초진 주사 전환, 치료 지속성을 진료실별로 비교합니다.</div>${ageDashRoomCompare()}</section>
+      </div>`;
+  }
+  function openAgeConsultingDashboardModal(){
+    const rows = state && Array.isArray(state.ageTableRows) ? state.ageTableRows : [];
+    if(!rows.length){
+      alert('먼저 통계 파일을 업로드하여 계산해주세요.');
+      return;
+    }
+    const modal=document.getElementById('ageChartModal');
+    const sel=document.getElementById('ageDashboardRoom');
+    const content=document.getElementById('ageDashboardContent');
+    if(!modal || !sel || !content){
+      alert('그래프 화면을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
+      return;
+    }
+    const rooms=[...new Set(rows.map(r=>r && r['구분']).filter(Boolean))]
+      .sort((a,b)=>a==='전체'?-1:b==='전체'?1:String(a).localeCompare(String(b),'ko',{numeric:true}));
+    const prev=sel.value;
+    sel.innerHTML=rooms.map(v=>`<option value="${escapeHTML(v)}">${v==='전체'?'전체 병원':escapeHTML(v)}</option>`).join('');
+    sel.value=rooms.includes(prev)?prev:(rooms.includes('전체')?'전체':rooms[0]);
+    sel.onchange=renderAgeConsultingDashboard;
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+    try{
+      renderAgeConsultingDashboard();
+    }catch(err){
+      console.error('연령대별 그래프 렌더링 오류:', err);
+      content.innerHTML='<div class="age-dash-empty">그래프 생성 중 오류가 발생했습니다. 브라우저 콘솔을 확인해주세요.</div>';
+    }
+  }
+  function closeAgeConsultingDashboardModal(){
+    const modal=document.getElementById('ageChartModal');
+    if(modal){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); }
+  }
+
+
+  /* ===== 연령대별 한눈에 보기 ===== */
+  function ovDonutGradient(rows){
+    const colors=['#8fa8c8','#9c8ad1','#8eb7a1','#d3a47b','#c9869f','#8097bb','#b79a72'];
+    const vals=rows.map(r=>ageDashNum(r['총환자수']));
+    const total=vals.reduce((a,b)=>a+b,0)||1; let cur=0, seg=[];
+    vals.forEach((v,i)=>{const start=cur,totalPct=v/total*100;cur+=totalPct;seg.push(`${colors[i%colors.length]} ${start.toFixed(2)}% ${cur.toFixed(2)}%`);});
+    return `conic-gradient(${seg.join(',')})`;
+  }
+  function ovComboChart(rows){
+    if(!rows || !rows.length) return '<div class="age-dash-empty">표시할 연령대 데이터가 없습니다.</div>';
+    const f=rows.map(r=>ageDashNum(r['초진']));
+    const inj=rows.map(r=>ageDashNum(r['초진주사']));
+    const rate=rows.map(r=>Math.max(0,Math.min(100,ageDashNum(r['초진 주사처방률']))));
+    const maxCount=Math.max(1,...f,...inj);
+    const W=920, H=300, left=46, right=48, top=34, bottom=58;
+    const plotW=W-left-right, plotH=H-top-bottom;
+    const groupW=plotW/rows.length;
+    const barW=Math.min(28,groupW*0.22), gap=Math.min(8,groupW*0.07);
+    const countY=v=>top+plotH-(v/maxCount)*plotH;
+    const rateY=v=>top+plotH-(v/100)*plotH;
+    const esc=escapeHTML;
+    let grid='';
+    [0,25,50,75,100].forEach(p=>{
+      const y=rateY(p);
+      grid+=`<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" class="ov-svg-grid"/>`;
+      grid+=`<text x="${W-right+10}" y="${y+4}" class="ov-svg-axis ov-svg-rate-axis">${p}%</text>`;
+    });
+    const countTicks=[0,Math.round(maxCount/2),maxCount];
+    countTicks.forEach(v=>{const y=countY(v);grid+=`<text x="${left-10}" y="${y+4}" text-anchor="end" class="ov-svg-axis">${v}</text>`;});
+    let bars='', pointStr='', dots='', labels='';
+    rows.forEach((r,i)=>{
+      const cx=left+groupW*(i+.5);
+      const fh=Math.max(0,(f[i]/maxCount)*plotH), ih=Math.max(0,(inj[i]/maxCount)*plotH);
+      const fy=top+plotH-fh, iy=top+plotH-ih;
+      const x1=cx-gap/2-barW, x2=cx+gap/2;
+      bars+=`<rect x="${x1}" y="${fy}" width="${barW}" height="${fh}" rx="5" class="ov-svg-bar ov-svg-first"/>`;
+      bars+=`<rect x="${x2}" y="${iy}" width="${barW}" height="${ih}" rx="5" class="ov-svg-bar ov-svg-inj"/>`;
+      bars+=`<text x="${x1+barW/2}" y="${Math.max(top+12,fy-7)}" text-anchor="middle" class="ov-svg-value">${f[i]}</text>`;
+      bars+=`<text x="${x2+barW/2}" y="${Math.max(top+12,iy-7)}" text-anchor="middle" class="ov-svg-value">${inj[i]}</text>`;
+      const py=rateY(rate[i]); pointStr+=`${cx},${py} `;
+      dots+=`<circle cx="${cx}" cy="${py}" r="5" class="ov-svg-dot"/>`;
+      dots+=`<text x="${cx}" y="${Math.max(top+12,py-10)}" text-anchor="middle" class="ov-svg-rate-label">${rate[i]}%</text>`;
+      labels+=`<text x="${cx}" y="${H-22}" text-anchor="middle" class="ov-svg-xlabel">${esc(r['연령대'])}</text>`;
+    });
+    return `<div class="ov-combo-chart ov-combo-svg-wrap">
+      <div class="ov-combo-legend"><span><i class="first"></i>초진 환자</span><span><i class="inj"></i>초진 주사</span><span><i class="rate"></i>초진 주사 처방률</span></div>
+      <svg class="ov-combo-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="연령대별 초진 환자, 초진 주사, 초진 주사 처방률 비교 그래프">
+        ${grid}
+        <line x1="${left}" y1="${top+plotH}" x2="${W-right}" y2="${top+plotH}" class="ov-svg-axis-line"/>
+        ${bars}
+        <polyline points="${pointStr.trim()}" class="ov-svg-line"/>
+        ${dots}${labels}
+        <text x="8" y="${top-10}" class="ov-svg-axis-title">명</text>
+        <text x="${W-25}" y="${top-10}" class="ov-svg-axis-title">%</text>
+      </svg>
+    </div>`;
+  }
+  function ovInsights(rows,overall){
+    if(!rows.length) return '';
+    const avg=ageDashNum(overall['초진 주사처방률']);
+    const highVol=rows.slice().sort((a,b)=>ageDashNum(b['초진'])-ageDashNum(a['초진']))[0];
+    const highConv=rows.slice().sort((a,b)=>ageDashNum(b['초진 주사처방률'])-ageDashNum(a['초진 주사처방률']))[0];
+    const lowVolHigh=rows.filter(r=>ageDashNum(r['초진'])<rows.reduce((s,x)=>s+ageDashNum(x['초진']),0)/rows.length && ageDashNum(r['초진 주사처방률'])>avg).sort((a,b)=>ageDashNum(b['초진 주사처방률'])-ageDashNum(a['초진 주사처방률']))[0];
+    const highVolLow=rows.filter(r=>ageDashNum(r['초진'])>=rows.reduce((s,x)=>s+ageDashNum(x['초진']),0)/rows.length && ageDashNum(r['초진 주사처방률'])<avg).sort((a,b)=>ageDashNum(a['초진 주사처방률'])-ageDashNum(b['초진 주사처방률']))[0];
+    let a=[`<div class="ov-insight"><b>📌 초진 규모 최대 · ${escapeHTML(highVol?.['연령대']||'-')}</b>초진 ${ageDashNum(highVol?.['초진'])}명, 처방률 ${ageDashPct(highVol?.['초진 주사처방률'])}. 신규 유입의 중심 연령층입니다.</div>`,`<div class="ov-insight"><b>✅ 처방률 최고 · ${escapeHTML(highConv?.['연령대']||'-')}</b>초진 규모와 별개로 전환 효율이 가장 높은 연령층입니다.</div>`];
+    if(lowVolHigh) a.push(`<div class="ov-insight"><b>💡 규모는 작지만 전환은 높음 · ${escapeHTML(lowVolHigh['연령대'])}</b>초진 ${ageDashNum(lowVolHigh['초진'])}명으로 적은 편이지만 처방률은 ${ageDashPct(lowVolHigh['초진 주사처방률'])}로 평균 ${avg}%보다 높습니다.</div>`);
+    if(highVolLow) a.push(`<div class="ov-insight"><b>🎯 전환 개선 후보 · ${escapeHTML(highVolLow['연령대'])}</b>초진 유입은 충분하지만 처방률이 평균보다 낮아 설명·권유 과정 점검 가치가 있습니다.</div>`);
+    return `<div class="ov-insights">${a.join('')}</div>`;
+  }
+  function ovInjectionDist(overall){
+    const keys=['1회 주사 비율','2회 주사 비율','3회 주사 비율','4회 주사 비율','5회 주사 비율','6회 주사 비율','7회 주사 비율','8회 이상 주사 비율']; const labs=['1회','2회','3회','4회','5회','6회','7회','8+'];
+    const vals=keys.map(k=>ageDashNum(overall[k])); const max=Math.max(1,...vals);
+    return `<div class="ov-injdist">${vals.map((v,i)=>`<div class="ov-injcol"><div class="val">${v}%</div><div class="track"><div class="fill" style="height:${v/max*100}%"></div></div><div class="lab">${labs[i]}</div></div>`).join('')}</div>`;
+  }
+  function renderAgeOverview(){
+    const content=document.getElementById('ageOverviewContent'); const room=document.getElementById('ageOverviewRoom')?.value||'전체'; if(!content) return;
+    const rows=ageDashAgeRows(room), overall=ageDashOverall(room); if(!overall){content.innerHTML='<div class="age-dash-empty">선택 범위 데이터가 없습니다.</div>';return;}
+    const ageSum=rows.reduce((s,r)=>s+ageDashNum(r['총환자수']),0)||1;
+    const kpis=[['총환자수',`${ageDashNum(overall['총환자수']).toLocaleString()}명`,'선택 범위 고유 환자'],['초진 환자',`${ageDashNum(overall['초진'])}명`,'신환 + 90일초진'],['초진 주사',`${ageDashNum(overall['초진주사'])}명`,`${ageDashPct(overall['초진 주사처방률'])} 처방률`],['초진 주사 처방률',ageDashPct(overall['초진 주사처방률']),'초진 환자 기준'],['초진 주사 후 재진율',ageDashPct(overall['초진 주사 재진율']),'초진 주사환자 재내원'],['평균 주사횟수',`${ageDashNum(overall['초진 주사 평균 횟수']).toFixed(2)}회`,`평균 내원 ${ageDashNum(overall['초진 주사 평균 내원 횟수']).toFixed(2)}회`]];
+    const distTable=`<table class="ov-mini-table"><thead><tr><th>연령대</th><th>환자수</th><th>비율</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHTML(r['연령대'])}</td><td>${ageDashNum(r['총환자수'])}</td><td>${(ageDashNum(r['총환자수'])/ageSum*100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+    const topPatient=rows.slice().sort((a,b)=>ageDashNum(b['총환자수'])-ageDashNum(a['총환자수']))[0];
+    const topRevisit=rows.slice().sort((a,b)=>ageDashNum(b['초진 주사 재진율'])-ageDashNum(a['초진 주사 재진율']))[0];
+    const topMulti=rows.slice().sort((a,b)=>(100-ageDashNum(b['1회 주사 비율']))-(100-ageDashNum(a['1회 주사 비율'])))[0];
+    content.innerHTML=`
+      <div class="age-overview-kpis">${kpis.map(([l,v,s])=>`<div class="age-overview-kpi"><span>${l}</span><strong>${v}</strong><small>${s}</small></div>`).join('')}</div>
+      <div class="age-overview-grid">
+        <section class="age-overview-panel"><h3>① 연령대별 환자 분포</h3><div class="ov-desc">전체 환자 중 연령대별 구성 비율</div><div class="ov-age-dist"><div class="ov-donut" style="background:${ovDonutGradient(rows)}"><div class="ov-donut-center">전체<b>${ageDashNum(overall['총환자수'])}명</b></div></div>${distTable}</div></section>
+        <section class="age-overview-panel wide2"><h3>② 초진 환자 · 초진 주사 · 처방률 관계</h3><div class="ov-desc">막대는 초진/초진주사 규모, 점·선은 처방률입니다. 규모와 전환 효율을 동시에 비교합니다.</div><div class="ov-combo">${ovComboChart(rows)}${ovInsights(rows,overall)}</div></section>
+        <section class="age-overview-panel"><h3>③ 주사 횟수 분포</h3><div class="ov-desc">초진 주사환자 기준 기간 내 총 주사횟수</div>${ovInjectionDist(overall)}</section>
+        <section class="age-overview-panel"><h3>④ 연령대별 n회 주사 비율</h3><div class="ov-desc">반복치료 패턴을 셀 진하기로 비교</div>${ageDashHeatTable(rows)}</section>
+        <section class="age-overview-panel"><h3>⑤ 진료실별 핵심 지표</h3><div class="ov-desc">환자 규모 · 처방률 · 재진율 · 평균 주사횟수</div>${ageDashRoomCompare()}</section>
+        <section class="age-overview-panel full"><h3>⑥ 컨설팅 포인트 요약</h3><div class="ov-desc">현재 데이터에서 바로 점검할 만한 포인트를 압축해 보여줍니다.</div><div class="ov-consult-cards"><div class="ov-consult-card"><span>핵심 고객층</span><b>${escapeHTML(topPatient?.['연령대']||'-')}</b><p>환자 규모가 가장 큰 연령층입니다.</p></div><div class="ov-consult-card"><span>처방률 최고</span><b>${escapeHTML(rows.slice().sort((a,b)=>ageDashNum(b['초진 주사처방률'])-ageDashNum(a['초진 주사처방률']))[0]?.['연령대']||'-')}</b><p>초진 환자의 주사 전환 효율이 가장 높습니다.</p></div><div class="ov-consult-card"><span>재진율 최고</span><b>${escapeHTML(topRevisit?.['연령대']||'-')}</b><p>초진 주사 후 후속 내원이 가장 잘 이어집니다.</p></div><div class="ov-consult-card"><span>반복치료 비중 최고</span><b>${escapeHTML(topMulti?.['연령대']||'-')}</b><p>2회 이상 주사로 이어지는 비중이 상대적으로 높습니다.</p></div><div class="ov-consult-card"><span>전체 평균 처방률</span><b>${ageDashPct(overall['초진 주사처방률'])}</b><p>각 연령대 전환 수준의 기준선입니다.</p></div></div></section>
+      </div>`;
+  }
+  function openAgeOverviewModal(){
+    const rows=state&&Array.isArray(state.ageTableRows)?state.ageTableRows:[]; if(!rows.length){alert('먼저 통계 파일을 업로드하여 계산해주세요.');return;}
+    const modal=document.getElementById('ageOverviewModal'), sel=document.getElementById('ageOverviewRoom'); if(!modal||!sel)return;
+    const rooms=[...new Set(rows.map(r=>r&&r['구분']).filter(Boolean))].sort((a,b)=>a==='전체'?-1:b==='전체'?1:String(a).localeCompare(String(b),'ko',{numeric:true}));
+    const prev=sel.value; sel.innerHTML=rooms.map(v=>`<option value="${escapeHTML(v)}">${v==='전체'?'전체 병원':escapeHTML(v)}</option>`).join(''); sel.value=rooms.includes(prev)?prev:(rooms.includes('전체')?'전체':rooms[0]); sel.onchange=renderAgeOverview; modal.style.display='flex'; renderAgeOverview();
+  }
+  function closeAgeOverviewModal(){const m=document.getElementById('ageOverviewModal');if(m)m.style.display='none';}
+
   function getAgeGroup(raw){
     if(!raw || typeof raw!=='string') return "전체";
     const match=raw.match(/(\d{1,3})세/); const age=match?parseInt(match[1]):NaN;
@@ -2481,9 +3265,99 @@ body.light-mode #ageMemoToggleBtn.active{
   document.getElementById('oneshotModal').addEventListener('click', (e)=>{
     if(e.target.id==='oneshotModal') hideOneshotModal();
   });
+
+  document.getElementById('ageChartOpenBtn')?.addEventListener('click', openAgeConsultingDashboardModal);
+  document.getElementById('ageChartCloseBtn')?.addEventListener('click', closeAgeConsultingDashboardModal);
+  document.getElementById('ageChartModal')?.addEventListener('click', (e)=>{
+    if(e.target.id==='ageChartModal') closeAgeChartModal();
+  });
+  document.getElementById('ageChartViewMode')?.addEventListener('change', ()=>{
+    rebuildAgeChartTarget();
+    renderAgeChart();
+  });
+  document.getElementById('ageChartTarget')?.addEventListener('change', renderAgeChart);
+  document.getElementById('ageChartMetric')?.addEventListener('change', renderAgeChart);
 </script>
 
 
+
+
+<script id="age-dashboard-click-failsafe-v1">
+/* 독립형 연령대 그래프 버튼 안전장치: 기존 이벤트 등록 실패와 무관하게 동작 */
+(function(){
+  function getRows(){
+    try{
+      if(typeof state !== 'undefined' && state && Array.isArray(state.ageTableRows)) return state.ageTableRows;
+    }catch(e){}
+    return [];
+  }
+
+  window.__jinsulOpenAgeDashboard = function(ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    var modal=document.getElementById('ageChartModal');
+    var sel=document.getElementById('ageDashboardRoom');
+    var content=document.getElementById('ageDashboardContent');
+    if(!modal){ alert('연령대별 그래프 화면을 찾지 못했습니다.'); return false; }
+
+    /* 클릭 자체는 항상 먼저 화면을 연다. 데이터 오류가 있어도 "아무 반응 없음"이 되지 않게 함 */
+    modal.style.setProperty('display','flex','important');
+    modal.setAttribute('aria-hidden','false');
+
+    try{
+      var rows=getRows();
+      if(!rows.length){
+        if(content) content.innerHTML='<div class="age-dash-empty">먼저 통계 파일을 업로드하여 계산해주세요.</div>';
+        return false;
+      }
+
+      if(sel){
+        var rooms=[];
+        rows.forEach(function(r){
+          var v=r && r['구분'];
+          if(v && rooms.indexOf(v)<0) rooms.push(v);
+        });
+        rooms.sort(function(a,b){
+          if(a==='전체') return -1;
+          if(b==='전체') return 1;
+          return String(a).localeCompare(String(b),'ko',{numeric:true});
+        });
+        var previous=sel.value;
+        sel.innerHTML=rooms.map(function(v){
+          var safe=String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+          return '<option value="'+safe+'">'+(v==='전체'?'전체 병원':safe)+'</option>';
+        }).join('');
+        sel.value=rooms.indexOf(previous)>=0 ? previous : (rooms.indexOf('전체')>=0 ? '전체' : rooms[0]);
+        sel.onchange=function(){
+          try{ if(typeof renderAgeConsultingDashboard==='function') renderAgeConsultingDashboard(); }
+          catch(err){ console.error(err); }
+        };
+      }
+
+      if(typeof renderAgeConsultingDashboard==='function'){
+        renderAgeConsultingDashboard();
+      }else if(content){
+        content.innerHTML='<div class="age-dash-empty">그래프 렌더링 함수를 불러오지 못했습니다.</div>';
+      }
+    }catch(err){
+      console.error('연령대 그래프 열기 오류',err);
+      if(content) content.innerHTML='<div class="age-dash-empty">그래프를 여는 중 오류가 발생했습니다: '+String(err && err.message || err)+'</div>';
+    }
+    return false;
+  };
+
+  window.__jinsulCloseAgeDashboard = function(ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    var modal=document.getElementById('ageChartModal');
+    if(modal){ modal.style.setProperty('display','none','important'); modal.setAttribute('aria-hidden','true'); }
+    return false;
+  };
+
+  var close=document.getElementById('ageChartCloseBtn');
+  if(close) close.onclick=window.__jinsulCloseAgeDashboard;
+  var modal=document.getElementById('ageChartModal');
+  if(modal) modal.addEventListener('click',function(e){ if(e.target===modal) window.__jinsulCloseAgeDashboard(e); });
+})();
+</script>
 
 </body>
 </html>
