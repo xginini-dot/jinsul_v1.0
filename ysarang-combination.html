@@ -61,8 +61,10 @@ h2{font-size:22px;margin:0;font-weight:1000;letter-spacing:-.04em}
 h3{font-size:17px;margin:0 0 10px;font-weight:1000}
 .sub,.hint{color:var(--muted);font-size:13px;line-height:1.7;font-weight:750}
 .sub{font-size:15px}.sub code,.hint code{background:rgba(189,169,139,.13);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--accent)}
-.codebox{font-size:12px;color:var(--muted);text-align:right;min-width:360px;font-weight:800}
-.codebox code{display:inline-block;margin-top:6px;background:rgba(0,0,0,.18);color:var(--gold2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:720px;white-space:normal;line-height:1.55}
+.codebox{font-size:12px;color:var(--text);text-align:right;min-width:360px;font-weight:1000}
+.codebox code{display:inline-block;margin-top:6px;background:rgba(0,0,0,.52);color:#fff4dc;border:1px solid rgba(216,199,170,.65);border-radius:10px;padding:9px 11px;max-width:720px;white-space:normal;line-height:1.6;font-weight:1000;box-shadow:0 8px 24px rgba(0,0,0,.20)}
+html[data-theme="light"] .codebox{color:#374151}
+html[data-theme="light"] .codebox code{background:#fffdf8;color:#6f542f;border-color:#cbb896;box-shadow:0 8px 20px rgba(64,54,42,.10)}
 .grid{display:grid;grid-template-columns:1.2fr .6fr .6fr;gap:16px;margin-top:24px}
 .field label{display:block;color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:950}
 .field input,.field select{width:100%;height:50px;border-radius:15px;border:1px solid var(--line);background:var(--field);color:var(--fieldText);padding:0 14px;font-size:14px;font-weight:800;outline:none}
@@ -204,12 +206,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
     <div class="tabs">
       <button class="tab active" data-group="old" data-tab="code">코드 조합 기준</button>
       <button class="tab" data-group="old" data-tab="dose">총투여량 포함 기준</button>
-      <button class="tab" data-group="old" data-tab="amount">차단술 금액 기준</button>
     </div>
 
     <div id="old-code"><div class="tableWrap"><table id="codeTable"></table></div></div>
     <div id="old-dose" class="hidden"><div class="tableWrap"><table id="doseTable"></table></div></div>
-    <div id="old-amount" class="hidden"><div class="tableWrap"><table id="amountTable"></table></div></div>
   </div>
 
   </div>
@@ -345,7 +345,7 @@ const monthStart=document.getElementById('monthStart'),monthEnd=document.getElem
 const searchInput=document.getElementById('searchInput'),typeFilter=document.getElementById('typeFilter'),minCount=document.getElementById('minCount');
 const matchMode=document.getElementById('matchMode'),comboLaSearch=document.getElementById('comboLaSearch');
 const statusEl=document.getElementById('status'),codeListEl=document.getElementById('codeList');
-const codeTable=document.getElementById('codeTable'),doseTable=document.getElementById('doseTable'),amountTable=document.getElementById('amountTable');
+const codeTable=document.getElementById('codeTable'),doseTable=document.getElementById('doseTable');
 const comboList=document.getElementById('comboList');
 let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[];
 
@@ -393,7 +393,7 @@ document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
   const group=btn.dataset.group;
   document.querySelectorAll(`.tab[data-group="${group}"]`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  ['code','dose','amount'].forEach(t=>document.getElementById(`${group}-${t}`).classList.toggle('hidden',btn.dataset.tab!==t));
+  ['code','dose'].forEach(t=>document.getElementById(`${group}-${t}`).classList.toggle('hidden',btn.dataset.tab!==t));
 });
 
 async function handleFiles(e){
@@ -527,24 +527,21 @@ function laKey(v){return [...v.la.keys()].sort().join(' + ')}
 function extraKey(v){return [...v.extra.keys()].sort().join(' + ')}
 
 function renderBase(pv){
-  const codeMap=new Map(),doseMap=new Map(),amountMap=new Map();let single=0,combo=0;
+  const codeMap=new Map(),doseMap=new Map();let single=0,combo=0;
   for(const v of pv){
     const entries=[...v.la.entries()].sort((a,b)=>a[0].localeCompare(b[0],'ko',{numeric:true}));
     if(entries.length===1)single++;else combo++;
     const ck=entries.map(x=>x[0]).join(' + ');
     const dk=entries.map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + ');
-    const ak=entries.map(([c,d])=>`${c} ${fmtWon((LA_INFO[c]?.price||0)*d)}`).join(' + ');
     addBase(codeMap,ck,entries.length,sumMap(v.la),laAmount(v));
     addBase(doseMap,dk,entries.length,sumMap(v.la),laAmount(v));
-    addBase(amountMap,ak,entries.length,sumMap(v.la),laAmount(v));
   }
   const st={total:pv.length,single,combo,codes:new Set(pv.flatMap(v=>[...v.la.keys()])),
-            codeRows:finalBase(codeMap,pv.length),doseRows:finalBase(doseMap,pv.length),amountRows:finalBase(amountMap,pv.length)};
+            codeRows:finalBase(codeMap,pv.length),doseRows:finalBase(doseMap,pv.length)};
   currentBaseStats=st;
   kTotal.textContent=fmtInt(st.total);kSingle.textContent=fmtInt(single);kCombo.textContent=fmtInt(combo);kCodes.textContent=fmtInt(st.codes.size);
   renderBaseTable(codeTable,filterBase(st.codeRows),'code');
   renderBaseTable(doseTable,filterBase(st.doseRows),'dose');
-  renderBaseTable(amountTable,filterBase(st.amountRows),'amount');
 }
 function addBase(map,key,n,dose,amount){
   if(!map.has(key))map.set(key,{key,count:0,codeCount:n,totalDose:0,totalAmount:0});
@@ -564,18 +561,22 @@ function filterBase(rows){
 function renderBaseTable(el,rows,mode){
   if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return}
   let h='<thead><tr><th>순위</th><th>구분</th><th class="left">'+
-    (mode==='code'?'LA코드 단독/조합':mode==='dose'?'LA코드 + 환자당 총투여량':'LA코드 + 금액')+
+    (mode==='code'?'LA코드 단독/조합':'LA코드 + 환자당 총투여량')+
     '</th><th>건수</th><th>차단술조합 비율</th>';
   if(mode==='dose')h+='<th>건당 평균 LA 총투여량</th>';
-  if(mode==='amount')h+='<th>총 차단술 금액</th><th>건당 평균 금액</th>';
-  h+='</tr></thead><tbody>';
-  h+=rows.map((r,i)=>`<tr><td>${i+1}</td><td><span class="pill ${r.codeCount>1?'combo':''}">${r.type}</span></td><td class="left"><b>${r.key}</b></td><td class="num">${fmtInt(r.count)}</td><td class="num">${r.pct.toFixed(2)}%</td>`+
-    (mode==='dose'?`<td class="num">${fmtDose(r.avgDose)}</td>`:'')+
-    (mode==='amount'?`<td class="money">${fmtWon(r.totalAmount)}</td><td class="money">${fmtWon(r.avgAmount)}</td>`:'')+
-    '</tr>').join('');
+  h+='<th>총 차단술 금액</th><th>건당 평균 금액</th></tr></thead><tbody>';
+  h+=rows.map((r,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><span class="pill ${r.codeCount>1?'combo':''}">${r.type}</span></td>
+    <td class="left"><b>${r.key}</b></td>
+    <td class="num">${fmtInt(r.count)}</td>
+    <td class="num">${r.pct.toFixed(2)}%</td>
+    ${mode==='dose'?`<td class="num">${fmtDose(r.avgDose)}</td>`:''}
+    <td class="money">${fmtWon(r.totalAmount)}</td>
+    <td class="money">${fmtWon(r.avgAmount)}</td>
+  </tr>`).join('');
   el.innerHTML=h+'</tbody>';
 }
-
 function renderCross(pv){
   const chosen=selectedExtra(),mode=matchMode.value,q=comboLaSearch.value.trim().toUpperCase();
   const matched=pv.filter(v=>{
@@ -676,7 +677,7 @@ function restoreDefaultPrices(){
 }
 
 function renderEmpty(){
-  codeTable.innerHTML=doseTable.innerHTML=amountTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
+  codeTable.innerHTML=doseTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
   comboList.innerHTML='<div class="empty">엑셀 업로드 후 LA × 추가처방 조합이 표시됩니다.</div>';
   ['kTotal','kSingle','kCombo','kCodes','xTotal','xMatched','xPatients'].forEach(id=>document.getElementById(id).textContent='0');
   xRatio.textContent='0%';xLaAmount.textContent=xExtraAmount.textContent='0원';codeListEl.textContent='-';
