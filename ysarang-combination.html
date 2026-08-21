@@ -1,126 +1,138 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <title>신경차단술 LA코드 단독/조합 통계</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    :root {
-      --gold:#bda98b; --gold2:#d8c7aa; --gold3:#8f8069;
-      --bg:#080808; --bg2:#161616; --card:rgba(255,255,255,.075); --card2:rgba(255,255,255,.045);
-      --panel:rgba(18,18,18,.84); --panel2:rgba(255,255,255,.06);
-      --text:#f8f4ec; --muted:#b8b1a6; --line:rgba(189,169,139,.28);
-      --line2:rgba(255,255,255,.10); --field:#0f1115; --fieldText:#f8f4ec;
-      --shadow:0 24px 70px rgba(0,0,0,.40); --accent:#d8c7aa; --danger:#ef4444;
-      --thead:#181510; --trEven:rgba(255,255,255,.035); --hover:rgba(189,169,139,.10);
-    }
-    html[data-theme="light"] {
-      --bg:#f7f3ec; --bg2:#eef1f5; --card:rgba(255,255,255,.90); --card2:rgba(255,255,255,.68);
-      --panel:rgba(255,255,255,.92); --panel2:#fffaf2;
-      --text:#111827; --muted:#64748b; --line:#e2d8ca; --line2:#edf0f5;
-      --field:#ffffff; --fieldText:#111827; --shadow:0 24px 70px rgba(64,54,42,.14);
-      --accent:#9b7c52; --thead:#f7f2ea; --trEven:#fcfbf8; --hover:#f8f1e5;
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0; min-height:100vh; color:var(--text);
-      font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
-      background:
-        radial-gradient(circle at top center, rgba(190,169,139,.24), transparent 38%),
-        linear-gradient(135deg,var(--bg),var(--bg2) 48%,rgba(189,169,139,.16));
-      transition:background .25s ease,color .25s ease;
-    }
-    body::before{
-      content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-      background-image:url("https://xginini-dot.github.io/jinsul_v1.0/진설로고.png");
-      background-repeat:no-repeat; background-position:center; background-size:min(620px,70vw);
-      opacity:.045; filter:grayscale(1);
-    }
-    html[data-theme="light"] body::before{opacity:.035;filter:grayscale(1)}
-    .wrap{max-width:1900px;margin:0 auto;padding:28px 24px 70px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
-    .topbar-left,.topbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .brand-chip{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
-    .brand-chip img{height:42px;width:auto;max-width:150px;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(0,0,0,.20))}
-    .brand-chip span{font-size:12px;font-weight:1000;letter-spacing:.16em;color:var(--gold2)}
-    html[data-theme="light"] .brand-chip span{color:#8f8069}
-    .nav-btn{
-      min-height:46px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);
-      padding:0 16px;font-weight:1000;cursor:pointer;box-shadow:0 14px 34px rgba(0,0,0,.14);backdrop-filter:blur(14px);
-      display:inline-flex;align-items:center;gap:8px;transition:.18s ease;
-    }
-    .nav-btn:hover{transform:translateY(-2px);border-color:rgba(189,169,139,.72)}
-    .card{
-      background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:26px;
-      padding:26px 28px;box-shadow:var(--shadow);margin-bottom:20px;backdrop-filter:blur(14px);overflow:hidden;position:relative;
-    }
-    .card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(189,169,139,.16),transparent 42%);opacity:.8;pointer-events:none}
-    .card>*{position:relative;z-index:1}
-    .hero{background:linear-gradient(135deg,rgba(17,24,39,.96),rgba(26,26,26,.88) 58%,rgba(63,52,36,.72));border-color:rgba(189,169,139,.45)}
-    html[data-theme="light"] .hero{background:linear-gradient(135deg,#ffffff,#fffaf2 58%,#f3eadc)}
-    .top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
-    .badge{display:inline-flex;gap:8px;align-items:center;border-radius:999px;background:rgba(189,169,139,.14);color:var(--gold2);padding:8px 14px;font-size:13px;font-weight:1000;border:1px solid rgba(189,169,139,.34)}
-    html[data-theme="light"] .badge{color:#7c684b;background:#fbf6ee}
-    .dot{width:7px;height:7px;border-radius:999px;background:var(--gold2)}
-    h1{font-size:34px;letter-spacing:-.055em;margin:18px 0 10px;color:var(--text);font-weight:1000}
-    .sub{color:var(--muted);font-size:15px;line-height:1.7;font-weight:700}
-    .sub code,.hint code{background:rgba(189,169,139,.13);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--accent)}
-    .codebox{font-size:12px;color:var(--muted);text-align:right;min-width:360px;font-weight:800}
-    .codebox code{display:inline-block;margin-top:6px;background:rgba(0,0,0,.18);color:var(--gold2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:720px;white-space:normal;line-height:1.55}
-    html[data-theme="light"] .codebox code{background:#fffaf2;color:#8f6f44}
-    .grid{display:grid;grid-template-columns:1.2fr .6fr .6fr;gap:16px;margin-top:24px}
-    .field label{display:block;color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:950}
-    .field input,.field select{width:100%;height:50px;border-radius:15px;border:1px solid var(--line);background:var(--field);color:var(--fieldText);padding:0 14px;font-size:14px;font-weight:800;outline:none}
-    .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(189,169,139,.12)}
-    .filebox{min-height:58px;display:flex;align-items:center;border:2px dashed rgba(189,169,139,.45);border-radius:18px;background:var(--panel2);padding:10px 14px;transition:.18s ease}
-    .filebox:hover{border-color:var(--gold);transform:translateY(-1px)}
-    .filebox input{height:auto;border:0;padding:0;background:transparent;color:var(--fieldText)}
-    .filebox input::file-selector-button{height:40px;border:0;border-radius:13px;background:linear-gradient(135deg,#1c2531,#111821);color:#fff;font-weight:1000;padding:0 16px;margin-right:12px;cursor:pointer}
-    .hint{font-size:13px;color:var(--muted);line-height:1.65;margin-top:10px;font-weight:750}
-    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
-    .btn{border:1px solid rgba(189,169,139,.55);background:linear-gradient(135deg,#bda98b,#dfcaa4);color:#fff;border-radius:999px;padding:11px 18px;cursor:pointer;font-weight:1000;box-shadow:0 14px 30px rgba(189,169,139,.18);transition:.18s ease}
-    .btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-    .btn.gray{border-color:var(--line);background:var(--panel2);color:var(--text);box-shadow:none}
-    .filters{display:grid;grid-template-columns:1fr 180px 180px;gap:12px;margin-top:18px}
-    .status{margin-top:14px;color:var(--accent);font-size:14px;font-weight:900}
-    .sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;margin-bottom:10px}
-    .sectionTitle h2{font-size:22px;margin:0;font-weight:1000;letter-spacing:-.04em}
-    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0 20px}
-    .kpi{background:linear-gradient(135deg,rgba(17,24,39,.95),rgba(44,48,53,.86));border:1px solid rgba(189,169,139,.42);border-radius:20px;padding:18px 20px;box-shadow:0 18px 36px rgba(0,0,0,.12);position:relative;overflow:hidden}
-    html[data-theme="light"] .kpi{background:linear-gradient(135deg,#111821,#2c3035);color:#fff}
-    .kpi::before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,#d8c7aa,#8f8069)}
-    .kpi .t{color:#d8c7aa;font-size:13px;font-weight:1000}
-    .kpi .v{font-size:30px;font-weight:1000;margin-top:6px;color:#fff;letter-spacing:-.05em}
-    .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-    .tab{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:10px 16px;cursor:pointer;font-weight:1000;transition:.18s ease}
-    .tab.active{border-color:rgba(189,169,139,.65);background:rgba(189,169,139,.16);color:var(--accent)}
-    .pill{display:inline-flex;border-radius:999px;padding:4px 9px;background:rgba(148,163,184,.14);color:var(--muted);font-size:12px;font-weight:1000;border:1px solid var(--line)}
-    .pill.combo{background:rgba(189,169,139,.14);color:var(--accent);border-color:rgba(189,169,139,.34)}
-    .hidden{display:none!important}
-    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
-    table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px;background:transparent}
-    th,td{border-bottom:1px solid var(--line2);padding:12px 14px;text-align:center;white-space:nowrap;color:var(--text)}
-    th{position:sticky;top:0;background:var(--thead);color:var(--text);font-size:12px;font-weight:1000;z-index:2;border-bottom:1px solid var(--line)}
-    td{font-weight:800}
-    td.left,th.left{text-align:left}
-    tbody tr:nth-child(even) td{background:var(--trEven)}
-    tr:hover td{background:var(--hover)}
-    .num{color:var(--accent);font-weight:1000}
-    .empty{color:var(--muted);padding:42px 10px;text-align:center;font-weight:900}
-    footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margin-top:22px}
-    @media(max-width:980px){
-      .wrap{padding:18px 14px 50px}.topbar,.top,.grid,.filters,.summary{display:block}.topbar-right{margin-top:12px}.field,.kpi{margin-top:12px}.codebox{text-align:left;min-width:0;margin-top:18px}.actions{justify-content:flex-start}h1{font-size:27px}.card{padding:22px 18px;border-radius:22px}.brand-chip{display:none}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신경차단술 LA코드 단독/조합 + 추가처방 통합통계</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --gold:#bda98b;--gold2:#d8c7aa;--gold3:#8f8069;
+  --bg:#080808;--bg2:#161616;--card:rgba(255,255,255,.075);--card2:rgba(255,255,255,.045);
+  --panel:rgba(18,18,18,.86);--panel2:rgba(255,255,255,.06);
+  --text:#f8f4ec;--muted:#b8b1a6;--line:rgba(189,169,139,.28);--line2:rgba(255,255,255,.10);
+  --field:#0f1115;--fieldText:#f8f4ec;--shadow:0 24px 70px rgba(0,0,0,.40);
+  --accent:#d8c7aa;--thead:#181510;--trEven:rgba(255,255,255,.035);--hover:rgba(189,169,139,.10);
+  --green:#6bd6a8;--blue:#78a9ff;--red:#ff8d8d;
+}
+html[data-theme="light"]{
+  --bg:#f7f3ec;--bg2:#eef1f5;--card:rgba(255,255,255,.92);--card2:rgba(255,255,255,.70);
+  --panel:rgba(255,255,255,.96);--panel2:#fffaf2;--text:#111827;--muted:#64748b;
+  --line:#e2d8ca;--line2:#edf0f5;--field:#fff;--fieldText:#111827;
+  --shadow:0 24px 70px rgba(64,54,42,.14);--accent:#8d704b;--thead:#f7f2ea;--trEven:#fcfbf8;--hover:#f8f1e5;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+  background:radial-gradient(circle at top center,rgba(190,169,139,.22),transparent 38%),
+             linear-gradient(135deg,var(--bg),var(--bg2) 48%,rgba(189,169,139,.15));
+}
+body:before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:url("https://xginini-dot.github.io/jinsul_v1.0/진설로고.png") center/min(620px,70vw) no-repeat;
+  opacity:.04;filter:grayscale(1);
+}
+.wrap{max-width:1900px;margin:0 auto;padding:28px 24px 70px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.topbar-left,.topbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand-chip{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+.brand-chip img{height:42px;max-width:150px;object-fit:contain}.brand-chip span{font-size:12px;font-weight:1000;letter-spacing:.16em;color:var(--gold2)}
+.nav-btn,.btn{
+  border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:16px;padding:11px 16px;
+  font-weight:1000;cursor:pointer;transition:.18s ease
+}
+.nav-btn:hover,.btn:hover{transform:translateY(-1px);border-color:rgba(189,169,139,.70)}
+.btn.primary{background:linear-gradient(135deg,#bda98b,#dfcaa4);color:#fff;border-color:rgba(189,169,139,.55)}
+.btn.gray{background:var(--panel2)}
+.card{
+  background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:26px;
+  padding:26px 28px;box-shadow:var(--shadow);margin-bottom:20px;backdrop-filter:blur(14px);overflow:hidden;position:relative
+}
+.card:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(189,169,139,.13),transparent 42%);pointer-events:none}
+.card>*{position:relative;z-index:1}
+.hero{background:linear-gradient(135deg,rgba(17,24,39,.96),rgba(26,26,26,.88) 58%,rgba(63,52,36,.72));border-color:rgba(189,169,139,.45)}
+html[data-theme="light"] .hero{background:linear-gradient(135deg,#fff,#fffaf2 58%,#f3eadc)}
+.top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.badge{display:inline-flex;gap:8px;align-items:center;border-radius:999px;background:rgba(189,169,139,.14);color:var(--gold2);padding:8px 14px;font-size:13px;font-weight:1000;border:1px solid rgba(189,169,139,.34)}
+.dot{width:7px;height:7px;border-radius:999px;background:var(--gold2)}
+h1{font-size:34px;letter-spacing:-.055em;margin:18px 0 10px;font-weight:1000}
+h2{font-size:22px;margin:0;font-weight:1000;letter-spacing:-.04em}
+h3{font-size:17px;margin:0 0 10px;font-weight:1000}
+.sub,.hint{color:var(--muted);font-size:13px;line-height:1.7;font-weight:750}
+.sub{font-size:15px}.sub code,.hint code{background:rgba(189,169,139,.13);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--accent)}
+.codebox{font-size:12px;color:var(--muted);text-align:right;min-width:360px;font-weight:800}
+.codebox code{display:inline-block;margin-top:6px;background:rgba(0,0,0,.18);color:var(--gold2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:720px;white-space:normal;line-height:1.55}
+.grid{display:grid;grid-template-columns:1.2fr .6fr .6fr;gap:16px;margin-top:24px}
+.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:950}
+.field input,.field select{width:100%;height:50px;border-radius:15px;border:1px solid var(--line);background:var(--field);color:var(--fieldText);padding:0 14px;font-size:14px;font-weight:800;outline:none}
+.filebox{min-height:58px;display:flex;align-items:center;border:2px dashed rgba(189,169,139,.45);border-radius:18px;background:var(--panel2);padding:10px 14px}
+.filebox input{height:auto;border:0;padding:0;background:transparent}
+.filebox input::file-selector-button{height:40px;border:0;border-radius:13px;background:linear-gradient(135deg,#1c2531,#111821);color:#fff;font-weight:1000;padding:0 16px;margin-right:12px;cursor:pointer}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.status{margin-top:14px;color:var(--accent);font-size:14px;font-weight:900}
+.filters{display:grid;grid-template-columns:1fr 180px 180px;gap:12px;margin-top:18px}
+.sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;margin-bottom:10px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0 20px}
+.summary.six{grid-template-columns:repeat(6,1fr)}
+.kpi{background:linear-gradient(135deg,rgba(17,24,39,.95),rgba(44,48,53,.86));border:1px solid rgba(189,169,139,.42);border-radius:20px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,#d8c7aa,#8f8069)}
+.kpi .t{color:#d8c7aa;font-size:12px;font-weight:1000}.kpi .v{font-size:28px;font-weight:1000;margin-top:6px;color:#fff;letter-spacing:-.05em}
+.tabs{display:flex;gap:8px;margin:12px 0 14px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:10px 16px;cursor:pointer;font-weight:1000}
+.tab.active{border-color:rgba(189,169,139,.65);background:rgba(189,169,139,.16);color:var(--accent)}
+.pill{display:inline-flex;border-radius:999px;padding:4px 9px;background:rgba(148,163,184,.14);color:var(--muted);font-size:12px;font-weight:1000;border:1px solid var(--line)}
+.pill.combo{background:rgba(189,169,139,.14);color:var(--accent)}
+.hidden{display:none!important}
+.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:950px;background:transparent}
+th,td{border-bottom:1px solid var(--line2);padding:12px 14px;text-align:center;white-space:nowrap;color:var(--text)}
+th{position:sticky;top:0;background:var(--thead);font-size:12px;font-weight:1000;z-index:2;border-bottom:1px solid var(--line)}
+td{font-weight:800} td.left,th.left{text-align:left} tbody tr:nth-child(even) td{background:var(--trEven)} tr:hover td{background:var(--hover)}
+.num{color:var(--accent);font-weight:1000}.money{color:var(--green);font-weight:1000}.empty{color:var(--muted);padding:42px 10px;text-align:center;font-weight:900}
+.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.price-card{border:1px solid var(--line);background:var(--panel2);border-radius:15px;padding:12px 14px}
+.price-card b{font-size:13px}.price-card span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.price-card strong{float:right;color:var(--accent)}
+.combo-filter{display:grid;grid-template-columns:1.2fr .75fr .75fr;gap:14px;margin-top:18px}
+.select-box{border:1px solid var(--line);border-radius:16px;background:var(--panel2);padding:14px}
+.checks{display:flex;gap:9px;flex-wrap:wrap;margin-top:8px}
+.check{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--field);font-size:13px;font-weight:850;cursor:pointer}
+.check input{width:auto;height:auto}
+.combo-block{border:1px solid var(--line);border-radius:18px;background:var(--panel2);margin-top:12px;overflow:hidden}
+.combo-head{display:grid;grid-template-columns:38px minmax(260px,1.2fr) minmax(260px,1fr) repeat(7,minmax(105px,.55fr));align-items:center;gap:0;cursor:pointer}
+.combo-head>div{padding:12px;border-right:1px solid var(--line2);text-align:center;font-size:12px;font-weight:900}
+.combo-head .left{text-align:left}.combo-head:hover{background:var(--hover)}
+.combo-detail{padding:12px 14px 16px;border-top:1px solid var(--line)}
+.detail-title{font-size:13px;font-weight:1000;margin:0 0 10px;color:var(--accent)}
+.smalltable{min-width:1000px}.smalltable th,.smalltable td{padding:9px 10px;font-size:12px}
+.arrow{font-size:15px;transition:.18s}.open .arrow{transform:rotate(90deg)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.legend span{font-size:12px;color:var(--muted);font-weight:800}
+footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margin-top:22px}
+
+.page-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:10px;z-index:20;padding:10px;border:1px solid var(--line);border-radius:20px;background:var(--panel);backdrop-filter:blur(18px)}
+.page-tab{flex:1;min-width:190px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:14px;padding:12px 15px;font-weight:1000;cursor:pointer}
+.page-tab.active{background:linear-gradient(135deg,#bda98b,#dfcaa4);color:#fff;border-color:transparent}
+.page-view{display:none}.page-view.active{display:block}
+.price-toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
+.price-editor{margin-top:16px}.price-edit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.price-edit-item{display:grid;grid-template-columns:85px 1fr 125px;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:10px}
+.price-edit-item span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.price-edit-item input{height:38px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--fieldText);padding:0 9px;text-align:right;font-weight:900;width:100%}
+@media(max-width:1200px){.price-edit-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.price-edit-grid{grid-template-columns:1fr}.price-edit-item{grid-template-columns:75px 1fr 105px}}
+@media(max-width:1200px){.summary.six{grid-template-columns:repeat(3,1fr)}.price-grid{grid-template-columns:repeat(2,1fr)}.combo-filter{grid-template-columns:1fr}.combo-head{min-width:1500px}.combo-block{overflow:auto}}
+@media(max-width:980px){.wrap{padding:18px 14px 50px}.top,.grid,.filters,.summary,.summary.six{display:block}.field,.kpi{margin-top:12px}.codebox{text-align:left;min-width:0;margin-top:18px}.actions{justify-content:flex-start}h1{font-size:27px}.card{padding:22px 18px}.brand-chip{display:none}.price-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
     <div class="topbar-left">
       <button class="nav-btn" onclick="history.back()">← 뒤로가기</button>
-      <div class="brand-chip"><img src="https://xginini-dot.github.io/jinsul_v1.0/진설로고.png" alt="JINSUL Logo"><span>JINSUL ANALYTICS</span></div>
+      <div class="brand-chip">
+        <img src="https://xginini-dot.github.io/jinsul_v1.0/진설로고.png" alt="JINSUL Logo">
+        <span>JINSUL ANALYTICS</span>
+      </div>
     </div>
     <div class="topbar-right">
       <button class="nav-btn" onclick="toggleTheme()">◐ <span id="themeLabel">다크</span> 모드</button>
@@ -131,24 +143,24 @@
     <div class="top">
       <div>
         <div class="badge"><span class="dot"></span>신경차단술 LA코드 자동 통계</div>
-        <h1>신경차단술 LA코드 단독/조합 통계</h1>
+        <h1>신경차단술 LA코드 단독/조합 + 추가처방 통합통계</h1>
         <div class="sub">
-          여러 LA코드 엑셀을 한 번에 업로드하면 <b>동일 환자·동일 날짜</b> 기준으로 하나의 차단술 방문으로 묶어 집계합니다.<br>
-          예) 같은 날 같은 환자에게 <code>LA274</code>와 <code>LA358</code>가 있으면 <code>LA274 + LA358</code> 1건으로 계산합니다.<br>
-          같은 환자·같은 날짜·같은 LA코드가 여러 줄이면 <b>1명으로 카운트</b>하고, 총투여량은 합산합니다.
+          기존 <b>LA코드 단독/조합 통계와 총투여량 통계</b>는 그대로 유지합니다.<br>
+          추가로 동일 환자·동일 날짜 기준 <b>LA코드 조합 + KK090/N0780/MM410/HA280</b> 조합을 함께 집계합니다.<br>
+          LA 총투여량과 추가 처방 총투여량은 <b>서로 별도</b>로 표시하며, 각 코드 단가를 이용해 금액도 계산합니다.
         </div>
       </div>
-      <div class="codebox">인식된 LA코드<br><code id="codeList">-</code></div>
+      <div class="codebox">인식된 코드<br><code id="codeList">-</code></div>
     </div>
 
     <div class="grid">
       <div class="field">
         <label>엑셀 파일 업로드 (*.xls, *.xlsx) — 여러 파일 선택 가능</label>
-        <div class="filebox"><input type="file" id="fileInput" multiple accept=".xls,.xlsx" /></div>
+        <div class="filebox"><input type="file" id="fileInput" multiple accept=".xls,.xlsx"></div>
         <div class="hint">
-          ① LA274.xls, LA358.xls처럼 코드별 파일을 한 번에 선택 가능<br>
-          ② 파일명이 <b>la2751</b>처럼 뒤에 붙어도 앞 5자리 기준으로 <b>LA275</b>로 인식<br>
-          ③ 파일 안에 LA코드 컬럼이 있으면 컬럼값을 우선 사용하고, 없으면 파일명 기준으로 인식
+          ① 파일명이 <b>LA241.xls, LA3581.xls, KK090.xls, N0780.xls</b> 형태이면 자동 인식합니다.<br>
+          ② <b>LA2751 → LA275</b>처럼 뒤에 숫자가 붙어도 앞 코드 기준으로 인식합니다.<br>
+          ③ 차트번호가 있으면 차트번호를 우선 사용하고, 없으면 환자명으로 매칭합니다. A1에 환자명만 있는 형식도 보조 인식합니다.
         </div>
       </div>
       <div class="field"><label>시작 월</label><select id="monthStart" disabled></select></div>
@@ -156,23 +168,29 @@
     </div>
 
     <div class="filters">
-      <div class="field"><label>조합 검색</label><input id="searchInput" placeholder="예: LA358 또는 LA274 + LA358" /></div>
+      <div class="field"><label>LA 조합 검색</label><input id="searchInput" placeholder="예: LA358 또는 LA274 + LA358"></div>
       <div class="field"><label>구분</label><select id="typeFilter"><option value="all">전체</option><option value="single">단독</option><option value="combo">조합</option></select></div>
-      <div class="field"><label>최소 건수</label><input id="minCount" type="number" min="1" value="1" /></div>
+      <div class="field"><label>최소 건수</label><input id="minCount" type="number" min="1" value="1"></div>
     </div>
 
     <div class="actions">
       <button class="btn gray" id="resetBtn">초기화</button>
-      <button class="btn" id="exportBtn">엑셀 다운로드</button>
+      <button class="btn primary" id="exportBtn">엑셀 다운로드</button>
     </div>
     <div class="status" id="status">엑셀 파일을 선택하면 자동으로 분석합니다.</div>
   </div>
 
+  <div class="page-nav">
+    <button class="page-tab active" data-page="laPage">① LA 단독/조합 통계</button>
+    <button class="page-tab" data-page="crossPage">② LA × 추가처방 조합</button>
+  </div>
+  <div id="laPage" class="page-view active">
+  <!-- 기존 기능 유지 -->
   <div class="card">
     <div class="sectionTitle">
       <div>
-        <h2>LA코드 단독/조합 통계</h2>
-        <div class="hint">건수 = 동일 환자·동일 날짜 기준 방문 수 / 비율 = 전체 차단술 방문 대비 비율</div>
+        <h2>① 기존 LA코드 단독/조합 통계</h2>
+        <div class="hint">건수 = 동일 환자·동일 날짜 기준 LA 방문 수 / 비율 = 전체 LA 방문 대비 비율</div>
       </div>
     </div>
 
@@ -180,121 +198,527 @@
       <div class="kpi"><div class="t">전체 차단술 방문</div><div class="v" id="kTotal">0</div></div>
       <div class="kpi"><div class="t">단독 방문</div><div class="v" id="kSingle">0</div></div>
       <div class="kpi"><div class="t">조합 방문</div><div class="v" id="kCombo">0</div></div>
-      <div class="kpi"><div class="t">인식 코드 수</div><div class="v" id="kCodes">0</div></div>
+      <div class="kpi"><div class="t">인식 LA코드 수</div><div class="v" id="kCodes">0</div></div>
     </div>
 
     <div class="tabs">
-      <button class="tab active" data-tab="code">① 코드 조합 기준</button>
-      <button class="tab" data-tab="dose">② 총투여량 포함 기준</button>
+      <button class="tab active" data-group="old" data-tab="code">코드 조합 기준</button>
+      <button class="tab" data-group="old" data-tab="dose">총투여량 포함 기준</button>
+      <button class="tab" data-group="old" data-tab="amount">차단술 금액 기준</button>
     </div>
 
-    <div id="tabCode">
-      <div class="tableWrap"><table id="codeTable"></table></div>
+    <div id="old-code"><div class="tableWrap"><table id="codeTable"></table></div></div>
+    <div id="old-dose" class="hidden"><div class="tableWrap"><table id="doseTable"></table></div></div>
+    <div id="old-amount" class="hidden"><div class="tableWrap"><table id="amountTable"></table></div></div>
+  </div>
+
+  </div>
+  <div id="crossPage" class="page-view">
+  <!-- 신규 기능 -->
+  <div class="card">
+    <div class="sectionTitle">
+      <div>
+        <h2>② LA코드 조합 × 추가처방 조합 통계</h2>
+        <div class="hint">
+          조합 행을 클릭하면 해당 조합의 <b>환자 리스트·환자별 시행횟수·시행일·LA/추가처방 총투여량·금액</b>을 펼쳐서 확인할 수 있습니다.
+        </div>
+      </div>
     </div>
-    <div id="tabDose" class="hidden">
-      <div class="hint" style="margin-bottom:10px;">예: <code>LA274 1.0 + LA358 2.0</code> / 환자 1명당 같은 날짜 기준 총투여량으로 계산</div>
-      <div class="tableWrap"><table id="doseTable"></table></div>
+
+    <div class="price-grid">
+      <div class="price-card"><b>KK090 <strong>18,340원</strong></b><span>관절강내주사</span></div>
+      <div class="price-card"><b>N0780 <strong>107,170원</strong></b><span>비관혈관절수동술 · 브리즈망</span></div>
+      <div class="price-card"><b>MM410 <strong>68,660원</strong></b><span>수압팽창술</span></div>
+      <div class="price-card"><b>HA280 <strong>102,500원</strong></b><span>관절조영</span></div>
+    </div>
+
+    <div class="combo-filter">
+      <div class="select-box">
+        <b>추가처방 선택</b>
+        <div class="checks" id="extraChecks"></div>
+        <div class="legend"><span>미선택 = 전체 추가처방 조합 조회</span><span>복수 선택 가능</span></div>
+      </div>
+      <div class="field">
+        <label>복수 선택 조건</label>
+        <select id="matchMode">
+          <option value="all">선택한 처방 모두 포함 (AND)</option>
+          <option value="any">선택한 처방 중 하나라도 포함 (OR)</option>
+          <option value="exact">선택한 처방과 정확히 일치</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>LA코드 검색</label>
+        <input id="comboLaSearch" placeholder="예: LA241 또는 LA241 + LA358">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn gray" id="selectAllBtn">추가처방 전체선택</button>
+      <button class="btn gray" id="clearSelectBtn">선택해제</button>
+    </div>
+
+    <div class="summary six">
+      <div class="kpi"><div class="t">전체 LA 방문</div><div class="v" id="xTotal">0</div></div>
+      <div class="kpi"><div class="t">조건 일치 방문</div><div class="v" id="xMatched">0</div></div>
+      <div class="kpi"><div class="t">조합 비율</div><div class="v" id="xRatio">0%</div></div>
+      <div class="kpi"><div class="t">환자 수</div><div class="v" id="xPatients">0</div></div>
+      <div class="kpi"><div class="t">LA 총금액</div><div class="v" id="xLaAmount">0원</div></div>
+      <div class="kpi"><div class="t">추가처방 총금액</div><div class="v" id="xExtraAmount">0원</div></div>
+    </div>
+
+    <div class="hint" style="margin-bottom:10px">
+      아래 표에서 <b>LA 총투여량</b>과 <b>추가처방 총투여량</b>은 별도 집계합니다.
+      금액은 각 코드의 단가 × 총투여량으로 계산합니다.
+    </div>
+    <div id="comboList"></div>
+  </div>
+
+  <!-- 단가표 -->
+  <div class="card">
+    <div class="price-toggle" id="priceToggle">
+      <div><h2>③ 적용 단가표</h2><div class="hint">기본 숨김 · 필요할 때 펼쳐서 단가를 직접 수정할 수 있습니다.</div></div>
+      <button class="btn gray" type="button" id="priceToggleBtn">단가표 펼치기 ▼</button>
+    </div>
+    <div id="priceEditor" class="price-editor hidden">
+      <div class="actions" style="margin-top:0;margin-bottom:12px">
+        <button class="btn gray" type="button" id="restorePriceBtn">기본 단가 복원</button>
+        <button class="btn primary" type="button" id="savePriceBtn">수정 단가 적용</button>
+      </div>
+      <div class="price-edit-grid" id="priceEditGrid"></div>
+      <div class="hint" style="margin:12px 0">수정 단가는 이 브라우저에 저장되며, 적용 즉시 모든 금액 통계를 다시 계산합니다.</div>
+      <div class="tableWrap"><table id="priceTable"></table></div>
     </div>
   </div>
+  </div>
+
   <footer>© JINSUL. Internal analytics dashboard.</footer>
 </div>
 
 <script>
+const DEFAULT_LA_INFO={
+  LA241:{name:'대소후두신경',price:31010},
+  LA247:{name:'견갑신경',price:31650},
+  LA248:{name:'늑간신경',price:31630},
+  LA251:{name:'경신경총',price:42140},
+  LA253:{name:'요천골신경총',price:84830},
+  LA272:{name:'좌골신경',price:31650},
+  LA274:{name:'대퇴신경',price:31670},
+  LA275:{name:'외측대퇴피신경',price:29650},
+  LA321:{name:'경막외차단 경추/흉추',price:85790},
+  LA323:{name:'경막외차단 요추/천추',price:50440},
+  LA324:{name:'경막외차단 미추',price:50440},
+  LA325:{name:'경추간공차단 경추/흉추',price:159480},
+  LA326:{name:'경추간공차단 요추/천추',price:159480},
+  LA346:{name:'액와신경',price:31650},
+  LA347:{name:'액와하부신경',price:28450},
+  LA352:{name:'방척추신경',price:84830},
+  LA353:{name:'미골신경',price:84150},
+  LA354:{name:'선택적신경근',price:84830},
+  LA355:{name:'척추후근신경절',price:84830},
+  LA356:{name:'척수회백신경교통지',price:84830},
+  LA357:{name:'척수신경후지',price:59190},
+  LA358:{name:'후지내측지',price:84830},
+  LA359:{name:'추간관절차단',price:89250},
+  LA360:{name:'천장관절차단',price:89250},
+  LA361:{name:'흉부교감신경절',price:137880},
+  LA362:{name:'요부교감신경절',price:138040},
+  LA366:{name:'상하복신경총',price:181210},
+  LA367:{name:'외톨이신경절',price:138230}
+};
+const DEFAULT_EXTRA_INFO={
+  KK090:{name:'관절강내주사',price:18340},
+  N0780:{name:'비관혈관절수동술(브리즈망)',price:107170},
+  MM410:{name:'수압팽창술',price:68660},
+  HA280:{name:'관절조영',price:102500}
+};
+
+const LA_INFO=JSON.parse(JSON.stringify(DEFAULT_LA_INFO));
+const EXTRA_INFO=JSON.parse(JSON.stringify(DEFAULT_EXTRA_INFO));
+try{
+  const saved=JSON.parse(localStorage.getItem('jinsul-la-extra-prices')||'{}');
+  Object.entries(saved.LA||{}).forEach(([c,p])=>{if(LA_INFO[c])LA_INFO[c].price=Number(p)||0});
+  Object.entries(saved.EXTRA||{}).forEach(([c,p])=>{if(EXTRA_INFO[c])EXTRA_INFO[c].price=Number(p)||0});
+}catch(e){}
+
+const fileInput=document.getElementById('fileInput');
+const monthStart=document.getElementById('monthStart'),monthEnd=document.getElementById('monthEnd');
+const searchInput=document.getElementById('searchInput'),typeFilter=document.getElementById('typeFilter'),minCount=document.getElementById('minCount');
+const matchMode=document.getElementById('matchMode'),comboLaSearch=document.getElementById('comboLaSearch');
+const statusEl=document.getElementById('status'),codeListEl=document.getElementById('codeList');
+const codeTable=document.getElementById('codeTable'),doseTable=document.getElementById('doseTable'),amountTable=document.getElementById('amountTable');
+const comboList=document.getElementById('comboList');
+let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[];
+
 (function(){
-  const saved = localStorage.getItem('jinsul-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  window.toggleTheme = function(){
-    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('jinsul-theme', next);
-    const label = document.getElementById('themeLabel');
-    if(label) label.textContent = next === 'dark' ? '다크' : '라이트';
+  const saved=localStorage.getItem('jinsul-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  window.toggleTheme=function(){
+    const cur=document.documentElement.getAttribute('data-theme')||'dark';
+    const next=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem('jinsul-theme',next);
+    document.getElementById('themeLabel').textContent=next==='dark'?'다크':'라이트';
   };
-  window.addEventListener('DOMContentLoaded',()=>{
-    const label = document.getElementById('themeLabel');
-    if(label) label.textContent = saved === 'dark' ? '다크' : '라이트';
-  });
+  window.addEventListener('DOMContentLoaded',()=>document.getElementById('themeLabel').textContent=saved==='dark'?'다크':'라이트');
 })();
-</script>
 
-<script>
-const fileInput=document.getElementById('fileInput'), monthStart=document.getElementById('monthStart'), monthEnd=document.getElementById('monthEnd');
-const searchInput=document.getElementById('searchInput'), typeFilter=document.getElementById('typeFilter'), minCount=document.getElementById('minCount');
-const statusEl=document.getElementById('status'), codeListEl=document.getElementById('codeList');
-const codeTable=document.getElementById('codeTable'), doseTable=document.getElementById('doseTable');
-const kTotal=document.getElementById('kTotal'), kSingle=document.getElementById('kSingle'), kCombo=document.getElementById('kCombo'), kCodes=document.getElementById('kCodes');
-let rawRows=[], months=[], currentStats=null, activeTab='code';
+function initUI(){
+  document.getElementById('extraChecks').innerHTML=Object.entries(EXTRA_INFO)
+    .map(([c,o])=>`<label class="check"><input type="checkbox" value="${c}"> ${c} · ${o.name}</label>`).join('');
+  document.querySelectorAll('#extraChecks input').forEach(x=>x.addEventListener('change',recalc));
+  renderPriceEditor(); renderPriceTable();
+  renderEmpty();
+}
+initUI();
+document.querySelectorAll('.page-tab').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active'));
+  btn.classList.add('active');document.getElementById(btn.dataset.page).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+document.getElementById('priceToggle').addEventListener('click',()=>{
+  const ed=document.getElementById('priceEditor');ed.classList.toggle('hidden');
+  document.getElementById('priceToggleBtn').textContent=ed.classList.contains('hidden')?'단가표 펼치기 ▼':'단가표 접기 ▲';
+});
+document.getElementById('savePriceBtn').addEventListener('click',e=>{e.stopPropagation();saveEditedPrices()});
+document.getElementById('restorePriceBtn').addEventListener('click',e=>{e.stopPropagation();restoreDefaultPrices()});
 
-fileInput.addEventListener('change', handleFiles);
-[monthStart,monthEnd,searchInput,typeFilter,minCount].forEach(el=>el.addEventListener('input', recalc));
-document.getElementById('resetBtn').onclick=resetAll; document.getElementById('exportBtn').onclick=exportExcel;
-document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{activeTab=btn.dataset.tab;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('tabCode').classList.toggle('hidden',activeTab!=='code');document.getElementById('tabDose').classList.toggle('hidden',activeTab!=='dose');});
+fileInput.addEventListener('change',handleFiles);
+[monthStart,monthEnd,searchInput,typeFilter,minCount,matchMode,comboLaSearch].forEach(el=>el.addEventListener('input',recalc));
+document.getElementById('resetBtn').onclick=resetAll;
+document.getElementById('exportBtn').onclick=exportExcel;
+document.getElementById('selectAllBtn').onclick=()=>{document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=true);recalc()};
+document.getElementById('clearSelectBtn').onclick=()=>{document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);recalc()};
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
+  const group=btn.dataset.group;
+  document.querySelectorAll(`.tab[data-group="${group}"]`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['code','dose','amount'].forEach(t=>document.getElementById(`${group}-${t}`).classList.toggle('hidden',btn.dataset.tab!==t));
+});
 
 async function handleFiles(e){
-  const files=Array.from(e.target.files||[]); if(!files.length) return;
+  const files=[...(e.target.files||[])]; if(!files.length)return;
   rawRows=[]; statusEl.textContent='엑셀을 읽는 중입니다...';
+  const failed=[];
   try{
     for(const f of files){
-      const buf=await f.arrayBuffer();
-      const wb=XLSX.read(buf,{type:'array',cellDates:true});
-      const sheet=wb.Sheets[wb.SheetNames[0]];
-      const aoa=XLSX.utils.sheet_to_json(sheet,{header:1,defval:null,raw:false});
-      const fileCode=codeFromFileName(f.name);
-      const parsed=parseAoaRows(aoa,fileCode,f.name);
-      rawRows.push(...parsed);
+      try{
+        const buf=await f.arrayBuffer();
+        const wb=XLSX.read(buf,{type:'array',cellDates:true});
+        const fileCode=codeFromFileName(f.name);
+        for(const sname of wb.SheetNames){
+          const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sname],{header:1,defval:null,raw:false});
+          rawRows.push(...parseAoaRows(aoa,fileCode,f.name,sname));
+        }
+      }catch(err){console.error(err);failed.push(f.name)}
     }
-    months=[...new Set(rawRows.map(r=>r.ym).filter(Boolean))].sort(); setupMonths(); recalc();
-    statusEl.textContent=`파일 ${files.length}개 / 유효 행 ${rawRows.length.toLocaleString()}건 분석 완료`;
-  }catch(err){console.error(err);statusEl.textContent='엑셀 분석 중 오류가 발생했습니다. 파일 형식을 확인해주세요.';}
+    months=[...new Set(rawRows.map(r=>r.ym).filter(Boolean))].sort();
+    setupMonths();buildVisits();recalc();
+    statusEl.textContent=`파일 ${files.length}개 / 유효 행 ${rawRows.length.toLocaleString()}건 / LA 방문 ${visits.length.toLocaleString()}건 분석 완료${failed.length?' · 읽기 실패: '+failed.join(', '):''}`;
+  }catch(err){
+    console.error(err);statusEl.textContent='엑셀 분석 중 오류가 발생했습니다. 파일 형식을 확인해주세요.';
+  }
 }
 
-function parseAoaRows(aoa,fileCode,fileName){
-  const headerIdx=findHeaderRow(aoa); if(headerIdx<0) return [];
-  const headers=aoa[headerIdx].map(v=>(v??'').toString().trim());
-  const idx={chart:findIdx(headers,['차트번호','환자번호','등록번호','수진자번호','챠트번호']), date:findIdx(headers,['내원일','진료일','처방일','일자','날짜']), dose:findIdx(headers,['총투여량','총 투여량','총량','투여량합']), qty:findIdx(headers,['투여량','1회투여량','1회 투여량']), days:findIdx(headers,['투여일수','일수']), code:findIdx(headers,['코드','처방코드','수가코드','LA코드'])};
+function parseAoaRows(aoa,fileCode,fileName,sheetName){
+  const headerIdx=findHeaderRow(aoa); if(headerIdx<0)return [];
+  const headers=(aoa[headerIdx]||[]).map(v=>clean(v));
+  const idx={
+    chart:findIdx(headers,['차트번호','환자번호','등록번호','수진자번호','챠트번호','chart']),
+    name:findIdx(headers,['환자명','수진자명','성명','이름','name']),
+    date:findIdx(headers,['내원일','진료일','처방일','시행일','일자','날짜','date']),
+    dose:findIdx(headers,['총투여량','총 투여량','총량','투여량합','총수량']),
+    qty:findIdx(headers,['투여량','1회투여량','1회 투여량','수량']),
+    days:findIdx(headers,['투여일수','일수']),
+    code:findIdx(headers,['처방코드','수가코드','LA코드','코드'])
+  };
+  const a1=clean(aoa?.[0]?.[0]);
+  const fallbackName=/^[가-힣]{2,5}$/.test(a1)?a1:'';
   const out=[];
   for(let i=headerIdx+1;i<aoa.length;i++){
     const row=aoa[i]||[];
-    const chart=clean(row[idx.chart]); const d=parseDate(row[idx.date]); if(!chart||!d) continue;
-    let code=idx.code>=0?normalizeLACode(row[idx.code]):''; if(!code) code=fileCode; if(!code) continue;
-    const doseTotal=idx.dose>=0?toNum(row[idx.dose]):0; const qty=idx.qty>=0?toNum(row[idx.qty]):0; const days=idx.days>=0?toNum(row[idx.days]):0;
-    const dose=doseTotal || (qty*(days||1)) || 0;
-    out.push({chart,date:d,dateKey:dateKey(d),ym:ymKey(d),code,dose,fileName});
+    const chart=idx.chart>=0?clean(row[idx.chart]):'';
+    const name=idx.name>=0?clean(row[idx.name]):fallbackName;
+    const d=idx.date>=0?parseDate(row[idx.date]):null;
+    if((!chart&&!name)||!d)continue;
+    let code=idx.code>=0?normalizeCode(row[idx.code]):'';
+    if(!code)code=fileCode;
+    if(!code)continue;
+    const isLA=!!LA_INFO[code] || /^LA\d{3}$/.test(code);
+    const isExtra=!!EXTRA_INFO[code];
+    if(!isLA&&!isExtra)continue;
+    const doseTotal=idx.dose>=0?toNum(row[idx.dose]):0;
+    const qty=idx.qty>=0?toNum(row[idx.qty]):0;
+    const days=idx.days>=0?toNum(row[idx.days]):0;
+    const dose=doseTotal || (qty*(days||1)) || 1;
+    out.push({chart,name,date:d,dateKey:dateKey(d),ym:ymKey(d),code,dose,type:isLA?'LA':'EXTRA',fileName,sheetName});
   }
   return out;
 }
-function findHeaderRow(aoa){for(let i=0;i<Math.min(20,aoa.length);i++){const s=(aoa[i]||[]).map(v=>(v??'').toString()).join('|'); if(/차트번호|환자번호|등록번호/.test(s)&&/내원일|진료일|처방일|일자|날짜/.test(s)) return i;} return -1;}
-function findIdx(headers,keys){return headers.findIndex(h=>keys.some(k=>h.replace(/\s/g,'').includes(k.replace(/\s/g,''))));}
-function codeFromFileName(name){const base=(name||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const m=base.match(/LA\d{3}/); return m?m[0]:'';}
-function normalizeLACode(v){const s=(v??'').toString().toUpperCase(); const m=s.match(/LA\s*(\d{3})/); return m?'LA'+m[1]:'';}
-function clean(v){return (v??'').toString().trim();}
-function toNum(v){if(v===null||v===undefined||v==='')return 0; const n=parseFloat(v.toString().replace(/,/g,'').trim()); return isNaN(n)?0:n;}
-function parseDate(v){if(!v&&v!==0)return null; if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate()); let s=v.toString().trim(); if(!s)return null; s=s.split(' ')[0].replace(/[.\/]/g,'-'); let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m)return new Date(+m[1],+m[2]-1,+m[3]); m=s.match(/^(\d{4})(\d{2})(\d{2})$/); if(m)return new Date(+m[1],+m[2]-1,+m[3]); const d=new Date(s); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());}
-function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;} function ymKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
-function setupMonths(){monthStart.innerHTML='';monthEnd.innerHTML=''; if(!months.length){monthStart.disabled=monthEnd.disabled=true;return;} months.forEach(m=>{monthStart.add(new Option(m,m));monthEnd.add(new Option(m,m));}); monthStart.value=months[0];monthEnd.value=months[months.length-1];monthStart.disabled=monthEnd.disabled=false;}
-function recalc(){if(!rawRows.length){renderEmpty();return;} const s=monthStart.value||months[0], e=monthEnd.value||months[months.length-1]; const filtered=rawRows.filter(r=>!r.ym||(r.ym>=s&&r.ym<=e)); currentStats=calcStats(filtered); render();}
-function calcStats(rows){
-  const visitMap=new Map(), codeSet=new Set();
-  for(const r of rows){codeSet.add(r.code); const key=`${r.chart}|${r.dateKey}`; if(!visitMap.has(key)) visitMap.set(key,new Map()); const m=visitMap.get(key); m.set(r.code,(m.get(r.code)||0)+r.dose);}
-  const codeMap=new Map(), doseMap=new Map(); let total=0,single=0,combo=0;
-  for(const m of visitMap.values()){
-    const entries=[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0],'ko',{numeric:true})); if(!entries.length) continue; total++; if(entries.length===1) single++; else combo++;
-    const codeKey=entries.map(e=>e[0]).join(' + '); const doseKey=entries.map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + '); const sumDose=entries.reduce((a,e)=>a+e[1],0);
-    add(codeMap,codeKey,entries.length,sumDose); add(doseMap,doseKey,entries.length,sumDose);
+function findHeaderRow(aoa){
+  for(let i=0;i<Math.min(30,aoa.length);i++){
+    const s=(aoa[i]||[]).map(v=>clean(v).replace(/\s/g,'')).join('|');
+    const hasPatient=/차트번호|환자번호|등록번호|수진자번호|챠트번호|환자명|수진자명|성명|이름|chart/i.test(s);
+    const hasDate=/내원일|진료일|처방일|시행일|일자|날짜|date/i.test(s);
+    if(hasPatient&&hasDate)return i;
   }
-  return {total,single,combo,codeSet,codeRows:finalRows(codeMap,total,false),doseRows:finalRows(doseMap,total,true)};
+  return -1;
 }
-function add(map,key,n,sumDose){if(!map.has(key))map.set(key,{key,count:0,codeCount:n,totalDoseSum:0}); const o=map.get(key); o.count++; o.totalDoseSum+=sumDose;}
-function finalRows(map,total,isDose){return [...map.values()].sort((a,b)=>b.count-a.count||a.codeCount-b.codeCount||a.key.localeCompare(b.key,'ko',{numeric:true})).map((r,i)=>({rank:i+1,key:r.key,count:r.count,codeCount:r.codeCount,type:r.codeCount===1?'단독':'조합',pct:total?r.count/total*100:0,avgDose:r.count?r.totalDoseSum/r.count:0}));}
-function render(){const st=currentStats;if(!st){renderEmpty();return;} const codes=[...st.codeSet].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})); codeListEl.textContent=codes.length?codes.join(', '):'-'; kTotal.textContent=fmtInt(st.total);kSingle.textContent=fmtInt(st.single);kCombo.textContent=fmtInt(st.combo);kCodes.textContent=fmtInt(codes.length); renderTable(codeTable,filterRows(st.codeRows),false); renderTable(doseTable,filterRows(st.doseRows),true);}
-function filterRows(rows){const q=searchInput.value.trim().toUpperCase().replace(/\s+/g,' '); const t=typeFilter.value; const min=Number(minCount.value)||1; return rows.filter(r=>r.count>=min).filter(r=>t==='all'||(t==='single'&&r.codeCount===1)||(t==='combo'&&r.codeCount>1)).filter(r=>!q||r.key.toUpperCase().includes(q.replace(/\s*\+\s*/g,' + ')));}
-function renderTable(el,rows,isDose){if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return;} let html='<thead><tr><th>순위</th><th>구분</th><th class="left">'+(isDose?'LA코드 + 환자당 총투여량':'LA코드 단독/조합')+'</th>'+(isDose?'<th>환자당 총투여량 합</th>':'')+'<th>건수</th><th>차단술조합 비율</th></tr></thead><tbody>'; rows.forEach((r,i)=>{html+=`<tr><td>${i+1}</td><td><span class="pill ${r.codeCount>1?'combo':''}">${r.type}</span></td><td class="left"><b>${r.key}</b></td>${isDose?`<td class="num">${fmtDose(r.avgDose)}</td>`:''}<td class="num">${fmtInt(r.count)}</td><td class="num">${r.pct.toFixed(2)}%</td></tr>`}); html+='</tbody>'; el.innerHTML=html;}
-function renderEmpty(){codeTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>'; doseTable.innerHTML=codeTable.innerHTML; kTotal.textContent=kSingle.textContent=kCombo.textContent=kCodes.textContent='0';}
-function fmtInt(n){return Number(n||0).toLocaleString();} function fmtDose(n){return (Math.round((n||0)*100)/100).toFixed(1).replace(/\.0$/,'.0');}
-function resetAll(){rawRows=[];months=[];currentStats=null;fileInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;searchInput.value='';typeFilter.value='all';minCount.value=1;codeListEl.textContent='-';statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();}
-function exportExcel(){if(!currentStats){alert('먼저 엑셀을 업로드해주세요.');return;} const wb=XLSX.utils.book_new(); const codeData=[['순위','구분','LA코드 단독/조합','건수','차단술조합 비율(%)'],...filterRows(currentStats.codeRows).map((r,i)=>[i+1,r.type,r.key,r.count,Math.round(r.pct*100)/100])]; const doseData=[['순위','구분','LA코드 + 환자당 총투여량','환자당 총투여량 합','건수','차단술조합 비율(%)'],...filterRows(currentStats.doseRows).map((r,i)=>[i+1,r.type,r.key,Number(fmtDose(r.avgDose)),r.count,Math.round(r.pct*100)/100])]; XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(codeData),'코드조합'); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(doseData),'투여량포함'); XLSX.writeFile(wb,'신경차단술_LA코드_단독조합통계.xlsx');}
-renderEmpty();
+function findIdx(headers,keys){return headers.findIndex(h=>keys.some(k=>h.replace(/\s/g,'').toLowerCase().includes(k.replace(/\s/g,'').toLowerCase())))}
+function codeFromFileName(name){
+  const base=(name||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  let m=base.match(/LA\d{3}/);if(m)return m[0];
+  for(const c of Object.keys(EXTRA_INFO))if(base.includes(c))return c;
+  return '';
+}
+function normalizeCode(v){
+  const s=clean(v).toUpperCase().replace(/\s/g,'');
+  let m=s.match(/LA(\d{3})/);if(m)return 'LA'+m[1];
+  for(const c of Object.keys(EXTRA_INFO))if(s.includes(c))return c;
+  return '';
+}
+function clean(v){return (v??'').toString().trim()}
+function toNum(v){if(v===null||v===undefined||v==='')return 0;const n=parseFloat(v.toString().replace(/,/g,'').replace(/[^\d.-]/g,''));return isNaN(n)?0:n}
+function parseDate(v){
+  if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  let s=clean(v);if(!s)return null;s=s.split(' ')[0].replace(/[.\/]/g,'-');
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{4})(\d{2})(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  const d=new Date(s);return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function ymKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function setupMonths(){
+  monthStart.innerHTML='';monthEnd.innerHTML='';
+  if(!months.length){monthStart.disabled=monthEnd.disabled=true;return}
+  months.forEach(m=>{monthStart.add(new Option(m,m));monthEnd.add(new Option(m,m))});
+  monthStart.value=months[0];monthEnd.value=months[months.length-1];monthStart.disabled=monthEnd.disabled=false;
+}
+function buildVisits(){
+  const map=new Map();
+  for(const r of rawRows){
+    const patientKey=r.chart?`C:${r.chart}`:`N:${r.name}`;
+    const key=`${patientKey}|${r.dateKey}`;
+    if(!map.has(key))map.set(key,{patientKey,chart:r.chart,name:r.name,dateKey:r.dateKey,ym:r.ym,la:new Map(),extra:new Map()});
+    const v=map.get(key);if(!v.chart&&r.chart)v.chart=r.chart;if(!v.name&&r.name)v.name=r.name;
+    const target=r.type==='LA'?v.la:v.extra;
+    target.set(r.code,(target.get(r.code)||0)+r.dose);
+  }
+  visits=[...map.values()].filter(v=>v.la.size>0);
+}
+function selectedExtra(){return [...document.querySelectorAll('#extraChecks input:checked')].map(x=>x.value).sort()}
+function periodVisits(){
+  if(!months.length)return [];
+  const s=monthStart.value||months[0],e=monthEnd.value||months[months.length-1];
+  return visits.filter(v=>v.ym>=s&&v.ym<=e);
+}
+function recalc(){
+  if(!visits.length){renderEmpty();return}
+  const pv=periodVisits();
+  renderBase(pv);
+  renderCross(pv);
+  const codes=[...new Set(rawRows.filter(r=>r.ym>=(monthStart.value||'')&&r.ym<=(monthEnd.value||'9999-99')).map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+  codeListEl.textContent=codes.length?codes.join(', '):'-';
+}
+function laAmount(v){let n=0;for(const [c,d] of v.la)n+=(LA_INFO[c]?.price||0)*d;return n}
+function extraAmount(v){let n=0;for(const [c,d] of v.extra)n+=(EXTRA_INFO[c]?.price||0)*d;return n}
+function sumMap(m){return [...m.values()].reduce((a,b)=>a+b,0)}
+function laKey(v){return [...v.la.keys()].sort().join(' + ')}
+function extraKey(v){return [...v.extra.keys()].sort().join(' + ')}
+
+function renderBase(pv){
+  const codeMap=new Map(),doseMap=new Map(),amountMap=new Map();let single=0,combo=0;
+  for(const v of pv){
+    const entries=[...v.la.entries()].sort((a,b)=>a[0].localeCompare(b[0],'ko',{numeric:true}));
+    if(entries.length===1)single++;else combo++;
+    const ck=entries.map(x=>x[0]).join(' + ');
+    const dk=entries.map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + ');
+    const ak=entries.map(([c,d])=>`${c} ${fmtWon((LA_INFO[c]?.price||0)*d)}`).join(' + ');
+    addBase(codeMap,ck,entries.length,sumMap(v.la),laAmount(v));
+    addBase(doseMap,dk,entries.length,sumMap(v.la),laAmount(v));
+    addBase(amountMap,ak,entries.length,sumMap(v.la),laAmount(v));
+  }
+  const st={total:pv.length,single,combo,codes:new Set(pv.flatMap(v=>[...v.la.keys()])),
+            codeRows:finalBase(codeMap,pv.length),doseRows:finalBase(doseMap,pv.length),amountRows:finalBase(amountMap,pv.length)};
+  currentBaseStats=st;
+  kTotal.textContent=fmtInt(st.total);kSingle.textContent=fmtInt(single);kCombo.textContent=fmtInt(combo);kCodes.textContent=fmtInt(st.codes.size);
+  renderBaseTable(codeTable,filterBase(st.codeRows),'code');
+  renderBaseTable(doseTable,filterBase(st.doseRows),'dose');
+  renderBaseTable(amountTable,filterBase(st.amountRows),'amount');
+}
+function addBase(map,key,n,dose,amount){
+  if(!map.has(key))map.set(key,{key,count:0,codeCount:n,totalDose:0,totalAmount:0});
+  const o=map.get(key);o.count++;o.totalDose+=dose;o.totalAmount+=amount;
+}
+function finalBase(map,total){
+  return [...map.values()].sort((a,b)=>b.count-a.count||a.key.localeCompare(b.key,'ko',{numeric:true}))
+    .map(r=>({...r,type:r.codeCount===1?'단독':'조합',pct:total?r.count/total*100:0,avgDose:r.count?r.totalDose/r.count:0,avgAmount:r.count?r.totalAmount/r.count:0}));
+}
+function filterBase(rows){
+  const q=searchInput.value.trim().toUpperCase().replace(/\s+/g,' ');
+  const t=typeFilter.value,min=Number(minCount.value)||1;
+  return rows.filter(r=>r.count>=min)
+    .filter(r=>t==='all'||(t==='single'&&r.codeCount===1)||(t==='combo'&&r.codeCount>1))
+    .filter(r=>!q||r.key.toUpperCase().includes(q.replace(/\s*\+\s*/g,' + ')));
+}
+function renderBaseTable(el,rows,mode){
+  if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return}
+  let h='<thead><tr><th>순위</th><th>구분</th><th class="left">'+
+    (mode==='code'?'LA코드 단독/조합':mode==='dose'?'LA코드 + 환자당 총투여량':'LA코드 + 금액')+
+    '</th><th>건수</th><th>차단술조합 비율</th>';
+  if(mode==='dose')h+='<th>건당 평균 LA 총투여량</th>';
+  if(mode==='amount')h+='<th>총 차단술 금액</th><th>건당 평균 금액</th>';
+  h+='</tr></thead><tbody>';
+  h+=rows.map((r,i)=>`<tr><td>${i+1}</td><td><span class="pill ${r.codeCount>1?'combo':''}">${r.type}</span></td><td class="left"><b>${r.key}</b></td><td class="num">${fmtInt(r.count)}</td><td class="num">${r.pct.toFixed(2)}%</td>`+
+    (mode==='dose'?`<td class="num">${fmtDose(r.avgDose)}</td>`:'')+
+    (mode==='amount'?`<td class="money">${fmtWon(r.totalAmount)}</td><td class="money">${fmtWon(r.avgAmount)}</td>`:'')+
+    '</tr>').join('');
+  el.innerHTML=h+'</tbody>';
+}
+
+function renderCross(pv){
+  const chosen=selectedExtra(),mode=matchMode.value,q=comboLaSearch.value.trim().toUpperCase();
+  const matched=pv.filter(v=>{
+    const extras=[...v.extra.keys()].sort();
+    let ok=true;
+    if(chosen.length){
+      if(mode==='all')ok=chosen.every(c=>extras.includes(c));
+      else if(mode==='any')ok=chosen.some(c=>extras.includes(c));
+      else ok=extras.length===chosen.length&&chosen.every((c,i)=>c===extras[i]);
+    }
+    if(!ok)return false;
+    if(q){
+      const tokens=q.split('+').map(x=>x.trim()).filter(Boolean);
+      const lk=laKey(v);
+      if(tokens.length>1)return tokens.every(t=>lk.includes(t));
+      return lk.includes(q);
+    }
+    return true;
+  });
+  currentComboVisits=matched;
+  const patients=new Set(matched.map(v=>v.patientKey));
+  xTotal.textContent=fmtInt(pv.length);xMatched.textContent=fmtInt(matched.length);
+  xRatio.textContent=(pv.length?matched.length/pv.length*100:0).toFixed(2)+'%';
+  xPatients.textContent=fmtInt(patients.size);
+  xLaAmount.textContent=fmtWon(matched.reduce((a,v)=>a+laAmount(v),0));
+  xExtraAmount.textContent=fmtWon(matched.reduce((a,v)=>a+extraAmount(v),0));
+
+  const map=new Map();
+  for(const v of matched){
+    const lk=laKey(v),ek=extraKey(v)||'추가처방 없음',key=lk+'||'+ek;
+    if(!map.has(key))map.set(key,{key,lk,ek,count:0,patients:new Map(),laDose:0,exDose:0,laAmt:0,exAmt:0});
+    const o=map.get(key);o.count++;o.laDose+=sumMap(v.la);o.exDose+=sumMap(v.extra);o.laAmt+=laAmount(v);o.exAmt+=extraAmount(v);
+    if(!o.patients.has(v.patientKey))o.patients.set(v.patientKey,{chart:v.chart,name:v.name,count:0,dates:[],laDose:0,exDose:0,laAmt:0,exAmt:0});
+    const p=o.patients.get(v.patientKey);p.count++;p.dates.push(v.dateKey);p.laDose+=sumMap(v.la);p.exDose+=sumMap(v.extra);p.laAmt+=laAmount(v);p.exAmt+=extraAmount(v);
+  }
+  const rows=[...map.values()].sort((a,b)=>b.count-a.count||a.lk.localeCompare(b.lk,'ko',{numeric:true}));
+  if(!rows.length){comboList.innerHTML='<div class="empty">조회되는 LA × 추가처방 조합이 없습니다.</div>';return}
+  comboList.innerHTML=rows.map((r,i)=>comboBlock(r,i,pv.length)).join('');
+  comboList.querySelectorAll('.combo-head').forEach(h=>h.addEventListener('click',()=>{
+    const block=h.closest('.combo-block');block.classList.toggle('open');
+    block.querySelector('.combo-detail').classList.toggle('hidden');
+  }));
+}
+function comboBlock(r,i,total){
+  const patientRows=[...r.patients.values()].sort((a,b)=>b.count-a.count||String(a.name).localeCompare(String(b.name),'ko'));
+  const extraLabel=r.ek==='추가처방 없음'?'추가처방 없음':r.ek.split(' + ').map(c=>`${c} ${EXTRA_INFO[c]?.name||''}`).join(' + ');
+  return `<div class="combo-block">
+    <div class="combo-head">
+      <div><span class="arrow">▶</span></div>
+      <div class="left"><b>${i+1}. ${r.lk}</b></div>
+      <div class="left">${extraLabel}</div>
+      <div>건수<br><span class="num">${fmtInt(r.count)}</span></div>
+      <div>비율<br><span class="num">${(total?r.count/total*100:0).toFixed(2)}%</span></div>
+      <div>환자 수<br><span class="num">${fmtInt(r.patients.size)}</span></div>
+      <div>LA 총투여량<br><span class="num">${fmtDose(r.laDose)}</span></div>
+      <div>추가 총투여량<br><span class="num">${fmtDose(r.exDose)}</span></div>
+      <div>LA 금액<br><span class="money">${fmtWon(r.laAmt)}</span></div>
+      <div>추가 금액<br><span class="money">${fmtWon(r.exAmt)}</span></div>
+    </div>
+    <div class="combo-detail hidden">
+      <div class="detail-title">환자 리스트 · 환자당 횟수</div>
+      <div class="tableWrap"><table class="smalltable">
+        <thead><tr><th>순위</th><th>차트번호</th><th>환자명</th><th>해당 조합 횟수</th><th class="left">시행일</th><th>LA 총투여량</th><th>추가 총투여량</th><th>LA 금액</th><th>추가 금액</th><th>합계 금액</th></tr></thead>
+        <tbody>${patientRows.map((p,j)=>`<tr>
+          <td>${j+1}</td><td>${esc(p.chart||'-')}</td><td><b>${esc(p.name||'-')}</b></td><td class="num">${p.count}</td>
+          <td class="left">${p.dates.sort().join(', ')}</td><td class="num">${fmtDose(p.laDose)}</td><td class="num">${fmtDose(p.exDose)}</td>
+          <td class="money">${fmtWon(p.laAmt)}</td><td class="money">${fmtWon(p.exAmt)}</td><td class="money">${fmtWon(p.laAmt+p.exAmt)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+
+function renderPriceEditor(){
+  const all=[...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o]),...Object.entries(EXTRA_INFO).map(([c,o])=>['EXTRA',c,o])];
+  document.getElementById('priceEditGrid').innerHTML=all.map(([type,c,o])=>`<div class="price-edit-item"><b>${c}</b><span title="${esc(o.name)}">${esc(o.name)}</span><input type="number" min="0" step="10" data-price-type="${type}" data-price-code="${c}" value="${o.price}"></div>`).join('');
+}
+function renderPriceTable(){
+  document.getElementById('priceTable').innerHTML=`<thead><tr><th>구분</th><th>코드</th><th class="left">명칭</th><th>현재 적용 단가</th></tr></thead><tbody>`+
+  Object.entries(LA_INFO).map(([c,o])=>`<tr><td>LA</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td></tr>`).join('')+
+  Object.entries(EXTRA_INFO).map(([c,o])=>`<tr><td>추가처방</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td></tr>`).join('')+`</tbody>`;
+}
+function saveEditedPrices(){
+  document.querySelectorAll('#priceEditGrid input').forEach(inp=>{
+    const c=inp.dataset.priceCode,p=Math.max(0,Number(inp.value)||0);
+    if(inp.dataset.priceType==='LA'&&LA_INFO[c])LA_INFO[c].price=p;
+    if(inp.dataset.priceType==='EXTRA'&&EXTRA_INFO[c])EXTRA_INFO[c].price=p;
+  });
+  localStorage.setItem('jinsul-la-extra-prices',JSON.stringify({LA:Object.fromEntries(Object.entries(LA_INFO).map(([c,o])=>[c,o.price])),EXTRA:Object.fromEntries(Object.entries(EXTRA_INFO).map(([c,o])=>[c,o.price]))}));
+  renderPriceTable();recalc();statusEl.textContent='수정 단가를 적용하고 금액 통계를 다시 계산했습니다.';
+}
+function restoreDefaultPrices(){
+  Object.entries(DEFAULT_LA_INFO).forEach(([c,o])=>LA_INFO[c].price=o.price);
+  Object.entries(DEFAULT_EXTRA_INFO).forEach(([c,o])=>EXTRA_INFO[c].price=o.price);
+  localStorage.removeItem('jinsul-la-extra-prices');renderPriceEditor();renderPriceTable();recalc();
+  statusEl.textContent='기본 단가로 복원했습니다.';
+}
+
+function renderEmpty(){
+  codeTable.innerHTML=doseTable.innerHTML=amountTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
+  comboList.innerHTML='<div class="empty">엑셀 업로드 후 LA × 추가처방 조합이 표시됩니다.</div>';
+  ['kTotal','kSingle','kCombo','kCodes','xTotal','xMatched','xPatients'].forEach(id=>document.getElementById(id).textContent='0');
+  xRatio.textContent='0%';xLaAmount.textContent=xExtraAmount.textContent='0원';codeListEl.textContent='-';
+}
+function resetAll(){
+  rawRows=[];months=[];visits=[];currentBaseStats=null;currentComboVisits=[];
+  fileInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;
+  searchInput.value='';typeFilter.value='all';minCount.value=1;matchMode.value='all';comboLaSearch.value='';
+  document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);
+  statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();
+}
+function exportExcel(){
+  if(!visits.length){alert('먼저 엑셀을 업로드해주세요.');return}
+  const wb=XLSX.utils.book_new();
+
+  const base1=[['순위','구분','LA코드 단독/조합','건수','비율(%)','총 LA 투여량','총 LA 금액'],
+    ...filterBase(currentBaseStats.codeRows).map((r,i)=>[i+1,r.type,r.key,r.count,round2(r.pct),round2(r.totalDose),Math.round(r.totalAmount)])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(base1),'LA조합통계');
+
+  const visitData=[['차트번호','환자명','시행일','LA 조합','추가처방 조합','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
+    ...currentComboVisits.map(v=>[v.chart,v.name,v.dateKey,laKey(v),extraKey(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),Math.round(laAmount(v)),Math.round(extraAmount(v)),Math.round(laAmount(v)+extraAmount(v))])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(visitData),'LA추가처방_방문별');
+
+  const pm=new Map();
+  currentComboVisits.forEach(v=>{
+    if(!pm.has(v.patientKey))pm.set(v.patientKey,{chart:v.chart,name:v.name,count:0,dates:[],laDose:0,exDose:0,laAmt:0,exAmt:0});
+    const p=pm.get(v.patientKey);p.count++;p.dates.push(v.dateKey);p.laDose+=sumMap(v.la);p.exDose+=sumMap(v.extra);p.laAmt+=laAmount(v);p.exAmt+=extraAmount(v);
+  });
+  const pd=[['차트번호','환자명','해당 조건 횟수','시행일','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
+    ...[...pm.values()].map(p=>[p.chart,p.name,p.count,p.dates.sort().join(', '),round2(p.laDose),round2(p.exDose),Math.round(p.laAmt),Math.round(p.exAmt),Math.round(p.laAmt+p.exAmt)])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd),'환자별상세');
+
+  const prices=[['구분','코드','명칭','단가'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price]),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prices),'단가표');
+
+  XLSX.writeFile(wb,'신경차단술_LA코드_추가처방_통합통계.xlsx');
+}
+function fmtInt(n){return Number(n||0).toLocaleString()}
+function fmtDose(n){return round2(n).toLocaleString(undefined,{maximumFractionDigits:2})}
+function fmtWon(n){return Math.round(n||0).toLocaleString()+'원'}
+function round2(n){return Math.round((Number(n)||0)*100)/100}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 </script>
 </body>
 </html>
