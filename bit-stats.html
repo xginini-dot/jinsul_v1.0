@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1797,8 +1798,8 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       if(!col || !col['차트'] || !col['마취'] || !col['초재']) return [];
       const firstSet = new Set();
       df.forEach(r=>{
-        const t = (r[col['초재']] ?? '').toString().trim();
-        if(t==="신환" || t==="90일초진"){
+        const t = normalizeVisitType(r[col['초재']]);
+        if(isFirstVisitType(t)){
           const id = (r[col['차트']] ?? '').toString().trim();
           if(id) firstSet.add(id);
         }
@@ -1912,6 +1913,18 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       XLSX.writeFile(wb, fname);
   }
   
+  /* ================= 초/재 구분 표준화 ================= */
+  function normalizeVisitType(v){
+    return String(v ?? '')
+      .replace(/[\s\u00A0\u200B-\u200D\uFEFF]/g,'')
+      .replace(/90일?초진?/g,'90일초진')
+      .trim();
+  }
+  function isFirstVisitType(v){
+    const t=normalizeVisitType(v);
+    return t==='신환' || t==='90일초진';
+  }
+
   /* ================= 메인 계산 로직 ================= */
   function parseData(data, keyword){
     document.getElementById('warning').innerText='';
@@ -1957,15 +1970,22 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     }
     updateDateRangeStatus(startDate, endDate, df.length, workingDf.length, !!col['내원일']);
 
+    // 초진 검증: 신환 + 90일초진 원자료 건수를 콘솔에 명확히 표시
+    try{
+      const rawNew = workingDf.filter(r=>normalizeVisitType(r[col['초재']])==='신환').length;
+      const raw90 = workingDf.filter(r=>normalizeVisitType(r[col['초재']])==='90일초진').length;
+      console.info(`[초진 검증] 신환 ${rawNew}명 + 90일초진 ${raw90}명 = ${rawNew+raw90}명`);
+    }catch(e){}
+
     const result=[];
     function makeStat(rows, label, ageGroup="전체"){
-      const 초진 = rows.filter(r=>["신환","90일초진"].includes(String(r[col['초재']]||'').trim()));
+      const 초진 = rows.filter(r=>isFirstVisitType(r[col['초재']]));
       const 초진차트=[...new Set(초진.map(r=>r[col['차트']]).filter(Boolean))];
 
       // 재진 통계: 신환/90일초진을 제외한 나머지 기록을 재진으로 계산합니다.
       const 재진 = rows.filter(r=>{
-        const v=String(r[col['초재']]||'').trim();
-        return v && !['신환','90일초진'].includes(v);
+        const v=normalizeVisitType(r[col['초재']]);
+        return v && !isFirstVisitType(v);
       });
       const 재진차트=[...new Set(재진.map(r=>r[col['차트']]).filter(Boolean))];
       const 재진주사 = 재진.filter(r=>(r[col['마취']]||'').includes('●'));
@@ -2046,7 +2066,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
           return a!==null && a>=18;
         });
       }
-      const adultFirst = adultRows.filter(r=>["신환","90일초진"].includes(r[col['초재']]));
+      const adultFirst = adultRows.filter(r=>isFirstVisitType(r[col['초재']]));
       const adultFirstCharts=[...new Set(adultFirst.map(r=>r[col['차트']]))];
       const adultInj = adultFirst.filter(r=>(r[col['마취']]||'').includes('●'));
       const adultRate = adultFirstCharts.length ? Math.round((adultInj.length/adultFirstCharts.length)*100)+'%' : '-';
