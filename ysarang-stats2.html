@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -1401,6 +1402,18 @@
             #duplicateInitialOutput th,#duplicateInitialOutput td { font-size:12px!important; padding:10px 8px!important; white-space:normal!important; }
             #duplicateInitialOutput td.duplicate-dates { text-align:left; line-height:1.65; }
             body.light .duplicate-summary, body.light #duplicateInitialOutput { background:rgba(255,255,255,.62)!important; border-color:rgba(159,135,100,.28)!important; }
+            .duplicate-class-select {
+                min-width:108px; height:36px; padding:0 9px; border-radius:10px;
+                border:1px solid rgba(190,169,139,.42); background:rgba(255,255,255,.07);
+                color:var(--text); font-weight:850; outline:none; cursor:pointer;
+            }
+            .duplicate-class-select:focus { border-color:rgba(232,216,189,.86); box-shadow:0 0 0 3px rgba(190,169,139,.12); }
+            .dup-auto-90 { color:#79d69b; font-weight:900; }
+            .dup-needs-check { color:#ffb86b; font-weight:900; }
+            .dup-first { color:var(--gold2); font-weight:900; }
+            .day90-count { display:inline-block; margin-left:3px; color:#8b6a3f; font-size:.82em; font-weight:950; white-space:nowrap; }
+            body:not(.light) .day90-count { color:#f0d7ad; }
+            body.light .duplicate-class-select { background:#fff!important; color:#172033!important; border-color:#cdbb9f!important; }
 
             /* ===== 요약 통계 그룹 헤더 ===== */
             #output .summary-group-head th {
@@ -3248,6 +3261,7 @@ body.jinsul-analysis-open{
                         '재진 주사처방률': visitSummary.revisitPatients ? `${Math.round(visitSummary.revisitInjectionRate * 100)}%` : '-',
                         '재진 평균 내원횟수': visitSummary.revisitPatients ? visitSummary.avgRevisitVisits.toFixed(2) : '-',
                         '초진환자수': total.length,
+                        '90일초진수': total.filter(r => r.initialClass === '90초진').length,
                         '초진 주사환자수': inj.length,
                         '초진 주사처방률': toPercent(inj.length, total.length),
                         '초진 주사치료 평균 주사횟수': inj.length ? avgInj.toFixed(2) : '-',
@@ -3450,6 +3464,7 @@ body.jinsul-analysis-open{
                 return (data || []).map(row => {
                     const ordered = {};
                     SUMMARY_COLUMNS.forEach(key => ordered[key] = row[key] ?? '-');
+                    if (Number(row['90일초진수']) > 0) ordered['90일초진수'] = row['90일초진수'];
                     return ordered;
                 });
             }
@@ -3466,7 +3481,13 @@ body.jinsul-analysis-open{
                 ];
                 const groupHead = '<tr class="summary-group-head">' + groups.map(g => `<th colspan="${g.span}" class="${g.cls}">${g.label}</th>`).join('') + '</tr>';
                 const columnHead = '<tr class="summary-column-head">' + headers.map(h => `<th class="${colClass(h)}">${h}</th>`).join('') + '</tr>';
-                const tbody = data.map(row => '<tr>' + headers.map(h => `<td class="${colClass(h)}">${fmt(row[h] ?? '-')}</td>`).join('') + '</tr>').join('');
+                const tbody = data.map(row => '<tr>' + headers.map(h => {
+                    if(h === '초진환자수'){
+                        const n90 = Number(row['90일초진수']) || 0;
+                        return `<td class="${colClass(h)}">${fmt(row[h] ?? '-')}${n90 ? ` <span class="day90-count">(${fmt(n90)})</span>` : ''}</td>`;
+                    }
+                    return `<td class="${colClass(h)}">${fmt(row[h] ?? '-')}</td>`;
+                }).join('') + '</tr>').join('');
                 return `<table class="summary-table no-scroll-fit">${colGroup(headers)}<thead>${groupHead}${columnHead}</thead><tbody>${tbody}</tbody></table>`;
             }
 
@@ -3663,11 +3684,39 @@ body.jinsul-analysis-open{
                 return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
             }
 
+            function daysBetweenISO(a,b){
+                if(!a || !b) return null;
+                const da=new Date(a+'T12:00:00'), db=new Date(b+'T12:00:00');
+                if(isNaN(da)||isNaN(db)) return null;
+                return Math.round((db-da)/86400000);
+            }
+
+            function applyDuplicateInitialClass(id,date,value){
+                window.__initialClassOverrides = window.__initialClassOverrides || {};
+                window.__initialClassOverrides[`${id}__${date}`] = value;
+                if(window.__latestFileMap) runAnalysis(window.__latestFileMap, true);
+            }
+
             function renderDuplicateInitialTable(rows){
-                if (!rows.length) return '<p class="hint" style="padding:16px;margin:0">서로 다른 날짜에 중복 등록된 초진·신환 환자가 없습니다.</p>';
-                let h='<table><thead><tr><th style="width:18%">차트번호</th><th style="width:22%">이름</th><th style="width:12%">중복 횟수</th><th>초진·신환 등록 날짜</th></tr></thead><tbody>';
+                if (!rows.length) return '<p class="hint" style="padding:16px;margin:0">서로 다른 날짜에 복수로 등록된 초진·신환 환자가 없습니다.</p>';
+                let h='<table><thead><tr><th style="width:12%">차트번호</th><th style="width:13%">이름</th><th style="width:14%">등록일</th><th style="width:14%">직전 진료일</th><th style="width:10%">간격</th><th style="width:17%">자동 판정</th><th style="width:20%">최종 산정</th></tr></thead><tbody>';
                 rows.forEach(r=>{
-                    h+=`<tr><td>${escapeDuplicateText(r['차트번호'])}</td><td>${escapeDuplicateText(r['이름']||'-')}</td><td>${r['중복 횟수']}회</td><td class="duplicate-dates">${r['날짜'].map(escapeDuplicateText).join('<br>')}</td></tr>`;
+                    const cls = r['자동 판정']==='90초진' ? 'dup-auto-90' : (r['자동 판정']==='재진' ? 'dup-needs-check' : 'dup-first');
+                    const reason = r['자동 판정']==='90초진' ? '90일 이상 경과' : (r['자동 판정']==='재진' ? '90일 미만 · 확인 필요' : '최초 등록');
+                    const selected = r['최종 산정'];
+                    h+=`<tr>
+                      <td>${escapeDuplicateText(r['차트번호'])}</td>
+                      <td>${escapeDuplicateText(r['이름']||'-')}</td>
+                      <td>${escapeDuplicateText(r['등록일'])}</td>
+                      <td>${escapeDuplicateText(r['직전 진료일']||'-')}</td>
+                      <td>${r['간격(일)']==null?'-':`${r['간격(일)']}일`}</td>
+                      <td class="${cls}">${escapeDuplicateText(r['자동 판정'])}<br><small>${reason}</small></td>
+                      <td><select class="duplicate-class-select" onchange="applyDuplicateInitialClass('${escapeDuplicateText(r['차트번호'])}','${escapeDuplicateText(r['등록일'])}',this.value)">
+                        <option value="초진" ${selected==='초진'?'selected':''}>초진</option>
+                        <option value="90초진" ${selected==='90초진'?'selected':''}>90초진</option>
+                        <option value="재진" ${selected==='재진'?'selected':''}>재진</option>
+                      </select></td>
+                    </tr>`;
                 });
                 return h+'</tbody></table>';
             }
@@ -3860,7 +3909,9 @@ body.jinsul-analysis-open{
                 }
             }
 
-            function runAnalysis(fileMap) {
+            function runAnalysis(fileMap, preserveOverrides = false) {
+                window.__latestFileMap = fileMap;
+                if(!preserveOverrides) window.__initialClassOverrides = {};
                 const {startDate, endDate} = getSelectedDateRange();
                 const patients = new Map();
                 const visitDates = new Map();
@@ -3901,9 +3952,11 @@ body.jinsul-analysis-open{
                         standardizedVisits.push([id, rrn, date]);
                         if (!patients.has(key)) patients.set(key, {id, rrn, age, room});
                         if (isInitial) {
-                            const occurrence = initialOccurrences.get(key) || { id, name: patientName, dates: new Set() };
+                            const occurrence = initialOccurrences.get(key) || { id, name: patientName, dates: new Set(), events: new Map() };
                             if (!occurrence.name && patientName) occurrence.name = patientName;
                             occurrence.dates.add(date);
+                            if (!occurrence.events) occurrence.events = new Map();
+                            if (!occurrence.events.has(date)) occurrence.events.set(date, { id, rrn, name:patientName, date, room, age, rawType:type });
                             initialOccurrences.set(key, occurrence);
 
                             const prev = initialCandidates.get(key);
@@ -3956,34 +4009,83 @@ body.jinsul-analysis-open{
                       `<strong>주사 파일 엑셀 내원일 인식</strong><br>${injectionDateInfo}</div>`;
                 }
 
-                const duplicateInitialRows = Array.from(initialOccurrences.values())
-                    .map(v => ({
-                        '차트번호': v.id,
-                        '이름': v.name || '',
-                        '중복 횟수': v.dates.size,
-                        '날짜': Array.from(v.dates).sort()
-                    }))
-                    .filter(v => v['중복 횟수'] >= 2)
-                    .sort((a,b) => a['날짜'][0].localeCompare(b['날짜'][0]) || String(a['차트번호']).localeCompare(String(b['차트번호'])));
+                // ===== 복수 초진/신환 날짜를 자동 판정하고, 필요 시 사용자가 직접 초진/90초진/재진으로 보정 =====
+                const overrides = window.__initialClassOverrides || {};
+                const allInitialEvents = [];
+                const duplicateInitialRows = [];
+                let auto90Count = 0;
+                let checkPatientIds = new Set();
+
+                Array.from(initialOccurrences.values()).forEach(v => {
+                    const events = Array.from((v.events || new Map()).values()).sort((a,b)=>a.date.localeCompare(b.date));
+                    const allVisits = Array.from(visitDates.get(v.id) || []).sort();
+                    events.forEach((e, idx) => {
+                        const prevVisits = allVisits.filter(d => d < e.date);
+                        const prevVisit = prevVisits.length ? prevVisits[prevVisits.length-1] : '';
+                        const gap = prevVisit ? daysBetweenISO(prevVisit, e.date) : null;
+                        let autoClass;
+                        if (/90/.test(e.rawType || '')) autoClass = '90초진';
+                        else if (idx === 0) autoClass = '초진';
+                        else if (gap != null && gap >= 90) autoClass = '90초진';
+                        else autoClass = '재진';
+                        const finalClass = overrides[`${v.id}__${e.date}`] || autoClass;
+                        const event = {...e, prevVisit, gap, autoClass, finalClass, isDuplicatePatient:events.length>=2};
+                        allInitialEvents.push(event);
+                        if(events.length >= 2){
+                            duplicateInitialRows.push({
+                                '차트번호':v.id, '이름':v.name||e.name||'', '등록일':e.date, '직전 진료일':prevVisit,
+                                '간격(일)':gap, '자동 판정':autoClass, '최종 산정':finalClass, '원본 구분':e.rawType||''
+                            });
+                            if(idx>0 && autoClass==='90초진') auto90Count++;
+                            if(idx>0 && autoClass==='재진') checkPatientIds.add(v.id);
+                        }
+                    });
+                });
+
+                duplicateInitialRows.sort((a,b)=>a['등록일'].localeCompare(b['등록일']) || String(a['차트번호']).localeCompare(String(b['차트번호'])));
                 window.__latestDuplicateInitialRows = duplicateInitialRows;
-                $('#duplicateInitialSummary').innerHTML = `<span><strong>${duplicateInitialRows.length.toLocaleString()}명</strong> · 서로 다른 날짜에 초진/신환으로 2회 이상 등록된 환자</span><span>총 중복 등록 ${duplicateInitialRows.reduce((sum,r)=>sum+r['중복 횟수'],0).toLocaleString()}건</span>`;
+                const duplicatePatients = new Set(duplicateInitialRows.map(r=>r['차트번호']));
+                $('#duplicateInitialSummary').innerHTML = `<span><strong>${checkPatientIds.size.toLocaleString()}명 확인 필요</strong> · 90일 미만 재등록 환자는 날짜별 산정구분을 직접 선택할 수 있습니다.</span><span>복수등록 ${duplicatePatients.size.toLocaleString()}명 · 자동 90초진 ${auto90Count.toLocaleString()}건</span>`;
                 $('#duplicateInitialOutput').innerHTML = renderDuplicateInitialTable(duplicateInitialRows);
                 $('#duplicateInitialDownloadBtn').disabled = duplicateInitialRows.length === 0;
                 $('#duplicateInitialDownloadBtn').onclick = () => exportXlsx([{
-                    name:'중복_초진신환',
-                    rows:duplicateInitialRows.map(r=>({차트번호:r['차트번호'], 이름:r['이름'], '중복 횟수':r['중복 횟수'], 날짜:r['날짜'].join(', ')}))
-                }], '의사랑_중복_초진신환_목록.xlsx');
+                    name:'중복_초진신환', rows:duplicateInitialRows
+                }], '의사랑_중복_초진신환_산정처리.xlsx');
 
-                const merged = Array.from(initialCandidates.values()).map(r => {
-                    const visits = Array.from(visitDates.get(r.id) || []).filter(d => d >= r.firstDate).sort();
-                    const injections = Array.from(injectionDates.get(r.id) || []).filter(d => d >= r.firstDate).sort();
-                    standardizedInitial.push([r.id,r.rrn,r.firstDate,'초진',r.room,r.age]);
-                    return {
-                        ...r,
-                        firstDayInj: injections.includes(r.firstDate) ? 1 : 0,
-                        injTotal: injections.length,
-                        visit: visits.length || 1
-                    };
+                // 사용자가 선택한 산정구분을 실제 외래 기록의 초진/재진 통계에도 반영합니다.
+                const classByPatientDate = new Map(allInitialEvents.map(e => [`${e.id}_${e.date}`, e.finalClass]));
+                outpatientRecords.forEach(r => {
+                    const cls = classByPatientDate.get(`${r.id}_${r.date}`);
+                    if(cls){
+                        r.isInitial = cls === '초진' || cls === '90초진';
+                        r.isRevisit = cls === '재진';
+                        r.initialClass = cls;
+                    }
+                });
+
+                // 초진/90초진으로 최종 산정된 날짜는 각각 하나의 초진 episode로 계산합니다.
+                // 다음 초진 episode가 생기면 이전 episode의 내원/주사 추적은 그 전날까지만 포함합니다.
+                const episodeEvents = allInitialEvents
+                    .filter(e => e.finalClass === '초진' || e.finalClass === '90초진')
+                    .sort((a,b)=>a.id===b.id ? a.date.localeCompare(b.date) : String(a.id).localeCompare(String(b.id)));
+                const episodesByPatient = new Map();
+                episodeEvents.forEach(e => (episodesByPatient.get(e.id) || episodesByPatient.set(e.id, []).get(e.id)).push(e));
+
+                const merged = [];
+                episodesByPatient.forEach((events,id) => {
+                    events.sort((a,b)=>a.date.localeCompare(b.date));
+                    events.forEach((e,idx) => {
+                        const nextDate = idx+1 < events.length ? events[idx+1].date : '';
+                        const visits = Array.from(visitDates.get(id) || []).filter(d => d >= e.date && (!nextDate || d < nextDate)).sort();
+                        const injections = Array.from(injectionDates.get(id) || []).filter(d => d >= e.date && (!nextDate || d < nextDate)).sort();
+                        standardizedInitial.push([e.id,e.rrn,e.date,e.finalClass,e.room,e.age]);
+                        merged.push({
+                            id:e.id, rrn:e.rrn, name:e.name||'', age:e.age, room:e.room, firstDate:e.date, initialClass:e.finalClass,
+                            firstDayInj: injections.includes(e.date) ? 1 : 0,
+                            injTotal: injections.length,
+                            visit: visits.length || 1
+                        });
+                    });
                 });
 
                 if (!merged.length) {
@@ -4009,7 +4111,7 @@ body.jinsul-analysis-open{
                     $('#m-patients').textContent = fmt(overall['총환자수']);
                     $('#m-visits').textContent = fmt(overall['총내원수']);
                     $('#m-avg-caption').textContent = `환자당 평균 내원횟수 ${fmt(overall['환자당 평균내원횟수'])}회`;
-                    $('#m-total').textContent = fmt(overall['초진환자수']);
+                    $('#m-total').innerHTML = `${fmt(overall['초진환자수'])}${Number(overall['90일초진수']) ? ` <span class="day90-count">(${fmt(overall['90일초진수'])})</span>` : ''}`;
                     $('#m-inj-rate').textContent = fmt(overall['초진 주사처방률']);
                     $('#m-visit-avg').textContent = fmt(overall['초진 평균 내원횟수']);
                     $('#m-revisit').textContent = fmt(overall['초진 재내원율']);
@@ -4036,7 +4138,7 @@ body.jinsul-analysis-open{
                     {name:'요약_진료실', rows:orderedSummaryRows(stats)},
                     {name:'연령대별_진료실', rows:byAge},
                     {name:'초진후_최초주사전환', rows:conversion.rows},
-                    {name:'중복_초진신환', rows:duplicateInitialRows.map(r=>({차트번호:r['차트번호'], 이름:r['이름'], '중복 횟수':r['중복 횟수'], 날짜:r['날짜'].join(', ')}))}
+                    {name:'중복_초진신환', rows:duplicateInitialRows}
                 ]);
             }
 
