@@ -7,14 +7,14 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
-  --navy:#111827;--deep:#0b1220;--gold:#b9a58a;--gold2:#d7c8ae;
-  --bg:#f4f1eb;--panel:#fffdfa;--panel2:#faf6f0;--line:#e6ded2;
-  --text:#1f2937;--muted:#6b7280;--red:#b91c1c;--green:#047857;--orange:#b45309;
-  --shadow:0 18px 45px rgba(17,24,39,.10);--radius:20px;
+--navy:#111827;--deep:#0b1220;--gold:#b9a58a;--gold2:#d7c8ae;
+--bg:#f4f1eb;--panel:#fffdfa;--panel2:#faf6f0;--line:#e6ded2;
+--text:#1f2937;--muted:#6b7280;--red:#b91c1c;--green:#047857;--orange:#b45309;
+--shadow:0 18px 45px rgba(17,24,39,.10);--radius:20px;
 }
 html[data-theme="dark"]{
-  --bg:#0f172a;--panel:#111827;--panel2:#0b1220;--line:#334155;
-  --text:#e5e7eb;--muted:#94a3b8;--shadow:0 22px 60px rgba(0,0,0,.34);
+--bg:#0f172a;--panel:#111827;--panel2:#0b1220;--line:#334155;
+--text:#e5e7eb;--muted:#94a3b8;--shadow:0 22px 60px rgba(0,0,0,.34);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -37,7 +37,7 @@ html[data-theme="dark"] .util-btn{background:#111827;color:#e5e7eb;border-color:
 .hero-badge{align-self:stretch;min-width:178px;border:1px solid rgba(215,200,174,.38);background:rgba(255,255,255,.06);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;text-align:right;color:#eadfcc;font-weight:900}.hero-badge span{font-size:11px;color:rgba(234,223,204,.72);margin-bottom:7px;letter-spacing:.12em}
 .guide{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.guide-item{padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:rgba(255,253,250,.92);box-shadow:0 10px 28px rgba(17,24,39,.05);font-size:13px;color:var(--muted);line-height:1.6}.guide-item b{display:block;color:var(--text);font-size:14px;margin-bottom:4px}.guide-item b::before{content:'•';color:var(--gold);margin-right:7px}
 html[data-theme="dark"] .guide-item{background:var(--panel)}
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}.upload-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px}.upload-card{transition:.18s}.upload-card:hover{transform:translateY(-2px);border-color:rgba(185,165,138,.7)}
+.upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.upload-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px}.upload-card{transition:.18s}.upload-card:hover{transform:translateY(-2px);border-color:rgba(185,165,138,.7)}
 .upload-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.upload-head h3{font-size:16px;margin:0;color:var(--text)}.status{font-size:12px;font-weight:850;color:var(--muted)}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:#8d7254}
 .dropzone{border:2px dashed #d5c6b4;background:#fffaf3;border-radius:16px;min-height:138px;padding:24px;text-align:center;display:flex;flex-direction:column;justify-content:center;transition:.2s}.dropzone:hover,.dropzone.drag-over{border-color:var(--gold);background:#fff7ec}.dropzone strong{font-size:15px;color:var(--text)}.dropzone span{font-size:12px;color:var(--muted);margin-top:7px}.file-name{font-size:12px;color:#80684e;font-weight:850;margin-top:10px;word-break:break-all}.file-date-info{font-size:11px;color:var(--muted);font-weight:750;margin-top:6px;line-height:1.5}
 html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[data-theme="dark"] .dropzone:hover{background:#111827;border-color:var(--gold2)}
@@ -49,82 +49,103 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
 .table-wrap{overflow:auto;max-height:64vh;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:separate;border-spacing:0;min-width:1110px;font-size:12px}th,td{padding:10px 9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}th{position:sticky;top:0;background:#f6efe6;z-index:5;color:#5a4938;font-weight:900}html[data-theme="dark"] th{background:#1f2937;color:#e5e7eb}thead tr:nth-child(2) th{top:35px}tr:last-child td{border-bottom:0}th:last-child,td:last-child{border-right:0}.row-err td{background:rgba(185,28,28,.07)}.row-misu td{background:rgba(107,114,128,.07);color:var(--muted)}.diff-text{color:var(--red);font-weight:900}.name-cell{text-align:left;font-weight:800}.badge{display:inline-flex;align-items:center;padding:4px 7px;border-radius:7px;font-size:11px;font-weight:850;margin:1px}.m1{background:#dcfce7;color:#166534}.m2{background:#fef3c7;color:#92400e}.m3{background:#f3f4f6;color:#6b7280}.m4{background:#e0f2fe;color:#075985}.m5{background:#fee2e2;color:#991b1b}.m6{background:#ede9fe;color:#5b21b6}.result-badge{padding:5px 8px;border-radius:8px;font-size:11px;font-weight:900}.r-ok{background:#dcfce7;color:#166534}.r-err{background:#fee2e2;color:#991b1b}.r-wait{background:#f3f4f6;color:#6b7280}.empty{padding:40px;text-align:center;color:var(--muted);font-size:13px}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 20px 45px}.footer img{height:38px;opacity:.78;display:block;margin:0 auto 8px;object-fit:contain}
 .loading-overlay{position:fixed;inset:0;background:rgba(15,23,42,.28);backdrop-filter:blur(3px);z-index:120;display:none;align-items:center;justify-content:center;padding:20px}.loading-overlay.on{display:flex}.loading-card{min-width:280px;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 25px 70px rgba(0,0,0,.28);padding:24px;text-align:center}.spinner{width:34px;height:34px;margin:0 auto 14px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin .75s linear infinite}.loading-title{font-weight:900;font-size:15px}.loading-sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}@keyframes spin{to{transform:rotate(360deg)}}
+.optional{display:inline-flex;padding:3px 7px;border-radius:99px;background:#eee6d9;color:#80684e;font-size:10px;font-weight:900;margin-left:6px}.booking-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:12px 0}.booking-tools label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:11px;font-weight:800}.booking-tools input,.booking-tools select{height:38px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);padding:0 10px}.reservation-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.reservation-summary .kpi{min-height:86px}.code-select{height:30px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text)}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.calendar-grid{grid-template-columns:repeat(8,1fr)}.toolbar{grid-template-columns:1fr 150px 130px}.toolbar-btn{width:100%}}
 @media(max-width:760px){.top-actions{position:static;justify-content:flex-end;padding:12px 12px 0}.util-btn{height:38px;padding:0 13px}.wrap{padding:12px 12px 35px}.brand-row{display:block}.hero{padding:24px 20px;border-radius:22px}.hero-badge{text-align:left;margin-top:18px;min-height:86px}.brand-mark{align-items:flex-start}.logo-box .logo{max-width:170px;max-height:82px}.company .en{font-size:19px;letter-spacing:.25em}.hero h1{font-size:27px}.guide{grid-template-columns:1fr}.upload-grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.compare-grid{grid-template-columns:1fr}.calendar-grid{grid-template-columns:repeat(7,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}}
+/* 밝고 간결한 JINSUL 검수 화면 */
+.wrap{max-width:1740px;padding-top:36px}.hero{overflow:visible;background:transparent;color:var(--text);border:0;box-shadow:none;border-radius:0;padding:10px 32px 22px;margin-bottom:0}.hero::before,.hero::after,.hero-badge,.company{display:none}.brand-row{display:block}.brand-copy{display:grid;grid-template-columns:220px minmax(0,1fr);grid-template-rows:auto auto;column-gap:34px;align-items:center}.brand-mark{grid-row:1/3;margin:0}.logo-box{justify-content:flex-start}.logo-box .logo{width:150px;max-width:150px;max-height:82px;filter:none}.hero h1{grid-column:2;margin:0 0 4px;font-size:28px;color:var(--text)}.hero p{grid-column:2;color:var(--muted);font-size:15px;line-height:1.5}.guide{display:grid}.upload-grid{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;gap:16px}.upload-card{box-shadow:none;border-radius:14px;padding:18px;background:var(--panel2)}.upload-card:hover{transform:none}.dropzone{min-height:158px;background:var(--panel);border-color:#c7b9a4}.panel{border-radius:18px;box-shadow:var(--shadow);padding:22px}.booking-tools{display:none}.top-actions{top:16px}.kpi,.compare{background:var(--panel)}
+.dropzone{cursor:pointer;user-select:none}.native-file{display:block!important;width:min(100%,420px);margin:14px auto 0;padding:8px;border:1px solid #c9bba6;border-radius:9px;background:#fff;color:#3a352e;cursor:pointer}.native-file::file-selector-button{height:34px;margin-right:10px;padding:0 14px;border:0;border-radius:7px;background:#363c43;color:#fff;font-weight:850;cursor:pointer}html[data-theme="dark"] .native-file{background:#111827;color:#e5e7eb;border-color:#64748b}html[data-theme="dark"] .native-file::file-selector-button{background:#c2aa80;color:#171717}.booking-analyze-btn{height:38px;margin:10px auto 0;padding:0 18px;border:0;border-radius:9px;background:#b59a69;color:#fff;font-weight:900;cursor:pointer}.booking-analyze-btn:hover{filter:brightness(.94)}
+.toolbar{display:flex;flex-wrap:wrap;grid-template-columns:none}.toolbar .search{flex:1 1 280px}.filter-tabs{display:flex;flex-wrap:wrap;gap:6px}.filter-tab{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:850;cursor:pointer}.filter-tab:hover{border-color:var(--gold)}.filter-tab.active{background:#363c43;border-color:#363c43;color:#fff;box-shadow:0 4px 12px rgba(54,60,67,.16)}html[data-theme="dark"] .filter-tab.active{background:#c2aa80;border-color:#c2aa80;color:#171717}
+.audit-tabs{display:flex;gap:8px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);margin:18px 0}.audit-tab{flex:1;height:52px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:15px;font-weight:900;cursor:pointer}.audit-tab:hover{background:var(--panel2);color:var(--text)}.audit-tab.active{background:#363c43;color:#fff;box-shadow:0 6px 16px rgba(54,60,67,.18)}html[data-theme="dark"] .audit-tab.active{background:#c2aa80;color:#171717}.view-empty{padding:44px 22px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;color:var(--muted);box-shadow:var(--shadow)}.view-empty b{display:block;color:var(--text);font-size:17px;margin-bottom:7px}
+html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8dc}
+@media(max-width:1000px){.upload-grid{grid-template-columns:1fr}.brand-copy{grid-template-columns:170px 1fr}.logo-box .logo{width:130px}.hero h1{font-size:24px}}
+@media(max-width:650px){.brand-copy{display:block}.brand-mark{margin-bottom:12px}.hero{padding:8px 8px 18px}.hero p{font-size:13px}.upload-grid{padding:12px}.reservation-summary{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="top-actions">
-  <button type="button" class="util-btn" onclick="goBack()">← 뒤로가기</button>
-  <button type="button" class="util-btn" onclick="toggleTheme()" id="themeBtn">☾ 다크 모드</button>
+<button type="button" class="util-btn" onclick="goBack()">← 뒤로가기</button>
+<button type="button" class="util-btn" onclick="toggleTheme()" id="themeBtn">☾ 다크 모드</button>
 </div>
 <main class="wrap">
-  <section class="hero">
-    <div class="brand-row">
-      <div class="brand-copy">
-        <div class="brand-mark">
-          <div class="logo-box"><img class="logo" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL Logo" loading="eager"></div>
-          <div class="company"><div class="en">JINSUL</div><div class="ko">경험과 가치를 현실화 하는 컨설팅</div></div>
-        </div>
-        <h1>수납 검수 시스템</h1>
-        <p>진설 일일 수납 대장과 병원 프로그램의 수납 내역을 차트번호 기준으로 비교합니다.<br>총액·현금/이체·카드 수단까지 함께 확인하여 누락과 수납 오류를 빠르게 찾을 수 있습니다.</p>
-      </div>
-      <div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.1 · Optimized</small></div>
-    </div>
-  </section>
+<section class="hero">
+<div class="brand-row">
+<div class="brand-copy">
+<div class="brand-mark">
+<div class="logo-box"><img class="logo" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL Logo" loading="eager"></div>
+<div class="company"><div class="en">JINSUL</div><div class="ko">경험과 가치를 현실화 하는 컨설팅</div></div>
+</div>
+<h1>수납·예약코드 통합 검수</h1>
+<p>수납대장과 병원 프로그램을 비교하고, 예약 엑셀 업로드 시 예약코드까지 함께 검수합니다.</p>
+</div>
+<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.1 · Optimized</small></div>
+</div>
+</section>
 <br>
-  <section class="guide">
-    <div class="guide-item"><b>비트컴퓨터</b>접수 → 일일집계 → 기간 선택 → 엑셀 다운로드 · 기간/단일파일 다중 업로드 지원</div>
-    <div class="guide-item"><b>의사랑</b>원무과 외래 → 마감 → 일일마감 → 마감 → 엑셀출력</div>
-    <div class="guide-item"><b>이지스</b>접수 → 일일수납현황 → 조회기간(당일) → 조회(F5) → 엑셀(F10)</div>
-  </section>
+<section class="guide">
+<div class="guide-item"><b>비트컴퓨터</b>접수 → 일일집계 → 기간 선택 → 엑셀 다운로드 · 기간/단일파일 다중 업로드 지원</div>
+<div class="guide-item"><b>의사랑</b>원무과 외래 → 마감 → 일일마감 → 마감 → 엑셀출력</div>
+<div class="guide-item"><b>이지스</b>접수 → 일일수납현황 → 조회기간(당일) → 조회(F5) → 엑셀(F10)</div>
+</section>
 <br>
-  <section class="upload-grid">
-    <div class="upload-card">
-      <div class="upload-head"><h3>1. 진설 일일 수납 대장</h3><span id="statusA" class="status">파일 대기</span></div>
-      <div class="dropzone" id="dropA"><strong>수납 대장 엑셀 업로드</strong><span>클릭하거나 파일을 끌어다 놓으세요.</span><div id="fileNameA" class="file-name"></div><input type="file" id="fileA" accept=".xlsx,.xls,.xlsm" hidden></div>
-      <div id="calendarArea" class="calendar-area"><div class="calendar-title">검수할 날짜 선택</div><div id="calendarGrid" class="calendar-grid"></div></div>
-    </div>
-    <div class="upload-card">
-      <div class="upload-head"><h3>2. 차트 일일 수납 엑셀</h3><span id="statusB" class="status">파일 대기</span></div>
-      <div class="dropzone" id="dropB"><strong>병원 프로그램 수납 엑셀 업로드</strong><span>비트 기간 엑셀 1개 또는 일자별 엑셀 여러 개를 한 번에 선택할 수 있습니다.</span><div id="fileNameB" class="file-name"></div><div id="bitDateInfo" class="file-date-info"></div><input type="file" id="fileB" accept=".xlsx,.xls,.xlsm" multiple hidden></div>
-    </div>
-  </section>
+<section class="upload-grid">
+<div class="upload-card">
+<div class="upload-head"><h3>1. 진설 일일 수납 대장</h3><span id="statusA" class="status">파일 대기</span></div>
+<div class="dropzone" id="dropA"><strong>수납 대장 엑셀 업로드</strong><span>클릭하거나 파일을 끌어다 놓으세요.</span><div id="fileNameA" class="file-name"></div><input type="file" id="fileA" accept=".xlsx,.xls,.xlsm" hidden></div>
+<div id="calendarArea" class="calendar-area"><div class="calendar-title">검수할 날짜 선택</div><div id="calendarGrid" class="calendar-grid"></div></div>
+</div>
+<div class="upload-card">
+<div class="upload-head"><h3>2. 차트 일일 수납 엑셀</h3><span id="statusB" class="status">파일 대기</span></div>
+<div class="dropzone" id="dropB"><strong>병원 프로그램 수납 엑셀 업로드</strong><span>비트 기간 엑셀 1개 또는 일자별 엑셀 여러 개를 한 번에 선택할 수 있습니다.</span><div id="fileNameB" class="file-name"></div><div id="bitDateInfo" class="file-date-info"></div><input type="file" id="fileB" accept=".xlsx,.xls,.xlsm" multiple hidden></div>
+</div>
+<div class="upload-card">
+<div class="upload-head"><h3>3. 예약 엑셀 <span class="optional">선택</span></h3><span id="statusC" class="status ok">업로드 가능</span></div>
+<div class="dropzone" id="dropC"><strong>의사랑·비트 예약 엑셀 업로드</strong><span>파일을 선택하면 즉시 자동 분석됩니다. 여러 파일을 한 번에 선택할 수 있습니다.</span><input type="file" id="fileC" class="native-file" accept=".xlsx,.xls,.xlsm,.csv" multiple onchange="handleBookingInput(this)"><div id="fileNameC" class="file-name"></div><div id="bookingInfo" class="file-date-info">파일을 선택하면 인식 상태가 여기에 표시됩니다.</div></div>
+</div>
+</section>
 <br>
-  <section id="resultPanel" class="panel hidden-panel">
-    <div class="panel-head"><h2>검수 결과</h2><div id="selectedDay" class="selected-day"></div></div>
+<nav id="auditTabs" class="audit-tabs hidden" aria-label="검수 화면 선택"><button type="button" id="paymentTab" class="audit-tab active" onclick="showAuditView('payment')">수납검수</button><button type="button" id="reservationTab" class="audit-tab" onclick="showAuditView('reservation')">예약코드검수</button></nav>
+<div id="auditViewEmpty" class="view-empty hidden"><b id="auditEmptyTitle">검수 결과가 없습니다.</b><span id="auditEmptyText">필요한 엑셀을 업로드해주세요.</span></div>
+<section id="resultPanel" class="panel hidden-panel">
+<div class="panel-head"><h2>검수 결과</h2><div id="selectedDay" class="selected-day"></div></div>
 <br>
-    <div class="kpis">
-      <div class="kpi"><div class="label">전체 환자</div><div id="kpiAll" class="value">0</div><div class="sub">차트번호 기준</div></div>
-      <div class="kpi ok"><div class="label">정상</div><div id="kpiOk" class="value">0</div><div id="rateOk" class="sub">0%</div></div>
-      <div class="kpi error"><div class="label">오류/누락</div><div id="kpiErr" class="value">0</div><div id="rateErr" class="sub">0%</div></div>
-      <div class="kpi"><div class="label">총액 오류</div><div id="kpiTotalErr" class="value">0</div><div class="sub">수납액 불일치</div></div>
-      <div class="kpi"><div class="label">수단 오류</div><div id="kpiMethodErr" class="value">0</div><div class="sub">현금·카드 구분</div></div>
-      <div class="kpi"><div class="label">미수 대기</div><div id="kpiMisu" class="value">0</div><div class="sub">오류 집계 제외</div></div>
-    </div>
+<div class="kpis">
+<div class="kpi"><div class="label">전체 환자</div><div id="kpiAll" class="value">0</div><div class="sub">차트번호 기준</div></div>
+<div class="kpi ok"><div class="label">정상</div><div id="kpiOk" class="value">0</div><div id="rateOk" class="sub">0%</div></div>
+<div class="kpi error"><div class="label">오류/누락</div><div id="kpiErr" class="value">0</div><div id="rateErr" class="sub">0%</div></div>
+<div class="kpi"><div class="label">총액 오류</div><div id="kpiTotalErr" class="value">0</div><div class="sub">수납액 불일치</div></div>
+<div class="kpi"><div class="label">수단 오류</div><div id="kpiMethodErr" class="value">0</div><div class="sub">현금·카드 구분</div></div>
+<div class="kpi"><div class="label">미수 대기</div><div id="kpiMisu" class="value">0</div><div class="sub">오류 집계 제외</div></div>
+</div>
 <br>
-    <div class="compare-grid">
-      <div class="compare"><div class="compare-title">현금 + 이체</div><div class="compare-row"><span>수납대장</span><b id="sumCashA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCashB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCash">0원</b></div></div>
-      <div class="compare"><div class="compare-title">카드</div><div class="compare-row"><span>수납대장</span><b id="sumCardA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCardB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCard">0원</b></div></div>
-      <div class="compare"><div class="compare-title">총 수납액</div><div class="compare-row"><span>수납대장</span><b id="sumTotalA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumTotalB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffTotal">0원</b></div></div>
-    </div>
+<div class="compare-grid">
+<div class="compare"><div class="compare-title">현금 + 이체</div><div class="compare-row"><span>수납대장</span><b id="sumCashA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCashB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCash">0원</b></div></div>
+<div class="compare"><div class="compare-title">카드</div><div class="compare-row"><span>수납대장</span><b id="sumCardA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumCardB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffCard">0원</b></div></div>
+<div class="compare"><div class="compare-title">총 수납액</div><div class="compare-row"><span>수납대장</span><b id="sumTotalA">0원</b></div><div class="compare-row"><span>프로그램</span><b id="sumTotalB">0원</b></div><div class="compare-row"><span>차액</span><b id="diffTotal">0원</b></div></div>
+</div>
 <br>
-    <div class="toolbar">
-      <input class="control search" id="searchInput" placeholder="차트번호 또는 환자명 검색" oninput="applyFilter()">
-      <select class="control" id="resultFilter" onchange="applyFilter()"><option value="all">전체 결과</option><option value="error">오류만</option><option value="정상">정상</option><option value="총액오류">총액 오류</option><option value="수단오류">수단 오류</option><option value="수납 미처리">수납 미처리</option><option value="수납대장 미기재">수납대장 미기재</option><option value="미수대기">미수 대기</option></select>
-      <select class="control" id="tolerance" onchange="runCheck()"><option value="0">수단오차 0원</option><option value="50" selected>수단오차 50원</option><option value="100">수단오차 100원</option><option value="500">수단오차 500원</option></select>
-      <button class="toolbar-btn" onclick="resetAll()">초기화</button>
-      <button class="toolbar-btn primary" onclick="exportResult()">결과 엑셀 저장</button>
-    </div>
+<div class="toolbar">
+<input class="control search" id="searchInput" placeholder="차트번호 또는 환자명 검색" oninput="applyFilter()">
+<input type="hidden" id="resultFilter" value="all"><div class="filter-tabs" id="resultFilterTabs"><button type="button" class="filter-tab active" data-filter="all" onclick="setResultFilter('all',this)">전체</button><button type="button" class="filter-tab" data-filter="error" onclick="setResultFilter('error',this)">오류만</button><button type="button" class="filter-tab" data-filter="정상" onclick="setResultFilter('정상',this)">정상</button><button type="button" class="filter-tab" data-filter="총액오류" onclick="setResultFilter('총액오류',this)">총액 오류</button><button type="button" class="filter-tab" data-filter="수단오류" onclick="setResultFilter('수단오류',this)">수단 오류</button><button type="button" class="filter-tab" data-filter="수납 미처리" onclick="setResultFilter('수납 미처리',this)">수납 미처리</button><button type="button" class="filter-tab" data-filter="수납대장 미기재" onclick="setResultFilter('수납대장 미기재',this)">대장 미기재</button><button type="button" class="filter-tab" data-filter="미수대기" onclick="setResultFilter('미수대기',this)">미수 대기</button></div>
+<select class="control" id="tolerance" onchange="runCheck()"><option value="0">수단오차 0원</option><option value="50" selected>수단오차 50원</option><option value="100">수단오차 100원</option><option value="500">수단오차 500원</option></select>
+<button class="toolbar-btn" onclick="resetAll()">초기화</button>
+<button class="toolbar-btn primary" onclick="exportResult()">결과 엑셀 저장</button>
+</div>
 <br>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th rowspan="2">차트번호</th><th rowspan="2">환자명</th><th colspan="2">현금+이체</th><th colspan="2">카드</th><th colspan="2">총액</th><th rowspan="2">검수결과</th><th rowspan="2">수단상세</th></tr><tr><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th></tr></thead>
-        <tbody id="resultBody"></tbody>
-      </table>
-      <div id="emptyResult" class="empty hidden">조건에 맞는 결과가 없습니다.</div>
-    </div>
-  </section>
+<div class="table-wrap">
+<table>
+<thead><tr><th rowspan="2">차트번호</th><th rowspan="2">환자명</th><th colspan="2">현금+이체</th><th colspan="2">카드</th><th colspan="2">총액</th><th rowspan="2">검수결과</th><th rowspan="2">수단상세</th></tr><tr><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th><th>수납대장</th><th>프로그램</th></tr></thead>
+<tbody id="resultBody"></tbody>
+</table>
+<div id="emptyResult" class="empty hidden">조건에 맞는 결과가 없습니다.</div>
+</div>
+</section>
+<section id="reservationPanel" class="panel hidden-panel">
+<div class="panel-head"><h2>예약코드 검수 <span class="optional">예약 파일 업로드 시 표시</span></h2><div id="reservationPeriod" class="selected-day"></div></div>
+<div class="reservation-summary"><div class="kpi"><div class="label">검수 환자</div><div id="resAll" class="value">0</div></div><div class="kpi ok"><div class="label">일치</div><div id="resOk" class="value">0</div></div><div class="kpi error"><div class="label">불일치</div><div id="resBad" class="value">0</div></div><div class="kpi"><div class="label">예약 없음</div><div id="resNone" class="value">0</div></div></div>
+<div class="toolbar"><input class="control search" id="reservationSearch" placeholder="차트번호 또는 환자명 검색" oninput="renderReservationRows()"><input type="hidden" id="reservationFilter" value="bad"><div class="filter-tabs" id="reservationFilterTabs"><button type="button" class="filter-tab" data-filter="all" onclick="setReservationFilter('all',this)">전체</button><button type="button" class="filter-tab active" data-filter="bad" onclick="setReservationFilter('bad',this)">불일치만</button><button type="button" class="filter-tab" data-filter="ok" onclick="setReservationFilter('ok',this)">일치만</button></div><button class="toolbar-btn" onclick="clearBookingOnly()">예약만 초기화</button><button class="toolbar-btn primary" onclick="exportReservationResult()">예약 결과 저장</button></div>
+<div class="table-wrap"><table><thead><tr><th>차트번호</th><th>환자명</th><th>기존 코드</th><th>자동 판정</th><th>수정 코드</th><th>결과</th><th>예약 건수</th><th>예약일</th><th>예약 내용</th><th>매칭</th></tr></thead><tbody id="reservationBody"></tbody></table><div id="reservationEmpty" class="empty hidden">조건에 맞는 결과가 없습니다.</div></div>
+</section>
 </main>
 <div class="footer">© JINSUL · 경험과 가치를 현실화 하는 컨설팅</div>
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-card"><div class="spinner"></div><div id="loadingTitle" class="loading-title">엑셀을 분석하고 있습니다.</div><div id="loadingSub" class="loading-sub">필요한 데이터만 불러오는 중입니다.</div></div></div>
@@ -133,6 +154,9 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
 let currentWbA=null,dbA=[],confA=null,resultRows=[],selectedSheet=null;
 let fileABuffer=null,sheetNamesA=[],cacheA=new Map();
 let bitRecords=[],bitFiles=[],bitDates=new Set();
+let bookingRecords=[],bookingResults=[];
+let currentAuditView='payment';
+let bookingBusy=false;
 const methodNames={1:'현금',2:'카드',3:'미수',4:'미수(현)',5:'미수(카)',6:'이체'};
 const norm=s=>String(s??'').trim().replace(/\s/g,'');
 const normId=id=>String(id??'').trim().replace(/^0+/,'');
@@ -140,141 +164,177 @@ const toN=v=>Math.round(Number(String(v??0).replace(/[^0-9.-]+/g,'')))||0;
 const won=v=>Number(v||0).toLocaleString()+'원';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const TAGS={
-  id:['차트번호','챠트번호','등록번호','환자번호'],
-  name:['성명','수진자명','수진자','이름','환자명'],
-  date:['수납일자','수납일','진료일자','진료일','접수일자','내원일자','일자','날짜'],
-  total:['원무과입금액','수납액','수납액합계','합계','본인부담총액'],
-  cash:['현금수납액','현금수납','현금금액','현금'],
-  card:['카드수납액','카드수납','카드금액','카드'],
-  acc:['계좌이체액','계좌수납','계좌금액','계좌이체','계좌']
+id:['차트번호','챠트번호','등록번호','환자번호'],
+name:['성명','수진자명','수진자','이름','환자명'],
+date:['수납일자','수납일','진료일자','진료일','접수일자','내원일자','일자','날짜'],
+total:['원무과입금액','수납액','수납액합계','합계','본인부담총액'],
+cash:['현금수납액','현금수납','현금금액','현금'],
+card:['카드수납액','카드수납','카드금액','카드'],
+acc:['계좌이체액','계좌수납','계좌금액','계좌이체','계좌']
 };
+const BOOKING_TAGS={id:['차트번호','챠트번호','환자번호','등록번호'],name:['이름','수진자명','환자명','성명'],date:['예약일','진료예약시간','예약일시','예약날짜'],type:['예약구분','참고사항','메모','예약내용','비고']};
 function goBack(){if(history.length>1)history.back();else location.href='https://xginini-dot.github.io/jinsul/'}
-function initTheme(){const saved=localStorage.getItem('jinsul-theme');const dark=saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';updateThemeBtn()}
+function initTheme(){const saved=localStorage.getItem('jinsul-theme');const dark=saved==='dark';document.documentElement.dataset.theme=dark?'dark':'light';updateThemeBtn()}
 function toggleTheme(){document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('jinsul-theme',document.documentElement.dataset.theme);updateThemeBtn()}
 function updateThemeBtn(){const dark=document.documentElement.dataset.theme==='dark';const b=document.getElementById('themeBtn');if(b)b.textContent=(dark?'☀ 라이트 모드':'☾ 다크 모드')}
 initTheme();
+function showAuditView(view,scroll=false){currentAuditView=view;const tabs=document.getElementById('auditTabs'),empty=document.getElementById('auditViewEmpty'),payment=document.getElementById('resultPanel'),reservation=document.getElementById('reservationPanel');tabs.classList.remove('hidden');document.getElementById('paymentTab').classList.toggle('active',view==='payment');document.getElementById('reservationTab').classList.toggle('active',view==='reservation');const available=view==='payment'?resultRows.length>0:bookingResults.length>0;payment.classList.toggle('hidden-panel',view!=='payment'||!available);reservation.classList.toggle('hidden-panel',view!=='reservation'||!available);empty.classList.toggle('hidden',available);if(!available){document.getElementById('auditEmptyTitle').textContent=view==='payment'?'수납검수 결과가 없습니다.':'예약코드검수 결과가 없습니다.';document.getElementById('auditEmptyText').textContent=view==='payment'?'1번과 2번 수납 엑셀을 업로드해주세요.':bookingRecords.length?'검수 날짜가 포함된 1번 수납대장을 먼저 선택해주세요.':'3번 예약 엑셀을 업로드하면 결과가 표시됩니다.'}if(scroll)setTimeout(()=>tabs.scrollIntoView({behavior:'smooth',block:'start'}),30)}
 function setLoading(on,title='엑셀을 분석하고 있습니다.',sub='필요한 데이터만 불러오는 중입니다.'){const el=document.getElementById('loadingOverlay');if(!el)return;document.getElementById('loadingTitle').textContent=title;document.getElementById('loadingSub').textContent=sub;el.classList.toggle('on',!!on)}
 function yieldUI(){return new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)))}
 function setStatus(id,text,type=''){const el=document.getElementById(id);el.className='status'+(type?' '+type:'');el.textContent=text}
 function getMap(rows,side){
-  for(let i=0;i<Math.min(rows.length,80);i++){
-    const row=rows[i];if(!Array.isArray(row))continue;const map={};
-    row.forEach((cell,idx)=>{
-      const c=norm(cell);if(!c)return;
-      for(const k in TAGS){if(TAGS[k].some(t=>c===norm(t)||c.includes(norm(t)))&&map[k]===undefined)map[k]=idx}
-      if(side==='A'){
-        if(c.includes('수단(입력)')||c==='수단'||c.includes('결제수단'))map.method=idx;
-        if(c.includes('금')&&c.includes('액')&&idx<12&&map.total===undefined)map.total=idx;
-      }
-    });
-    if(map.id!==undefined&&map.name!==undefined)return{index:i,map};
-  }
-  return null;
+for(let i=0;i<Math.min(rows.length,80);i++){
+const row=rows[i];if(!Array.isArray(row))continue;const map={};
+row.forEach((cell,idx)=>{
+const c=norm(cell);if(!c)return;
+for(const k in TAGS){if(TAGS[k].some(t=>c===norm(t)||c.includes(norm(t)))&&map[k]===undefined)map[k]=idx}
+if(side==='A'){
+if(c.includes('수단(입력)')||c==='수단'||c.includes('결제수단'))map.method=idx;
+if(c.includes('금')&&c.includes('액')&&idx<12&&map.total===undefined)map.total=idx;
+if(c.includes('예약코드'))map.resCode=idx;
+}
+});
+if(map.id!==undefined&&map.name!==undefined)return{index:i,map};
+}
+return null;
 }
 function setupDropZone(dropId,inputId,handler,multiple=false){
-  const zone=document.getElementById(dropId),input=document.getElementById(inputId);
-  zone.onclick=()=>input.click();
-  zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};
-  zone.ondragleave=()=>zone.classList.remove('drag-over');
-  zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const fs=[...(e.dataTransfer.files||[])];if(fs.length)handler(multiple?fs:fs[0])};
-  input.onchange=e=>{const fs=[...(e.target.files||[])];if(fs.length)handler(multiple?fs:fs[0]);e.target.value=''};
+const zone=document.getElementById(dropId),input=document.getElementById(inputId);
+zone.tabIndex=0;zone.setAttribute('role','button');zone.setAttribute('aria-label','엑셀 파일 선택');
+zone.onclick=e=>{if(e.target===input||e.target.closest('.file-pick-btn'))return;input.click()};
+zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click()}};
+zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};
+zone.ondragleave=()=>zone.classList.remove('drag-over');
+zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const fs=[...(e.dataTransfer.files||[])];if(fs.length)handler(multiple?fs:fs[0])};
+input.onchange=e=>{const fs=[...(e.target.files||[])];if(fs.length)handler(multiple?fs:fs[0]);e.target.value=''};
 }
 setupDropZone('dropA','fileA',handleFileA,false);
 setupDropZone('dropB','fileB',handleFilesB,true);
+setupBookingDropZone();
+function setupBookingDropZone(){const zone=document.getElementById('dropC'),input=document.getElementById('fileC');zone.tabIndex=0;zone.setAttribute('role','group');zone.onclick=e=>{if(e.target.closest('input,button'))return;input.click()};zone.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('input,button')){e.preventDefault();input.click()}};zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};zone.ondragleave=()=>zone.classList.remove('drag-over');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const files=[...(e.dataTransfer.files||[])];if(files.length)handleFilesC(files)}}
+async function handleBookingInput(input){const files=[...(input?.files||[])];if(!files.length){setStatus('statusC','파일을 선택해주세요','err');document.getElementById('bookingInfo').textContent='선택된 예약 엑셀이 없습니다.';return}if(bookingBusy)return;bookingBusy=true;document.getElementById('fileNameC').textContent=`선택 파일 ${files.length}개 · ${files.slice(0,3).map(f=>f.name).join(', ')}${files.length>3?' 외 '+(files.length-3)+'개':''}`;document.getElementById('bookingInfo').textContent='파일 선택 확인 · 예약 데이터 분석을 시작합니다.';setStatus('statusC','분석 시작','loading');try{await handleFilesC(files)}finally{bookingBusy=false}}
 function readSheetNames(buffer){const wb=XLSX.read(new Uint8Array(buffer),{type:'array',bookSheets:true,bookProps:false});return wb.SheetNames||[]}
 function readOneSheet(buffer,sheetName,limitRows=0){const opt={type:'array',sheets:[sheetName],dense:true,cellStyles:false,cellNF:false,cellText:true,bookVBA:false};if(limitRows>0)opt.sheetRows=limitRows;const wb=XLSX.read(new Uint8Array(buffer),opt);const ws=wb.Sheets[sheetName];if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true})}
 function pad2(n){return String(n).padStart(2,'0')}
 function dateKey(v){
-  if(v===null||v===undefined||v==='')return null;
-  if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${pad2(v.getMonth()+1)}-${pad2(v.getDate())}`;
-  if(typeof v==='number'&&isFinite(v)){
-    const d=XLSX.SSF.parse_date_code(v);if(d&&d.y)return `${d.y}-${pad2(d.m)}-${pad2(d.d)}`;
-  }
-  const s=String(v).trim();
-  let m=s.match(/(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
-  m=s.match(/^(20\d{2})(\d{2})(\d{2})$/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
-  return null;
+if(v===null||v===undefined||v==='')return null;
+if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${pad2(v.getMonth()+1)}-${pad2(v.getDate())}`;
+if(typeof v==='number'&&isFinite(v)){
+const d=XLSX.SSF.parse_date_code(v);if(d&&d.y)return `${d.y}-${pad2(d.m)}-${pad2(d.d)}`;
+}
+const s=String(v).trim();
+let m=s.match(/(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+m=s.match(/^(20\d{2})(\d{2})(\d{2})$/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+return null;
 }
 function inferDateFromName(name){
-  let m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-](\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
-  m=String(name).match(/(?:^|\D)(\d{1,2})[._\/-](\d{1,2})(?:\D|$)/);if(m){const y=new Date().getFullYear();return `${y}-${pad2(m[1])}-${pad2(m[2])}`}
-  return null;
+let m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-]?(\d{1,2})/);if(m)return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+m=String(name).match(/(?:^|\D)(\d{1,2})[._\/-](\d{1,2})(?:\D|$)/);if(m){const y=new Date().getFullYear();return `${y}-${pad2(m[1])}-${pad2(m[2])}`}
+return null;
 }
 function dayFromDateKey(k){if(!k)return null;const m=String(k).match(/-(\d{2})$/);return m?Number(m[1]):null}
-function sheetDateKey(name){const m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-](\d{1,2})/);return m?`${m[1]}-${pad2(m[2])}-${pad2(m[3])}`:null}
+function sheetDateKey(name){const m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-]?(\d{1,2})/);return m?`${m[1]}-${pad2(m[2])}-${pad2(m[3])}`:null}
 async function handleFileA(file){
-  try{
-    document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();
-    fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};renderCalendar();setStatus('statusA','로드 완료','ok');
-  }catch(err){console.error(err);setStatus('statusA','파일 인식 실패','err');alert('수납 대장 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
+try{
+document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();
+fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};renderCalendar();setStatus('statusA','로드 완료','ok');
+}catch(err){console.error(err);setStatus('statusA','파일 인식 실패','err');alert('수납 대장 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
 }
 async function handleFilesB(files){
-  try{
-    bitRecords=[];bitFiles=[];bitDates.clear();
-    const names=files.map(f=>f.name);document.getElementById('fileNameB').textContent=names.length===1?names[0]:`${names.length}개 파일 선택 · ${names.slice(0,3).join(', ')}${names.length>3?' 외 '+(names.length-3)+'개':''}`;
-    setStatus('statusB',`${files.length}개 파일 분석 중`,'loading');setLoading(true,'병원 프로그램 엑셀을 분석하고 있습니다.','기간 파일과 일자별 여러 파일의 날짜를 자동 분류합니다.');await yieldUI();
-    let recognized=0,unrecognized=[];
-    for(let fi=0;fi<files.length;fi++){
-      const file=files[fi];document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name}`;await yieldUI();
-      const buffer=await file.arrayBuffer();const sheets=readSheetNames(buffer);let fileRows=0;const fallbackDate=inferDateFromName(file.name);
-      for(const sheet of sheets){
-        const sample=readOneSheet(buffer,sheet,100);const res=getMap(sample,'B');if(!res)continue;
-        const raw=readOneSheet(buffer,sheet,0),fullRes=getMap(raw,'B')||res,m=fullRes.map,data=raw.slice(fullRes.index+1);let sheetRows=0;
-        for(const row of data){
-          const id=normId(row[m.id]),name=row[m.name];if(!id&&!name)continue;
-          let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||fallbackDate||sheetDateKey(sheet);
-          const cash=toN(m.cash!==undefined?row[m.cash]:0),acc=toN(m.acc!==undefined?row[m.acc]:0),card=toN(m.card!==undefined?row[m.card]:0);
-          const total=(m.cash!==undefined||m.card!==undefined||m.acc!==undefined)?cash+acc+card:toN(m.total!==undefined?row[m.total]:0);
-          bitRecords.push({id,name:name||'',cash:cash+acc,card,total,dateKey:dk,day:dayFromDateKey(dk),source:file.name,sheet});
-          if(dk)bitDates.add(dk);sheetRows++;fileRows++;
-        }
-      }
-      if(fileRows){recognized++}else unrecognized.push(file.name);
-    }
-    if(!bitRecords.length)throw new Error('차트번호/환자명/수납금액 컬럼을 찾지 못했습니다.');
-    bitFiles=files.map(f=>f.name);const dates=[...bitDates].sort();
-    const dateText=dates.length?`${dates[0]}${dates.length>1?' ~ '+dates[dates.length-1]:''} · ${dates.length}일 · ${bitRecords.length.toLocaleString()}건`:`날짜 열 미확인 · ${bitRecords.length.toLocaleString()}건`;
-    document.getElementById('bitDateInfo').textContent=dateText+(unrecognized.length?` · 인식 제외 ${unrecognized.length}개`:``);
-    setStatus('statusB',recognized===files.length?`${files.length}개 로드 완료`:`${recognized}/${files.length}개 로드`,'ok');
-    if(dbA.length){await yieldUI();runCheck()}
-  }catch(err){console.error(err);bitRecords=[];setStatus('statusB','파일 인식 실패','err');document.getElementById('bitDateInfo').textContent='';alert('병원 프로그램 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
+try{
+bitRecords=[];bitFiles=[];bitDates.clear();
+const names=files.map(f=>f.name);document.getElementById('fileNameB').textContent=names.length===1?names[0]:`${names.length}개 파일 선택 · ${names.slice(0,3).join(', ')}${names.length>3?' 외 '+(names.length-3)+'개':''}`;
+setStatus('statusB',`${files.length}개 파일 분석 중`,'loading');setLoading(true,'병원 프로그램 엑셀을 분석하고 있습니다.','기간 파일과 일자별 여러 파일의 날짜를 자동 분류합니다.');await yieldUI();
+let recognized=0,unrecognized=[];
+for(let fi=0;fi<files.length;fi++){
+const file=files[fi];document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name}`;await yieldUI();
+const buffer=await file.arrayBuffer();const sheets=readSheetNames(buffer);let fileRows=0;const fallbackDate=inferDateFromName(file.name);
+for(const sheet of sheets){
+const sample=readOneSheet(buffer,sheet,100);const res=getMap(sample,'B');if(!res)continue;
+const raw=readOneSheet(buffer,sheet,0),fullRes=getMap(raw,'B')||res,m=fullRes.map,data=raw.slice(fullRes.index+1);let sheetRows=0;
+for(const row of data){
+const id=normId(row[m.id]),name=row[m.name];if(!id&&!name)continue;
+let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||fallbackDate||sheetDateKey(sheet);
+const cash=toN(m.cash!==undefined?row[m.cash]:0),acc=toN(m.acc!==undefined?row[m.acc]:0),card=toN(m.card!==undefined?row[m.card]:0);
+const total=(m.cash!==undefined||m.card!==undefined||m.acc!==undefined)?cash+acc+card:toN(m.total!==undefined?row[m.total]:0);
+bitRecords.push({id,name:name||'',cash:cash+acc,card,total,dateKey:dk,day:dayFromDateKey(dk),source:file.name,sheet});
+if(dk)bitDates.add(dk);sheetRows++;fileRows++;
 }
+function getBookingMap(rows){let best=null;for(let i=0;i<Math.min(rows.length,150);i++){const row=rows[i];if(!Array.isArray(row))continue;const map={};row.forEach((cell,idx)=>{const c=norm(cell);if(!c)return;for(const k in BOOKING_TAGS)if(map[k]===undefined&&BOOKING_TAGS[k].some(t=>c===norm(t)||c.includes(norm(t))))map[k]=idx});const score=['id','name','date','type'].filter(k=>map[k]!==undefined).length;if(!best||score>best.score)best={index:i,map,score};if(score===4)break}return best&&best.score>=2&&(best.map.id!==undefined||best.map.name!==undefined)?best:null}
+async function handleFilesC(files){try{bookingRecords=[];bookingResults=[];const names=files.map(f=>f.name);document.getElementById('fileNameC').textContent=names.length===1?names[0]:`${names.length}개 파일 선택 · ${names.slice(0,2).join(', ')}${names.length>2?' 외 '+(names.length-2)+'개':''}`;setStatus('statusC',`${files.length}개 분석 중`,'loading');setLoading(true,'예약 엑셀을 분석하고 있습니다.','의사랑·비트 형식과 머리글 위치를 자동으로 찾습니다.');let recognized=0,skipped=0;for(let fi=0;fi<files.length;fi++){const file=files[fi],buffer=await file.arrayBuffer(),sheets=readSheetNames(buffer);document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name}`;await yieldUI();let found=false;for(const sheet of sheets){const rows=readOneSheet(buffer,sheet,0),res=getBookingMap(rows);if(!res)continue;found=true;const m=res.map;for(const row of rows.slice(res.index+1)){const id=normId(m.id!==undefined?row[m.id]:''),name=String(m.name!==undefined?row[m.name]:'').trim();if(!id&&!name)continue;let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||inferDateFromName(file.name)||sheetDateKey(sheet);let text=m.type!==undefined?String(row[m.type]??''):'';if(!text)text=row.map(v=>String(v??'')).join(' | ');bookingRecords.push({id,name,dateKey:dk,text:text.trim(),source:file.name,sheet})}}if(found)recognized++;else skipped++}if(!bookingRecords.length)throw new Error('예약 파일에서 차트번호/이름/예약일/예약내용을 찾지 못했습니다.');const dates=[...new Set(bookingRecords.map(r=>r.dateKey).filter(Boolean))].sort();document.getElementById('bookingInfo').textContent=`예약 ${bookingRecords.length.toLocaleString()}건${dates.length?` · ${dates[0]} ~ ${dates[dates.length-1]}`:''}${skipped?` · 제외 파일 ${skipped}개`:''}`;setStatus('statusC',`${recognized}/${files.length}개 로드`,'ok');if(confA&&dbA.length)runReservationCheck(true);else showAuditView('reservation',true)}catch(err){console.error(err);bookingRecords=[];bookingResults=[];setStatus('statusC','파일 인식 실패','err');document.getElementById('bookingInfo').textContent='';showAuditView('reservation',true);alert('예약 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}}
+function bookingFlags(text){const s=norm(text).toLowerCase();return{follow:s.includes('주사경과'),treat:/주사치료|연골주사|신경주사|블럭주사|block|c-arm|carm/.test(s),recommend:s.includes('권장')}}
+function bookingCode(list){if(!list.length)return 1;let f=false,t=false,w=false;for(const r of list){const q=bookingFlags(r.text);f||=q.follow;t||=q.treat;w||=q.recommend}if(f&&t)return 4;if(t)return 3;if(f)return 2;if(w)return 6;return 5}
+function codeLabel(n){return({1:'예약 없음',2:'주사경과',3:'주사치료',4:'경과+치료',5:'기타 예약',6:'권장'})[n]||'미입력'}
+function selectedAuditDate(){if(selectedSheet?.dateKey)return selectedSheet.dateKey;const dates=[...new Set(recordsForSelectedDay().map(r=>r.dateKey).filter(Boolean))].sort();if(dates.length===1)return dates[0];if(selectedSheet?.day){const now=new Date();return `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(selectedSheet.day)}`}return null}
+function runReservationCheck(scroll=false){if(!bookingRecords.length||!confA||!dbA.length){bookingResults=[];showAuditView('reservation',scroll);return}const base=selectedAuditDate(),filtered=bookingRecords.filter(r=>!base||!r.dateKey||r.dateKey>base);const byId=new Map(),byName=new Map();for(const r of filtered){if(r.id){if(!byId.has(r.id))byId.set(r.id,[]);byId.get(r.id).push(r)}if(r.name){const n=norm(r.name);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(r)}}const patients=new Map();for(const row of dbA){const id=normId(row[confA.map.id]),name=String(row[confA.map.name]??'').trim();if(!id&&!name)continue;const key=id?'i:'+id:'n:'+norm(name),old=confA.map.resCode!==undefined?Number(String(row[confA.map.resCode]??'').match(/[1-6]/)?.[0]||0):0;if(!patients.has(key))patients.set(key,{id,name,oldCode:old||null});else if(!patients.get(key).oldCode&&old)patients.get(key).oldCode=old}bookingResults=[...patients.values()].map((p,i)=>{let list=p.id?(byId.get(p.id)||[]):[],matched=list.length?'차트번호':'';if(!list.length&&p.name){list=byName.get(norm(p.name))||[];matched=list.length?'이름':''}const auto=bookingCode(list);return{...p,no:i+1,list,auto,edit:auto,matched}});const bad=bookingResults.filter(r=>r.oldCode!==r.edit).length;document.getElementById('resAll').textContent=bookingResults.length.toLocaleString();document.getElementById('resOk').textContent=(bookingResults.length-bad).toLocaleString();document.getElementById('resBad').textContent=bad.toLocaleString();document.getElementById('resNone').textContent=bookingResults.filter(r=>r.auto===1).length.toLocaleString();document.getElementById('reservationPeriod').textContent=`검수일 ${base||'확인 불가'} 이후 · 대상 예약 ${filtered.length.toLocaleString()}건`;renderReservationRows();showAuditView('reservation',scroll)}
+function renderReservationRows(){const body=document.getElementById('reservationBody'),q=norm(document.getElementById('reservationSearch').value).toLowerCase(),filter=document.getElementById('reservationFilter').value,html=[];for(const r of bookingResults){const bad=r.oldCode!==r.edit;if(filter==='bad'&&!bad||filter==='ok'&&bad)continue;if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;const dates=[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),texts=r.list.map(x=>x.text).filter(Boolean).join(' / ');html.push(`<tr class="${bad?'row-err':''}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td>${r.oldCode??'미입력'} ${r.oldCode?codeLabel(r.oldCode):''}</td><td><b>${r.auto}</b> ${codeLabel(r.auto)}</td><td><select class="code-select" data-res-no="${r.no}">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===r.edit?'selected':''}>${n} ${codeLabel(n)}</option>`).join('')}</select></td><td><span class="result-badge ${bad?'r-err':'r-ok'}">${bad?'불일치':'일치'}</span></td><td>${r.list.length}</td><td>${esc(dates||'-')}</td><td title="${esc(texts)}" style="max-width:320px;overflow:hidden;text-overflow:ellipsis">${esc(texts||'-')}</td><td>${esc(r.matched||'예약 없음')}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('reservationEmpty').classList.toggle('hidden',html.length>0)}
+document.getElementById('reservationBody').addEventListener('change',e=>{if(!e.target.matches('.code-select'))return;const r=bookingResults.find(x=>x.no===Number(e.target.dataset.resNo));if(r){r.edit=Number(e.target.value);runReservationSummaryOnly();renderReservationRows()}});
+function runReservationSummaryOnly(){const bad=bookingResults.filter(r=>r.oldCode!==r.edit).length;document.getElementById('resOk').textContent=(bookingResults.length-bad).toLocaleString();document.getElementById('resBad').textContent=bad.toLocaleString()}
+function clearBookingOnly(){bookingRecords=[];bookingResults=[];document.getElementById('fileC').value='';document.getElementById('fileNameC').textContent='';document.getElementById('bookingInfo').textContent='';setStatus('statusC','업로드 가능','ok');showAuditView(resultRows.length?'payment':'reservation')}
+function exportReservationResult(){if(!bookingResults.length){alert('저장할 예약 검수 결과가 없습니다.');return}const rows=bookingResults.map(r=>({'차트번호':r.id,'환자명':r.name,'기존 예약코드':r.oldCode??'','자동 판정코드':r.auto,'최종 수정코드':r.edit,'결과':r.oldCode===r.edit?'일치':'불일치','예약 건수':r.list.length,'예약일':[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),'예약 내용':r.list.map(x=>x.text).filter(Boolean).join(' / '),'매칭 기준':r.matched||'예약 없음'}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'예약코드 검수');XLSX.writeFile(wb,`JINSUL_예약코드검수_${selectedAuditDate()||'전체'}.xlsx`)}
+}
+if(fileRows){recognized++}else unrecognized.push(file.name);
+}
+if(!bitRecords.length)throw new Error('차트번호/환자명/수납금액 컬럼을 찾지 못했습니다.');
+bitFiles=files.map(f=>f.name);const dates=[...bitDates].sort();
+const dateText=dates.length?`${dates[0]}${dates.length>1?' \~ '+dates[dates.length-1]:''} · ${dates.length}일 · ${bitRecords.length.toLocaleString()}건`:`날짜 열 미확인 · ${bitRecords.length.toLocaleString()}건`;
+document.getElementById('bitDateInfo').textContent=dateText+(unrecognized.length?` · 인식 제외 ${unrecognized.length}개`:``);
+setStatus('statusB',recognized===files.length?`${files.length}개 로드 완료`:`${recognized}/${files.length}개 로드`,'ok');
+if(dbA.length){await yieldUI();runCheck()}
+}catch(err){console.error(err);bitRecords=[];setStatus('statusB','파일 인식 실패','err');document.getElementById('bitDateInfo').textContent='';alert('병원 프로그램 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
+}
+/* 예약 엑셀 기능은 수납 엑셀 분석 함수와 분리된 전역 영역에서 실행 */
+function getBookingMapGlobal(rows){let best=null;for(let i=0;i<Math.min(rows.length,200);i++){const row=rows[i];if(!Array.isArray(row))continue;const map={};row.forEach((cell,idx)=>{const c=norm(cell);if(!c)return;for(const k in BOOKING_TAGS)if(map[k]===undefined&&BOOKING_TAGS[k].some(t=>c===norm(t)||c.includes(norm(t))))map[k]=idx});const score=['id','name','date','type'].filter(k=>map[k]!==undefined).length;if(!best||score>best.score)best={index:i,map,score};if(score===4)break}return best&&best.score>=2&&(best.map.id!==undefined||best.map.name!==undefined)?best:null}
+async function handleFilesC(files){try{bookingRecords=[];bookingResults=[];setStatus('statusC',`${files.length}개 분석 중`,'loading');setLoading(true,'예약 엑셀을 분석하고 있습니다.','첫 번째 파일을 준비하고 있습니다.');await yieldUI();let recognized=0,skipped=0,totalSheets=0;for(let fi=0;fi<files.length;fi++){const file=files[fi];document.getElementById('bookingInfo').textContent=`${fi+1}/${files.length} 파일 분석 중 · ${file.name}`;document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name}`;await yieldUI();const buffer=await file.arrayBuffer(),sheets=readSheetNames(buffer);let found=false;for(let si=0;si<sheets.length;si++){const sheet=sheets[si];totalSheets++;document.getElementById('loadingSub').textContent=`${fi+1}/${files.length} · ${file.name} · ${sheet}`;await yieldUI();const rows=readOneSheet(buffer,sheet,0),res=getBookingMapGlobal(rows);if(!res)continue;found=true;const m=res.map;for(const row of rows.slice(res.index+1)){const id=normId(m.id!==undefined?row[m.id]:''),name=String(m.name!==undefined?row[m.name]:'').trim();if(!id&&!name)continue;let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||inferDateFromName(file.name)||sheetDateKey(sheet);let text=m.type!==undefined?String(row[m.type]??''):'';if(!text)text=row.map(v=>String(v??'')).join(' | ');bookingRecords.push({id,name,dateKey:dk,text:text.trim(),source:file.name,sheet})}}if(found)recognized++;else skipped++}if(!bookingRecords.length)throw new Error(`총 ${files.length}개 파일·${totalSheets}개 시트에서 차트번호/이름/예약일/예약내용 머리글을 찾지 못했습니다.`);const dates=[...new Set(bookingRecords.map(r=>r.dateKey).filter(Boolean))].sort();document.getElementById('fileNameC').textContent=files.length===1?files[0].name:`${files.length}개 파일 · ${files.slice(0,3).map(f=>f.name).join(', ')}${files.length>3?' 외 '+(files.length-3)+'개':''}`;document.getElementById('bookingInfo').textContent=`예약 ${bookingRecords.length.toLocaleString()}건 인식${dates.length?` · ${dates[0]} ~ ${dates[dates.length-1]}`:''}${skipped?` · 제외 파일 ${skipped}개`:''}`;setStatus('statusC',`${recognized}/${files.length}개 로드 완료`,'ok');if(confA&&dbA.length)runReservationCheck(true);else showAuditView('reservation',true)}catch(err){console.error(err);bookingRecords=[];bookingResults=[];setStatus('statusC','파일 인식 실패','err');document.getElementById('bookingInfo').textContent=err.message;showAuditView('reservation',true);alert('예약 엑셀 인식 오류\n'+err.message)}finally{setLoading(false)}}
+function bookingFlagsGlobal(text){const s=norm(text).toLowerCase();return{follow:s.includes('주사경과'),treat:/주사치료|연골주사|신경주사|블럭주사|block|c-arm|carm/.test(s),recommend:s.includes('권장')}}
+function bookingCodeGlobal(list){if(!list.length)return 1;const followRows=[],treatRows=[];let recommend=false;list.forEach((r,i)=>{const q=bookingFlagsGlobal(r.text);if(q.follow)followRows.push(i);if(q.treat)treatRows.push(i);recommend||=q.recommend});const hasDistinctPair=followRows.some(f=>treatRows.some(t=>t!==f));if(hasDistinctPair)return 4;if(treatRows.length)return 3;if(followRows.length)return 2;if(recommend)return 6;return 5}
+function codeLabel(n){return({1:'예약 없음',2:'주사경과',3:'주사치료',4:'경과+치료',5:'기타 예약',6:'권장'})[n]||'미입력'}
+function selectedAuditDate(){if(selectedSheet?.dateKey)return selectedSheet.dateKey;const dates=[...new Set(recordsForSelectedDay().map(r=>r.dateKey).filter(Boolean))].sort();if(dates.length===1)return dates[0];if(selectedSheet?.day){const now=new Date();return `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(selectedSheet.day)}`}return null}
+function runReservationCheck(scroll=false){if(!bookingRecords.length||!confA||!dbA.length){bookingResults=[];showAuditView('reservation',scroll);return}const base=selectedAuditDate(),filtered=bookingRecords.filter(r=>!base||!r.dateKey||r.dateKey>base),byId=new Map(),byName=new Map();for(const r of filtered){if(r.id){if(!byId.has(r.id))byId.set(r.id,[]);byId.get(r.id).push(r)}if(r.name){const n=norm(r.name);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(r)}}const patients=new Map();for(const row of dbA){const id=normId(row[confA.map.id]),name=String(row[confA.map.name]??'').trim();if(!id&&!name)continue;const key=id?'i:'+id:'n:'+norm(name),old=confA.map.resCode!==undefined?Number(String(row[confA.map.resCode]??'').match(/[1-6]/)?.[0]||0):0;if(!patients.has(key))patients.set(key,{id,name,oldCode:old||null});else if(!patients.get(key).oldCode&&old)patients.get(key).oldCode=old}bookingResults=[...patients.values()].map((p,i)=>{let list=p.id?(byId.get(p.id)||[]):[],matched=list.length?'차트번호':'';if(!list.length&&p.name){list=byName.get(norm(p.name))||[];matched=list.length?'이름':''}const auto=bookingCodeGlobal(list);return{...p,no:i+1,list,auto,edit:auto,matched}});const bad=bookingResults.filter(r=>r.oldCode!==r.edit).length;document.getElementById('resAll').textContent=bookingResults.length.toLocaleString();document.getElementById('resOk').textContent=(bookingResults.length-bad).toLocaleString();document.getElementById('resBad').textContent=bad.toLocaleString();document.getElementById('resNone').textContent=bookingResults.filter(r=>r.auto===1).length.toLocaleString();document.getElementById('reservationPeriod').textContent=`검수일 ${base||'확인 불가'} 이후 · 대상 예약 ${filtered.length.toLocaleString()}건`;renderReservationRows();showAuditView('reservation',scroll)}
+function renderReservationRows(){const body=document.getElementById('reservationBody'),q=norm(document.getElementById('reservationSearch').value).toLowerCase(),filter=document.getElementById('reservationFilter').value,html=[];for(const r of bookingResults){const bad=r.oldCode!==r.edit;if(filter==='bad'&&!bad||filter==='ok'&&bad)continue;if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;const dates=[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),texts=r.list.map(x=>x.text).filter(Boolean).join(' / ');html.push(`<tr class="${bad?'row-err':''}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td>${r.oldCode??'미입력'} ${r.oldCode?codeLabel(r.oldCode):''}</td><td><b>${r.auto}</b> ${codeLabel(r.auto)}</td><td><select class="code-select" data-res-no="${r.no}">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===r.edit?'selected':''}>${n} ${codeLabel(n)}</option>`).join('')}</select></td><td><span class="result-badge ${bad?'r-err':'r-ok'}">${bad?'불일치':'일치'}</span></td><td>${r.list.length}</td><td>${esc(dates||'-')}</td><td title="${esc(texts)}" style="max-width:320px;overflow:hidden;text-overflow:ellipsis">${esc(texts||'-')}</td><td>${esc(r.matched||'예약 없음')}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('reservationEmpty').classList.toggle('hidden',html.length>0)}
+function runReservationSummaryOnly(){const bad=bookingResults.filter(r=>r.oldCode!==r.edit).length;document.getElementById('resOk').textContent=(bookingResults.length-bad).toLocaleString();document.getElementById('resBad').textContent=bad.toLocaleString()}
+function clearBookingOnly(){bookingRecords=[];bookingResults=[];document.getElementById('fileC').value='';document.getElementById('fileNameC').textContent='';document.getElementById('bookingInfo').textContent='파일을 선택하면 인식 상태가 여기에 표시됩니다.';setStatus('statusC','업로드 가능','ok');showAuditView(resultRows.length?'payment':'reservation')}
+function exportReservationResult(){if(!bookingResults.length){alert('저장할 예약 검수 결과가 없습니다.');return}const rows=bookingResults.map(r=>({'차트번호':r.id,'환자명':r.name,'기존 예약코드':r.oldCode??'','자동 판정코드':r.auto,'최종 수정코드':r.edit,'결과':r.oldCode===r.edit?'일치':'불일치','예약 건수':r.list.length,'예약일':[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),'예약 내용':r.list.map(x=>x.text).filter(Boolean).join(' / '),'매칭 기준':r.matched||'예약 없음'}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'예약코드 검수');XLSX.writeFile(wb,`JINSUL_예약코드검수_${selectedAuditDate()||'전체'}.xlsx`)}
+document.getElementById('reservationBody').onchange=e=>{if(!e.target.matches('.code-select'))return;const r=bookingResults.find(x=>x.no===Number(e.target.dataset.resNo));if(r){r.edit=Number(e.target.value);runReservationSummaryOnly();renderReservationRows()}};
 function sheetDay(name){const m=String(name).trim().match(/(?:^|\D)(\d{1,2})(?:일)?(?:\D|$)/);if(!m)return null;const d=Number(m[1]);return d>=1&&d<=31?d:null}
 function renderCalendar(){
-  const grid=document.getElementById('calendarGrid');grid.innerHTML='';const dayMap=new Map();sheetNamesA.forEach(n=>{const d=sheetDay(n);if(d&&!dayMap.has(d))dayMap.set(d,n)});
-  const today=new Date().getDate(),days=[...dayMap.keys()].sort((a,b)=>a-b),initial=dayMap.has(today)?today:days[0];
-  for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(bitRecords.length)runCheck()};grid.appendChild(btn)}
-  document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(bitRecords.length)runCheck()})
+const grid=document.getElementById('calendarGrid');grid.innerHTML='';const dayMap=new Map();sheetNamesA.forEach(n=>{const d=sheetDay(n);if(d&&!dayMap.has(d))dayMap.set(d,n)});
+const today=new Date().getDate(),days=[...dayMap.keys()].sort((a,b)=>a-b),initial=dayMap.has(today)?today:days[0];
+for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(bitRecords.length)runCheck()};grid.appendChild(btn)}
+document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(bitRecords.length)runCheck()})
 }
 async function loadSheetData(sheetName,day){
-  selectedSheet={name:sheetName,day,dateKey:sheetDateKey(sheetName)};
-  try{setStatus('statusA',`${day}일 분석 중`,'loading');let parsed=cacheA.get(sheetName);if(!parsed){setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`선택한 ${day}일 시트만 불러옵니다.`);await yieldUI();const raw=readOneSheet(fileABuffer,sheetName,0);const res=getMap(raw,'A');if(!res)throw new Error('차트번호/환자명/금액 항목을 찾지 못했습니다.');parsed={data:raw.slice(res.index+1),map:res.map};cacheA.set(sheetName,parsed)}confA=parsed;dbA=parsed.data;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';setStatus('statusA',`${day}일 준비 완료`,'ok')}catch(err){console.error(err);dbA=[];confA=null;setStatus('statusA','시트 항목 인식 실패','err');alert(`${day}일 시트를 읽는 중 오류가 발생했습니다.\n${err.message}`)}finally{setLoading(false)}
+selectedSheet={name:sheetName,day,dateKey:sheetDateKey(sheetName)};
+try{setStatus('statusA',`${day}일 분석 중`,'loading');let parsed=cacheA.get(sheetName);if(!parsed){setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`선택한 ${day}일 시트만 불러옵니다.`);await yieldUI();const raw=readOneSheet(fileABuffer,sheetName,0);const res=getMap(raw,'A');if(!res)throw new Error('차트번호/환자명/금액 항목을 찾지 못했습니다.');parsed={data:raw.slice(res.index+1),map:res.map};cacheA.set(sheetName,parsed)}confA=parsed;dbA=parsed.data;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';setStatus('statusA',`${day}일 준비 완료`,'ok');if(bookingRecords.length)runReservationCheck()}catch(err){console.error(err);dbA=[];confA=null;setStatus('statusA','시트 항목 인식 실패','err');alert(`${day}일 시트를 읽는 중 오류가 발생했습니다.\n${err.message}`)}finally{setLoading(false)}
 }
 function recordsForSelectedDay(){
-  if(!selectedSheet)return bitRecords;
-  const exact=selectedSheet.dateKey;
-  if(exact&&bitRecords.some(r=>r.dateKey===exact))return bitRecords.filter(r=>r.dateKey===exact);
-  const dated=bitRecords.filter(r=>r.day===selectedSheet.day);
-  if(dated.length)return dated;
-  const undated=bitRecords.filter(r=>!r.dateKey);
-  return undated.length===bitRecords.length?bitRecords:undated;
+if(!selectedSheet)return bitRecords;
+const exact=selectedSheet.dateKey;
+if(exact&&bitRecords.some(r=>r.dateKey===exact))return bitRecords.filter(r=>r.dateKey===exact);
+const dated=bitRecords.filter(r=>r.day===selectedSheet.day);
+if(dated.length)return dated;
+const undated=bitRecords.filter(r=>!r.dateKey);
+return undated.length===bitRecords.length?bitRecords:undated;
 }
 function runCheck(){
-  if(!confA||!dbA.length||!bitRecords.length)return;
-  const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set(),selectedB=recordsForSelectedDay();
-  dbA.forEach(row=>{const id=normId(row[confA.map.id]),name=row[confA.map.name];if(!id||!name)return;allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});const e=aggA.get(id),amt=toN(row[confA.map.total]),met=parseInt(row[confA.map.method]);if([1,4,6].includes(met))e.cash+=amt;else if([2,5].includes(met))e.card+=amt;e.total+=amt;if(met)e.methods.add(met)});
-  selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
-  let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
-  [...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{const a=aggA.get(id),b=aggB.get(id);const misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}else if(!a&&b){result='수납대장 미기재';isError=true}else if(a&&b){const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;if(dTotal!==0&&!misuOnly){result='총액오류';isError=true}else if((Math.abs(dCash)>tolerance||Math.abs(dCard)>tolerance)&&!misuOnly){result='수단오류';isError=true}else if(misuOnly)result='미수대기'}const row={id,name:a?.name||b?.name||'',aCash:a?.cash||0,bCash:b?.cash||0,aCard:a?.card||0,bCard:b?.card||0,aTotal:a?.total||0,bTotal:b?.total||0,result,isError,methods:a?[...a.methods]:[],misuOnly};if(!misuOnly){totals.aCash+=row.aCash;totals.aCard+=row.aCard;totals.aTotal+=row.aTotal;totals.bCash+=row.bCash;totals.bCard+=row.bCard;totals.bTotal+=row.bTotal}resultRows.push(row)});
-  updateSummary(totals);renderRows();document.getElementById('resultPanel').classList.remove('hidden-panel');
-  const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
+if(!confA||!dbA.length||!bitRecords.length)return;
+const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set(),selectedB=recordsForSelectedDay();
+dbA.forEach(row=>{const id=normId(row[confA.map.id]),name=row[confA.map.name];if(!id||!name)return;allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});const e=aggA.get(id),amt=toN(row[confA.map.total]),met=parseInt(row[confA.map.method]);if([1,4,6].includes(met))e.cash+=amt;else if([2,5].includes(met))e.card+=amt;e.total+=amt;if(met)e.methods.add(met)});
+selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
+let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
+[...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{const a=aggA.get(id),b=aggB.get(id);const misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}else if(!a&&b){result='수납대장 미기재';isError=true}else if(a&&b){const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;if(dTotal!==0&&!misuOnly){result='총액오류';isError=true}else if((Math.abs(dCash)>tolerance||Math.abs(dCard)>tolerance)&&!misuOnly){result='수단오류';isError=true}else if(misuOnly)result='미수대기'}const row={id,name:a?.name||b?.name||'',aCash:a?.cash||0,bCash:b?.cash||0,aCard:a?.card||0,bCard:b?.card||0,aTotal:a?.total||0,bTotal:b?.total||0,result,isError,methods:a?[...a.methods]:[],misuOnly};if(!misuOnly){totals.aCash+=row.aCash;totals.aCard+=row.aCard;totals.aTotal+=row.aTotal;totals.bCash+=row.bCash;totals.bCard+=row.bCard;totals.bTotal+=row.bTotal}resultRows.push(row)});
+updateSummary(totals);renderRows();const keepView=currentAuditView;if(bookingRecords.length)runReservationCheck(false);showAuditView(keepView==='reservation'&&bookingRecords.length?'reservation':'payment');
+const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
 }
 function updateSummary(t){const all=resultRows.length,err=resultRows.filter(r=>r.isError).length,misu=resultRows.filter(r=>r.result==='미수대기').length,ok=resultRows.filter(r=>r.result==='정상').length;document.getElementById('kpiAll').textContent=all;document.getElementById('kpiOk').textContent=ok;document.getElementById('kpiErr').textContent=err;document.getElementById('kpiTotalErr').textContent=resultRows.filter(r=>r.result==='총액오류').length;document.getElementById('kpiMethodErr').textContent=resultRows.filter(r=>r.result==='수단오류').length;document.getElementById('kpiMisu').textContent=misu;document.getElementById('rateOk').textContent=(all?ok/all*100:0).toFixed(1)+'%';document.getElementById('rateErr').textContent=(all?err/all*100:0).toFixed(1)+'%';[['sumCashA',t.aCash],['sumCashB',t.bCash],['sumCardA',t.aCard],['sumCardB',t.bCard],['sumTotalA',t.aTotal],['sumTotalB',t.bTotal]].forEach(([id,v])=>document.getElementById(id).textContent=won(v));setDiff('diffCash',t.aCash-t.bCash);setDiff('diffCard',t.aCard-t.bCard);setDiff('diffTotal',t.aTotal-t.bTotal)}
 function setDiff(id,v){const el=document.getElementById(id);el.textContent=won(v);el.className=v===0?'diff-zero':'diff-bad'}
 function renderRows(){const body=document.getElementById('resultBody');const q=norm(document.getElementById('searchInput').value).toLowerCase(),filter=document.getElementById('resultFilter').value;const html=[];for(const r of resultRows){if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;if(filter==='error'&&!r.isError)continue;if(!['all','error'].includes(filter)&&r.result!==filter)continue;const rowClass=r.isError?'row-err':r.result==='미수대기'?'row-misu':'';const cls=r.result==='정상'?'r-ok':r.result==='미수대기'?'r-wait':'r-err';const methods=r.methods.length?r.methods.map(m=>`<span class="badge m${m}">${esc(methodNames[m]||m)}</span>`).join(' '):'<span class="badge">기록없음</span>';html.push(`<tr class="${rowClass}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td class="${r.aCash!==r.bCash?'diff-text':''}">${r.aCash.toLocaleString()}</td><td>${r.bCash.toLocaleString()}</td><td class="${r.aCard!==r.bCard?'diff-text':''}">${r.aCard.toLocaleString()}</td><td>${r.bCard.toLocaleString()}</td><td class="${r.aTotal!==r.bTotal?'diff-text':''}">${r.aTotal.toLocaleString()}</td><td>${r.bTotal.toLocaleString()}</td><td><span class="result-badge ${cls}">${esc(r.result)}</span></td><td>${methods}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('emptyResult').classList.toggle('hidden',html.length>0)}
 function applyFilter(){renderRows()}
-function exportResult(){if(!resultRows.length){alert('저장할 검수 결과가 없습니다.');return}const rows=resultRows.map(r=>({'차트번호':r.id,'환자명':r.name,'현금+이체(수납대장)':r.aCash,'현금+이체(프로그램)':r.bCash,'카드(수납대장)':r.aCard,'카드(프로그램)':r.bCard,'총액(수납대장)':r.aTotal,'총액(프로그램)':r.bTotal,'검수결과':r.result,'수단상세':r.methods.map(m=>methodNames[m]||m).join(', ')}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'검수결과');const day=selectedSheet?.dateKey?'_'+selectedSheet.dateKey:selectedSheet?.day?`_${selectedSheet.day}일`:'';XLSX.writeFile(wb,`JINSUL_수납검수${day}.xlsx`)}
-function resetAll(){currentWbA=confA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();dbA=[];bitRecords=[];bitFiles=[];bitDates.clear();selectedSheet=null;resultRows=[];['fileA','fileB'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB','bitDateInfo'].forEach(id=>document.getElementById(id).textContent='');['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';setLoading(false)}
+function activateFilterButton(groupId,btn){document.querySelectorAll(`#${groupId} .filter-tab`).forEach(b=>b.classList.toggle('active',b===btn))}
+function setResultFilter(value,btn){document.getElementById('resultFilter').value=value;activateFilterButton('resultFilterTabs',btn);renderRows()}
+function setReservationFilter(value,btn){document.getElementById('reservationFilter').value=value;activateFilterButton('reservationFilterTabs',btn);renderReservationRows()}
+function exportResult(){if(!resultRows.length){alert('저장할 검수 결과가 없습니다.');return}const rows=resultRows.map(r=>({'차트번호':r.id,'환자명':r.name,'현금+이체(수납대장)':r.aCash,'현금+이체(프로그램)':r.bCash,'카드(수납대장)':r.aCard,'카드(프로그램)':r.bCard,'총액(수납대장)':r.aTotal,'총액(프로그램)':r.bTotal,'검수결과':r.result,'수단상세':r.methods.map(m=>methodNames[m]||m).join(', ')}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'수납 검수결과');if(bookingResults.length){const rr=bookingResults.map(r=>({'차트번호':r.id,'환자명':r.name,'기존 예약코드':r.oldCode??'','자동 판정코드':r.auto,'최종 수정코드':r.edit,'결과':r.oldCode===r.edit?'일치':'불일치','예약 건수':r.list.length,'예약일':[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),'예약 내용':r.list.map(x=>x.text).filter(Boolean).join(' / ')}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rr),'예약코드 검수')}const day=selectedSheet?.dateKey?'_'+selectedSheet.dateKey:selectedSheet?.day?`_${selectedSheet.day}일`:'';XLSX.writeFile(wb,`JINSUL_수납검수${day}.xlsx`)}
+function resetAll(){currentWbA=confA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();dbA=[];bitRecords=[];bitFiles=[];bitDates.clear();bookingRecords=[];bookingResults=[];selectedSheet=null;resultRows=[];currentAuditView='payment';['fileA','fileB','fileC'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB','bitDateInfo','fileNameC','bookingInfo'].forEach(id=>document.getElementById(id).textContent='');['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});setStatus('statusC','업로드 가능','ok');document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('reservationPanel').classList.add('hidden-panel');document.getElementById('auditTabs').classList.add('hidden');document.getElementById('auditViewEmpty').classList.add('hidden');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';document.querySelectorAll('#resultFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));document.getElementById('reservationFilter').value='bad';document.querySelectorAll('#reservationFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='bad'));setLoading(false)}
 </script>
 </body>
 </html>
