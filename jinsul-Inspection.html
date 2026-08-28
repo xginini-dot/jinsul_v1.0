@@ -35,7 +35,7 @@ html[data-theme="dark"] .util-btn{background:#111827;color:#e5e7eb;border-color:
 .company .en{font-size:23px;letter-spacing:.36em;font-weight:900;color:#f7f1e8}.company .ko{margin-top:6px;font-size:13px;letter-spacing:.10em;color:rgba(247,241,232,.78);font-weight:700}
 .hero h1{margin:0 0 9px;font-size:34px;letter-spacing:-.045em}.hero p{margin:0;opacity:.88;line-height:1.65;max-width:900px;font-size:14px}
 .hero-badge{align-self:stretch;min-width:178px;border:1px solid rgba(215,200,174,.38);background:rgba(255,255,255,.06);border-radius:22px;padding:18px;display:flex;flex-direction:column;justify-content:center;text-align:right;color:#eadfcc;font-weight:900}.hero-badge span{font-size:11px;color:rgba(234,223,204,.72);margin-bottom:7px;letter-spacing:.12em}
-.guide{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.guide-item{padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:rgba(255,253,250,.92);box-shadow:0 10px 28px rgba(17,24,39,.05);font-size:13px;color:var(--muted);line-height:1.6}.guide-item b{display:block;color:var(--text);font-size:14px;margin-bottom:4px}.guide-item b::before{content:'•';color:var(--gold);margin-right:7px}
+.guide{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.guide-item{padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:rgba(255,253,250,.92);box-shadow:0 10px 28px rgba(17,24,39,.05);font-size:13px;color:var(--muted);line-height:1.6}.guide-item b{display:block;color:var(--text);font-size:14px;margin-bottom:7px}.guide-item b::before{content:'•';color:var(--gold);margin-right:7px}.guide-route{display:grid;grid-template-columns:42px 1fr;gap:7px;margin-top:4px}.guide-route em{font-style:normal;color:#8a7355;font-size:11px;font-weight:900;padding-top:2px}
 html[data-theme="dark"] .guide-item{background:var(--panel)}
 .upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.upload-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px}.upload-card{transition:.18s}.upload-card:hover{transform:translateY(-2px);border-color:rgba(185,165,138,.7)}
 .upload-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.upload-head h3{font-size:16px;margin:0;color:var(--text)}.status{font-size:12px;font-weight:850;color:var(--muted)}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:#8d7254}
@@ -83,9 +83,9 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 </section>
 <br>
 <section class="guide">
-<div class="guide-item"><b>비트컴퓨터</b>접수 → 일일집계 → 기간 선택 → 엑셀 다운로드 · 기간/단일파일 다중 업로드 지원</div>
-<div class="guide-item"><b>의사랑</b>원무과 외래 → 마감 → 일일마감 → 마감 → 엑셀출력</div>
-<div class="guide-item"><b>이지스</b>접수 → 일일수납현황 → 조회기간(당일) → 조회(F5) → 엑셀(F10)</div>
+<div class="guide-item"><b>비트컴퓨터</b><div class="guide-route"><em>수납</em><span>접수 → 일일집계 → 기간 선택 → 엑셀 다운로드</span></div><div class="guide-route"><em>예약</em><span>접수 → 조회 → 예약환자조회 → 3개월치 엑셀 추출</span></div></div>
+<div class="guide-item"><b>의사랑</b><div class="guide-route"><em>수납</em><span>원무과 외래 → 마감 → 일일마감 → 마감 → 엑셀출력</span></div><div class="guide-route"><em>예약</em><span>접수 → 예약현황 → 주별 → 1주일 단위로 총 4~8주 엑셀 추출</span></div></div>
+<div class="guide-item"><b>이지스</b><div class="guide-route"><em>수납</em><span>접수 → 일일수납현황 → 조회기간(당일) → 조회(F5) → 엑셀(F10)</span></div></div>
 </section>
 <br>
 <section class="upload-grid">
@@ -100,7 +100,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 </div>
 <div class="upload-card">
 <div class="upload-head"><h3>3. 예약 엑셀 <span class="optional">선택</span></h3><span id="statusC" class="status ok">업로드 가능</span></div>
-<div class="dropzone" id="dropC"><strong>의사랑·비트 예약 엑셀 업로드</strong><span>파일을 선택하면 즉시 자동 분석됩니다. 여러 파일을 한 번에 선택할 수 있습니다.</span><input type="file" id="fileC" class="native-file" accept=".xlsx,.xls,.xlsm,.csv" multiple onchange="handleBookingInput(this)"><div id="fileNameC" class="file-name"></div><div id="bookingInfo" class="file-date-info">파일을 선택하면 인식 상태가 여기에 표시됩니다.</div></div>
+<div class="dropzone" id="dropC"><strong>의사랑·비트 예약 엑셀 업로드</strong><span>클릭하거나 파일을 끌어다 놓으세요. 여러 파일을 한 번에 선택할 수 있습니다.</span><div id="fileNameC" class="file-name"></div><div id="bookingInfo" class="file-date-info"></div><input type="file" id="fileC" accept=".xlsx,.xls,.xlsm,.csv" multiple hidden></div>
 </div>
 </section>
 <br>
@@ -210,7 +210,7 @@ input.onchange=e=>{const fs=[...(e.target.files||[])];if(fs.length)handler(multi
 }
 setupDropZone('dropA','fileA',handleFileA,false);
 setupDropZone('dropB','fileB',handleFilesB,true);
-setupBookingDropZone();
+setupDropZone('dropC','fileC',handleFilesC,true);
 function setupBookingDropZone(){const zone=document.getElementById('dropC'),input=document.getElementById('fileC');zone.tabIndex=0;zone.setAttribute('role','group');zone.onclick=e=>{if(e.target.closest('input,button'))return;input.click()};zone.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('input,button')){e.preventDefault();input.click()}};zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};zone.ondragleave=()=>zone.classList.remove('drag-over');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const files=[...(e.dataTransfer.files||[])];if(files.length)handleFilesC(files)}}
 async function handleBookingInput(input){const files=[...(input?.files||[])];if(!files.length){setStatus('statusC','파일을 선택해주세요','err');document.getElementById('bookingInfo').textContent='선택된 예약 엑셀이 없습니다.';return}if(bookingBusy)return;bookingBusy=true;document.getElementById('fileNameC').textContent=`선택 파일 ${files.length}개 · ${files.slice(0,3).map(f=>f.name).join(', ')}${files.length>3?' 외 '+(files.length-3)+'개':''}`;document.getElementById('bookingInfo').textContent='파일 선택 확인 · 예약 데이터 분석을 시작합니다.';setStatus('statusC','분석 시작','loading');try{await handleFilesC(files)}finally{bookingBusy=false}}
 function readSheetNames(buffer){const wb=XLSX.read(new Uint8Array(buffer),{type:'array',bookSheets:true,bookProps:false});return wb.SheetNames||[]}
