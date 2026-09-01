@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -235,6 +236,19 @@
     #dateRangeStatus,.card p[style],#oneshotMeta{
       color:#a7a7a7 !important;
     }
+    .is-hidden{display:none!important}
+    .date-recognition-actions{display:flex;justify-content:flex-end;margin-top:10px}
+    .date-recognition-detail{margin-top:10px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.035)}
+    #dailyCard.daily-collapsed .daily-action{display:none}
+    #duplicateInitialCard.duplicate-collapsed .duplicate-action,#duplicateInitialCard.duplicate-collapsed .duplicate-body{display:none}
+    .duplicate-summary{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.035);color:var(--muted);font-size:12px}
+    #duplicateInitialOutput{width:100%;overflow:auto;border:1px solid var(--border);border-radius:16px}
+    #duplicateInitialOutput table{min-width:980px}
+    .duplicate-class-select{min-width:96px;padding:7px 9px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text)}
+    .day90-count{color:var(--gold2);font-size:.72em;font-weight:900;vertical-align:middle}
+    .daily-table-wrap{width:100%;overflow:auto;border-radius:16px;border:1px solid var(--border)}
+    .daily-table-wrap table{min-width:1120px}
+    .daily-table-wrap th,.daily-table-wrap td{white-space:nowrap}
     .warn,#warning{
       margin-top:12px;
       color:var(--danger);
@@ -1425,7 +1439,13 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
             <button id="oneshotDlBtn" class="secondary" disabled>1회자 다운로드</button>
           </div>
         </div>
-        <p id="dateRangeStatus" style="color:var(--muted);font-size:12px;margin:10px 0 0">통계 기간: 전체</p>
+        <div class="date-recognition-actions">
+          <button id="toggleDateRecognitionBtn" class="secondary mini-btn" type="button" aria-expanded="false" onclick="toggleDateRecognition()">외래 파일 날짜 인식 보기</button>
+        </div>
+        <div id="dateRecognitionDetail" class="date-recognition-detail is-hidden">
+          <p id="dateRangeStatus" style="color:var(--muted);font-size:12px;margin:0">통계 기간: 전체</p>
+          <p id="dateRecognitionMeta" style="color:var(--muted);font-size:12px;margin:6px 0 0">파일을 업로드하면 인식한 날짜 열과 범위를 표시합니다.</p>
+        </div>
         <p style="color:var(--muted);font-size:12px;margin:8px 0 0">⚠️ 모든 데이터는 브라우저 내에서만 처리됩니다.</p>
       </div>
     </div>
@@ -1484,6 +1504,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
           <p>의사랑 통계와 동일한 순서와 그룹으로 초진·재진·전체 환자 지표를 확인합니다.</p>
         </div>
         <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="summaryVisitToggleBtn" onclick="toggleSummaryVisitDistribution()" type="button" aria-pressed="false">1~8회 상세보기</button>
           <button class="secondary mini-btn" id="summaryMemoToggleBtn" onclick="toggleSummaryMemoColumn()" type="button">기타 메모 보기</button>
           <button class="secondary mini-btn" onclick="copyTable('summaryOutput')" type="button">표 복사</button>
           <button class="secondary mini-btn" onclick="downloadTableXlsx('summaryOutput','비트_요약통계.xlsx')" type="button">엑셀 다운로드</button>
@@ -1491,6 +1512,43 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
         </div>
       </div>
       <div id="summaryOutput"></div>
+    </div>
+
+    <div class="card table-card daily-collapsed" id="dailyCard">
+      <div class="section-head">
+        <div>
+          <h2>📅 일자별 상세 통계</h2>
+          <p>선택 기간의 초진·재진·주사·총내원 현황을 날짜별로 확인합니다.</p>
+        </div>
+        <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="dailyToggleBtn" onclick="toggleDailyStats()" type="button" aria-expanded="false">펼쳐보기</button>
+          <button class="secondary mini-btn daily-action" onclick="copyTable('dailyOutput')" type="button">표 복사</button>
+          <button class="secondary mini-btn daily-action" onclick="downloadTableXlsx('dailyOutput','비트_일자별상세통계.xlsx')" type="button">엑셀 다운로드</button>
+          <button class="secondary mini-btn daily-action" onclick="toggleTableFullscreen('dailyCard')" type="button">전체화면</button>
+        </div>
+      </div>
+      <div id="dailyBody" class="is-hidden">
+        <div id="dailyOutput" class="daily-table-wrap"><p style="color:var(--muted);font-size:12px;padding:14px;margin:0">외래환자 파일을 업로드하면 결과가 표시됩니다.</p></div>
+      </div>
+    </div>
+
+    <div class="card table-card duplicate-collapsed" id="duplicateInitialCard">
+      <div class="section-head">
+        <div>
+          <h2>👥 중복 초진·신환 목록</h2>
+          <p>직전 진료일부터 90일 이상이면 90초진, 90일 미만이면 재진으로 자동 판정하며 직접 변경할 수 있습니다.</p>
+        </div>
+        <div class="table-actions no-print">
+          <button class="secondary mini-btn" id="duplicateInitialToggleBtn" onclick="toggleDuplicateInitial()" type="button" aria-expanded="false">펼쳐보기</button>
+          <button class="secondary mini-btn duplicate-action" onclick="copyTable('duplicateInitialOutput')" type="button">표 복사</button>
+          <button class="secondary mini-btn duplicate-action" onclick="downloadTableXlsx('duplicateInitialOutput','비트_중복초진신환_산정처리.xlsx')" type="button">엑셀 다운로드</button>
+          <button class="secondary mini-btn duplicate-action" onclick="toggleTableFullscreen('duplicateInitialCard')" type="button">전체화면</button>
+        </div>
+      </div>
+      <div class="duplicate-body">
+        <div class="duplicate-summary" id="duplicateInitialSummary"><span><strong>0명</strong> · 확인할 중복 초진·신환</span><span>90일 이상 재등록은 정상 90초진</span></div>
+        <div id="duplicateInitialOutput"><p style="color:var(--muted);font-size:12px;padding:14px;margin:0">외래환자 파일을 업로드하면 결과가 표시됩니다.</p></div>
+      </div>
     </div>
 
     <div class="card table-card" id="ageCard">
@@ -1577,7 +1635,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 <script>
   /* ================= 공통 유틸 ================= */
   const AGE_ORDER = ["0~10대","20대","30대","40대","50대","60대","70대이상","전체"];
-  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'', summaryMemoVisible:false, summaryTableRows:null, ageMemoVisible:false, ageTableRows:null };
+  const state = { df:null, col:null, oneshotRows:[], oneshotNewRows:[], oneshotMode:'all', routeMap:null, rawData:null, keyword:'', summaryMemoVisible:false, summaryVisitExtended:false, summaryTableRows:null, ageMemoVisible:false, ageTableRows:null, dailyRows:[], initialClassOverrides:{}, duplicateInitialRows:[] };
 
   function pad2(n){ return String(n).padStart(2,'0'); }
   
@@ -1649,6 +1707,47 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     }
     const label = `${start || '처음'} ~ ${end || '마지막'}`;
     el.textContent = hasDateCol ? `통계 기간: ${label} (${kept}건 / 전체 ${total}건)` : `통계 기간: ${label} · 내원일 컬럼을 찾지 못해 전체로 계산됨`;
+  }
+
+  function toggleDateRecognition(){
+    const detail=document.getElementById('dateRecognitionDetail');
+    const btn=document.getElementById('toggleDateRecognitionBtn');
+    if(!detail||!btn) return;
+    detail.classList.toggle('is-hidden');
+    const hidden=detail.classList.contains('is-hidden');
+    btn.textContent=hidden?'외래 파일 날짜 인식 보기':'외래 파일 날짜 인식 숨기기';
+    btn.setAttribute('aria-expanded',String(!hidden));
+  }
+
+  function toggleDailyStats(){
+    const body=document.getElementById('dailyBody');
+    const card=document.getElementById('dailyCard');
+    const btn=document.getElementById('dailyToggleBtn');
+    if(!body||!card||!btn) return;
+    body.classList.toggle('is-hidden');
+    const hidden=body.classList.contains('is-hidden');
+    card.classList.toggle('daily-collapsed',hidden);
+    btn.textContent=hidden?'펼쳐보기':'접기';
+    btn.setAttribute('aria-expanded',String(!hidden));
+  }
+
+  function toggleDuplicateInitial(){
+    const card=document.getElementById('duplicateInitialCard');
+    const btn=document.getElementById('duplicateInitialToggleBtn');
+    if(!card||!btn)return;
+    card.classList.toggle('duplicate-collapsed');
+    const hidden=card.classList.contains('duplicate-collapsed');
+    btn.textContent=hidden?'펼쳐보기':'접기';
+    btn.setAttribute('aria-expanded',String(!hidden));
+  }
+
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function applyDuplicateInitialClass(chart,date,value){
+    state.initialClassOverrides[`${chart}__${date}`]=value;
+    rerunWithCurrentOptions();
   }
 
   function rerunWithCurrentOptions(){
@@ -1922,7 +2021,76 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
   }
   function isFirstVisitType(v){
     const t=normalizeVisitType(v);
-    return t==='신환' || t==='90일초진';
+    return t==='신환' || t==='초진' || t==='90일초진';
+  }
+
+  function daysBetweenVisits(a,b){
+    const da=new Date(a+'T12:00:00'),db=new Date(b+'T12:00:00');
+    return isNaN(da)||isNaN(db)?null:Math.round((db-da)/86400000);
+  }
+
+  function previousSortedDate(sorted,date){
+    let lo=0,hi=sorted.length;
+    while(lo<hi){const mid=(lo+hi)>>>1;if(sorted[mid]<date)lo=mid+1;else hi=mid;}
+    return lo>0?sorted[lo-1]:'';
+  }
+
+  function applyDuplicateInitialReview(rows,col){
+    const output=document.getElementById('duplicateInitialOutput');
+    const summary=document.getElementById('duplicateInitialSummary');
+    if(!col?.['내원일']||!col?.['차트']||!col?.['초재']){
+      state.duplicateInitialRows=[];
+      if(output)output.innerHTML='<p style="color:var(--muted);font-size:12px;padding:14px;margin:0">중복 판정에 필요한 차트번호·내원일·초재 구분 열을 찾지 못했습니다.</p>';
+      return;
+    }
+    const visitsByChart=new Map(),eventsByChart=new Map();
+    for(const row of rows){
+      const chart=String(row[col['차트']]??'').trim(),date=normalizeVisitDate(row[col['내원일']]);
+      if(!chart||!date)continue;
+      if(!visitsByChart.has(chart))visitsByChart.set(chart,new Set());
+      visitsByChart.get(chart).add(date);
+      const original=normalizeVisitType(row[col['초재']]);
+      row.__jinsulOriginalVisitType=original;
+      if(isFirstVisitType(original)){
+        if(!eventsByChart.has(chart))eventsByChart.set(chart,new Map());
+        if(!eventsByChart.get(chart).has(date))eventsByChart.get(chart).set(date,{chart,date,original,name:col['이름']?String(row[col['이름']]??'').trim():'',room:col['과']?String(row[col['과']]??'').trim():''});
+      }
+    }
+    const review=[],classByKey=new Map();
+    for(const [chart,eventMap] of eventsByChart){
+      const events=[...eventMap.values()].sort((a,b)=>a.date.localeCompare(b.date));
+      if(events.length<2)continue;
+      const visits=[...(visitsByChart.get(chart)||[])].sort();
+      events.forEach((event,index)=>{
+        const previous=previousSortedDate(visits,event.date);
+        const gap=previous?daysBetweenVisits(previous,event.date):null;
+        let autoClass;
+        if(event.original==='90일초진')autoClass='90초진';
+        else if(index===0&&!previous)autoClass='초진';
+        else if(gap!==null&&gap>=90)autoClass='90초진';
+        else autoClass='재진';
+        const finalClass=state.initialClassOverrides[`${chart}__${event.date}`]||autoClass;
+        classByKey.set(`${chart}__${event.date}`,finalClass);
+        review.push({...event,previous,gap,autoClass,finalClass});
+      });
+    }
+    for(const row of rows){
+      const chart=String(row[col['차트']]??'').trim(),date=normalizeVisitDate(row[col['내원일']]);
+      const finalClass=classByKey.get(`${chart}__${date}`);
+      if(finalClass)row[col['초재']]=finalClass;
+    }
+    state.duplicateInitialRows=review;
+    const patients=new Set(review.map(r=>r.chart));
+    const needs=new Set(review.filter(r=>r.autoClass==='재진').map(r=>r.chart));
+    const auto90=review.filter(r=>r.autoClass==='90초진').length;
+    if(summary)summary.innerHTML=`<span><strong>${needs.size}명 확인 필요</strong> · 중복 등록 ${patients.size}명</span><span>자동 90초진 ${auto90}건 · 90일 이상은 정상 초진 산정</span>`;
+    if(!output)return;
+    if(!review.length){output.innerHTML='<p style="color:var(--muted);font-size:12px;padding:14px;margin:0">서로 다른 날짜에 중복 등록된 초진·신환 환자가 없습니다.</p>';return;}
+    const body=review.map(r=>{
+      const chartData=escapeHtml(encodeURIComponent(r.chart));
+      return `<tr><td>${escapeHtml(r.chart)}</td><td>${escapeHtml(r.name||'-')}</td><td>${r.date}</td><td>${r.previous||'-'}</td><td>${r.gap===null?'-':r.gap+'일'}</td><td>${r.autoClass}</td><td><select class="duplicate-class-select" data-chart="${chartData}" data-date="${r.date}" onchange="applyDuplicateInitialClass(decodeURIComponent(this.dataset.chart),this.dataset.date,this.value)"><option value="초진" ${r.finalClass==='초진'?'selected':''}>초진</option><option value="90초진" ${r.finalClass==='90초진'?'selected':''}>90초진</option><option value="재진" ${r.finalClass==='재진'?'selected':''}>재진</option></select></td></tr>`;
+    }).join('');
+    output.innerHTML=`<table><thead><tr><th>차트번호</th><th>환자명</th><th>등록일</th><th>직전 진료일</th><th>간격</th><th>자동 판정</th><th>최종 산정</th></tr></thead><tbody>${body}</tbody></table>`;
   }
 
   /* ================= 메인 계산 로직 ================= */
@@ -1964,11 +2132,23 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 
     const startDate = document.getElementById('startDateInput') ? document.getElementById('startDateInput').value : '';
     const endDate = document.getElementById('endDateInput') ? document.getElementById('endDateInput').value : '';
+    // 전체 업로드 자료의 직전 진료일까지 확인한 뒤 선택 기간 통계를 계산합니다.
+    applyDuplicateInitialReview(df,col);
     let workingDf = df;
     if((startDate || endDate) && col['내원일']){
       workingDf = df.filter(r=>isDateInRange(r[col['내원일']], startDate, endDate));
     }
     updateDateRangeStatus(startDate, endDate, df.length, workingDf.length, !!col['내원일']);
+    const recognition=document.getElementById('dateRecognitionMeta');
+    if(recognition){
+      const recognizedDates=col['내원일'] ? df.map(r=>normalizeVisitDate(r[col['내원일']])).filter(Boolean).sort() : [];
+      recognition.textContent=col['내원일'] && recognizedDates.length
+        ? `인식 날짜 열: ${col['내원일']} · ${recognizedDates[0]} ~ ${recognizedDates[recognizedDates.length-1]} · ${recognizedDates.length}건`
+        : '내원일·진료일·방문일에 해당하는 날짜 열을 찾지 못했습니다.';
+      const detail=document.getElementById('dateRecognitionDetail'), btn=document.getElementById('toggleDateRecognitionBtn');
+      detail?.classList.add('is-hidden');
+      if(btn){btn.textContent='외래 파일 날짜 인식 보기';btn.setAttribute('aria-expanded','false');}
+    }
 
     // 초진 검증: 신환 + 90일초진 원자료 건수를 콘솔에 명확히 표시
     try{
@@ -1981,6 +2161,9 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     function makeStat(rows, label, ageGroup="전체"){
       const 초진 = rows.filter(r=>isFirstVisitType(r[col['초재']]));
       const 초진차트=[...new Set(초진.map(r=>r[col['차트']]).filter(Boolean))];
+      const episodeKey=r=>`${r[col['차트']]}__${col['내원일']?normalizeVisitDate(r[col['내원일']]):''}`;
+      const 초진에피소드=[...new Set(초진.filter(r=>r[col['차트']]).map(episodeKey))];
+      const 초진90에피소드=[...new Set(초진.filter(r=>normalizeVisitType(r[col['초재']])==='90일초진'&&r[col['차트']]).map(episodeKey))];
 
       // 재진 통계: 신환/90일초진을 제외한 나머지 기록을 재진으로 계산합니다.
       const 재진 = rows.filter(r=>{
@@ -2017,6 +2200,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 
       const 주사 = 초진.filter(r=>(r[col['마취']]||'').includes('●'));
       const 주사차트=[...new Set(주사.map(r=>r[col['차트']]))];
+      const 주사에피소드=[...new Set(주사.filter(r=>r[col['차트']]).map(episodeKey))];
       const 주사기록 = rows.filter(r=>주사차트.includes(r[col['차트']]));
 
       const 주사횟수={}, 내원횟수={};
@@ -2069,7 +2253,9 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       const adultFirst = adultRows.filter(r=>isFirstVisitType(r[col['초재']]));
       const adultFirstCharts=[...new Set(adultFirst.map(r=>r[col['차트']]))];
       const adultInj = adultFirst.filter(r=>(r[col['마취']]||'').includes('●'));
-      const adultRate = adultFirstCharts.length ? Math.round((adultInj.length/adultFirstCharts.length)*100)+'%' : '-';
+      const adultFirstEpisodes=[...new Set(adultFirst.filter(r=>r[col['차트']]).map(episodeKey))];
+      const adultInjEpisodes=[...new Set(adultInj.filter(r=>r[col['차트']]).map(episodeKey))];
+      const adultRate = adultFirstEpisodes.length ? Math.round((adultInjEpisodes.length/adultFirstEpisodes.length)*100)+'%' : '-';
 
       // 전체 통계: 총환자수는 차트번호 고유수, 총내원수는 전체 내원 기록 수입니다.
       const 총환자차트 = [...new Set(rows.map(r=>r[col['차트']]).filter(Boolean))];
@@ -2083,8 +2269,9 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
         "총환자수": 총환자수,
         "총내원수": 총내원수,
         "환자당 평균 내원횟수": 환자당평균내원,
-        "초진": 초진차트.length,
-        "초진주사": 주사.length,
+        "초진": 초진에피소드.length,
+        "90일초진수": 초진90에피소드.length,
+        "초진주사": 주사에피소드.length,
         "재진 환자수": 재진차트.length,
         "재진": 재진.length,
         "재진 주사차트": 재진주사차트.length,
@@ -2095,9 +2282,9 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
         "초진 주사 재진율": injRevisitRate,
         "초진 주사 평균 횟수": 평균주사,
         "초진 주사 평균 내원 횟수": 평균내원,
-        "초진 주사처방률": `${초진차트.length ? Math.round((주사.length/초진차트.length)*100) : 0}%`,
-        "(18세▲)초진": adultFirstCharts.length,
-        "(18세▲)초진주사": adultInj.length,
+        "초진 주사처방률": `${초진에피소드.length ? Math.round((주사에피소드.length/초진에피소드.length)*100) : 0}%`,
+        "(18세▲)초진": adultFirstEpisodes.length,
+        "(18세▲)초진주사": adultInjEpisodes.length,
         "(18세▲)초진주사처방률": adultRate,
 
         "초진 평균 내원횟수": 평균초진내원,
@@ -2107,6 +2294,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
         "3회 내원 비율": `${visitRatio(3)}%`,
         "4회 내원 비율": `${visitRatio(4)}%`,
         "5회 내원 비율": `${visitRatio(5)}%`,
+        "5회 이상 내원 비율": `${visitRatio(5,"ge")}%`,
         "6회 내원 비율": `${visitRatio(6)}%`,
         "7회 내원 비율": `${visitRatio(7)}%`,
         "8회 이상 내원 비율": `${visitRatio(8,"ge")}%`,
@@ -2152,6 +2340,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     });
 
     renderSummaryTable(result);
+    renderDailyStats(buildDailyStats(workingDf,col,startDate,endDate));
     renderAgeTable(result);
     renderKPIAndChart(result);
     renderFirstInjectionTable(workingDf, col);
@@ -2180,7 +2369,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     const dateCol=col['내원일'] || null;
     const roomCol=col['과'] || null;
 
-    const isFirstType=value=>['신환','90일초진'].includes(String(value ?? '').trim());
+    const isFirstType=value=>isFirstVisitType(value);
     const roomValue=row=>roomCol ? String(row[roomCol] ?? '').trim() : '';
 
     /*
@@ -2309,7 +2498,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 
     // 진료실 목록도 요약 통계와 같은 원본 행 기준으로 생성합니다.
     const rooms=col['과'] ? [...new Set(rows
-      .filter(r=>['신환','90일초진'].includes(String(r[col['초재']] ?? '').trim()))
+      .filter(r=>isFirstVisitType(r[col['초재']]))
       .map(r=>String(r[col['과']] ?? '').trim())
       .filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true})) : [];
 
@@ -2338,6 +2527,68 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     const hidden=body.style.display==='none';
     body.style.display=hidden ? 'block' : 'none';
     btn.textContent=hidden ? '통계 숨기기' : '통계 보기';
+  }
+
+  const DAILY_COLUMNS=[
+    '일자','초진환자수','초진주사수','초진주사처방률','재진','재진주사처방률','총내원수',
+    '(18세▲)초진환자수','(18세▲)초진 주사수','(18세▲)초진 주사처방률'
+  ];
+
+  function buildDailyStats(rows,col,startDate='',endDate=''){
+    if(!col?.['내원일']||!col?.['차트']||!col?.['초재']) return [];
+    const buckets=new Map();
+    const bucket=date=>{
+      if(!buckets.has(date)) buckets.set(date,{first:new Set(),firstInj:new Set(),returnRows:0,returnCharts:new Set(),returnInj:new Set(),visits:0,adultFirst:new Set(),adultFirstInj:new Set()});
+      return buckets.get(date);
+    };
+    (rows||[]).forEach(row=>{
+      const date=normalizeVisitDate(row[col['내원일']]);
+      const id=String(row[col['차트']]??'').trim();
+      if(!date||!id) return;
+      const b=bucket(date), first=isFirstVisitType(row[col['초재']]);
+      const injected=col['마취']&&String(row[col['마취']]??'').includes('●');
+      b.visits++;
+      if(first){
+        b.first.add(id);
+        if(injected)b.firstInj.add(id);
+        const age=col['연령']?parseAge(row[col['연령']]):null;
+        if(age!==null&&age>=18){b.adultFirst.add(id);if(injected)b.adultFirstInj.add(id);}
+      }else{
+        b.returnRows++;
+        b.returnCharts.add(id);
+        if(injected)b.returnInj.add(id);
+      }
+    });
+    const dates=[];
+    if(startDate&&endDate){
+      const cursor=new Date(startDate+'T12:00:00'),last=new Date(endDate+'T12:00:00');
+      for(let guard=0;cursor<=last&&guard<4000;guard++){
+        dates.push(`${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}-${pad2(cursor.getDate())}`);
+        cursor.setDate(cursor.getDate()+1);
+      }
+    }else dates.push(...[...buckets.keys()].sort());
+    const pct=(num,den)=>`${den?Math.round(num/den*100):0}%`;
+    return dates.map(date=>{
+      const b=buckets.get(date)||{first:new Set(),firstInj:new Set(),returnRows:0,returnCharts:new Set(),returnInj:new Set(),visits:0,adultFirst:new Set(),adultFirstInj:new Set()};
+      return {
+        '일자':date,'초진환자수':b.first.size,'초진주사수':b.firstInj.size,'초진주사처방률':pct(b.firstInj.size,b.first.size),
+        '재진':b.returnRows,'재진주사처방률':pct(b.returnInj.size,b.returnCharts.size),'총내원수':b.visits,
+        '(18세▲)초진환자수':b.adultFirst.size,'(18세▲)초진 주사수':b.adultFirstInj.size,'(18세▲)초진 주사처방률':pct(b.adultFirstInj.size,b.adultFirst.size)
+      };
+    });
+  }
+
+  function renderDailyStats(rows){
+    state.dailyRows=rows||[];
+    const out=document.getElementById('dailyOutput');
+    if(!out)return;
+    if(!rows.length){
+      out.innerHTML='<p style="color:var(--muted);font-size:12px;padding:14px;margin:0">날짜 열을 찾지 못했거나 선택 기간에 데이터가 없습니다.</p>';
+      return;
+    }
+    const head='<tr>'+DAILY_COLUMNS.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+    const body=rows.map(r=>'<tr>'+DAILY_COLUMNS.map(c=>`<td>${r[c]??'-'}</td>`).join('')+'</tr>').join('');
+    out.innerHTML=`<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
   }
 
   function renderSummaryTable(allRows){
@@ -2373,10 +2624,14 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       {key:"2회 내원 비율", label:"2회 내원율", group:"distribution"},
       {key:"3회 내원 비율", label:"3회 내원율", group:"distribution"},
       {key:"4회 내원 비율", label:"4회 내원율", group:"distribution"},
-      {key:"5회 내원 비율", label:"5회 내원율", group:"distribution"},
-      {key:"6회 내원 비율", label:"6회 내원율", group:"distribution"},
-      {key:"7회 내원 비율", label:"7회 내원율", group:"distribution"},
-      {key:"8회 이상 내원 비율", label:"8회 이상 내원율", group:"distribution"},
+      ...(state.summaryVisitExtended ? [
+        {key:"5회 내원 비율", label:"5회 내원율", group:"distribution"},
+        {key:"6회 내원 비율", label:"6회 내원율", group:"distribution"},
+        {key:"7회 내원 비율", label:"7회 내원율", group:"distribution"},
+        {key:"8회 이상 내원 비율", label:"8회 이상 내원율", group:"distribution"}
+      ] : [
+        {key:"5회 이상 내원 비율", label:"5회 이상 내원율", group:"distribution"}
+      ]),
       {key:"특정 키워드 포함 메모 수", label:"특정 키워드 포함 메모 수", group:"etc"}
     ].filter(c=>rows.some(r=>c.key in r) && (state.summaryMemoVisible || c.key!=="특정 키워드 포함 메모 수"));
 
@@ -2428,7 +2683,13 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     const columnHead='<tr class="summary-column-row">'+secondCols.map(c=>`<th>${c.label}</th>`).join('')+'</tr>';
     const tbody=rows.map(r=>{
       const rowClass=r["구분"]==="전체" ? 'summary-total-row' : (r["구분"]==="진료실 평균(균등)" ? 'summary-average-row' : '');
-      return `<tr class="${rowClass}"><td>${formatCell(r["구분"])}</td>`+secondCols.map(c=>`<td>${formatCell(r[c.key])}</td>`).join('')+'</tr>';
+      return `<tr class="${rowClass}"><td>${formatCell(r["구분"])}</td>`+secondCols.map(c=>{
+        if(c.key==='초진'){
+          const n90=Number(r['90일초진수'])||0;
+          return `<td>${formatCell(r[c.key])}${n90?` <span class="day90-count">(${n90})</span>`:''}</td>`;
+        }
+        return `<td>${formatCell(r[c.key])}</td>`;
+      }).join('')+'</tr>';
     }).join('');
 
     document.getElementById('summaryOutput').innerHTML=`<table><thead>${groupHead}${columnHead}</thead><tbody>${tbody}</tbody></table>`;
@@ -2437,6 +2698,17 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       memoBtn.textContent=state.summaryMemoVisible ? '기타 메모 숨기기' : '기타 메모 보기';
       memoBtn.classList.toggle('active', state.summaryMemoVisible);
     }
+    const visitBtn=document.getElementById('summaryVisitToggleBtn');
+    if(visitBtn){
+      visitBtn.textContent=state.summaryVisitExtended?'1~5회로 간단히':'1~8회 상세보기';
+      visitBtn.setAttribute('aria-pressed',String(state.summaryVisitExtended));
+      visitBtn.classList.toggle('active',state.summaryVisitExtended);
+    }
+  }
+
+  function toggleSummaryVisitDistribution(){
+    state.summaryVisitExtended=!state.summaryVisitExtended;
+    if(state.summaryTableRows) renderSummaryTable(state.summaryTableRows);
   }
 
   function toggleSummaryMemoColumn(){
@@ -3105,7 +3377,8 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       const avgVisit = overall['환자당 평균 내원횟수'];
       const avgEl = document.getElementById('kpiAvgVisitPerPatient');
       if(avgEl) avgEl.textContent = `환자당 평균 내원횟수 ${formatCell(avgVisit)}회`;
-      document.getElementById('kpiFirst').textContent=formatCell(overall['초진']);
+      const n90=Number(overall['90일초진수'])||0;
+      document.getElementById('kpiFirst').innerHTML=`${formatCell(overall['초진'])}${n90?` <span class="day90-count">(${n90})</span>`:''}`;
       document.getElementById('kpiInjRate').textContent=formatCell(overall['초진 주사처방률']);
       document.getElementById('kpiVisitAvg').textContent=formatCell(overall['초진 평균 내원횟수']);
       document.getElementById('kpiRevisit').textContent=formatCell(overall['초진 재내원율']);
@@ -3190,6 +3463,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     const file=e.target.files[0];
     const keyword=document.getElementById('keywordInput').value.trim().toLowerCase();
     if(!file) return;
+    state.initialClassOverrides={};
     setLoading(true);
 
     try{
