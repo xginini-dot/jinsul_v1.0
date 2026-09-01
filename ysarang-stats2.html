@@ -1393,6 +1393,8 @@
             /* ===== 중복 초진·신환 목록 ===== */
             .duplicate-card.is-hidden .duplicate-body { display:none; }
             .daily-card.is-hidden .daily-body { display:none; }
+            .file-diagnostic-detail.is-hidden { display:none; }
+            .file-diagnostic-actions { margin-top:10px; display:flex; justify-content:flex-end; }
             #dailyOutput { width:100%; overflow:auto; border-radius:18px; border:1px solid rgba(190,169,139,.24); background:rgba(255,255,255,.045); }
             #dailyOutput table { min-width:1120px; table-layout:auto; }
             #dailyOutput th,#dailyOutput td { font-size:11px!important; padding:10px 8px!important; white-space:nowrap!important; }
@@ -2828,6 +2830,7 @@ body.jinsul-analysis-open{
                 <h3 class="card-title">
                     <span>📊 요약 통계 (전체 / 각 진료실)</span>
                     <span class="toolbar no-print">
+                        <button type="button" id="toggleVisitDistributionBtn" onclick="toggleVisitDistribution()" aria-pressed="false">1~8회 상세보기</button>
                         <button type="button" onclick="copyTable('#output')">📋 복사</button>
                         <button type="button" onclick="openFullTable('#output', '요약 통계')">전체화면</button>
                     </span>
@@ -3264,6 +3267,7 @@ body.jinsul-analysis-open{
                     const cnt3 = total.filter(r => r.visit === 3).length;
                     const cnt4 = total.filter(r => r.visit === 4).length;
                     const cnt5 = total.filter(r => r.visit === 5).length;
+                    const cnt5p = total.filter(r => r.visit >= 5).length;
                     const cnt6 = total.filter(r => r.visit === 6).length;
                     const cnt7 = total.filter(r => r.visit === 7).length;
                     const cnt8p = total.filter(r => r.visit >= 8).length;
@@ -3299,6 +3303,7 @@ body.jinsul-analysis-open{
                         '3회 내원율': toPercent(cnt3, total.length),
                         '4회 내원율': toPercent(cnt4, total.length),
                         '5회 내원율': toPercent(cnt5, total.length),
+                        '5회 이상 내원율': toPercent(cnt5p, total.length),
                         '6회 내원율': toPercent(cnt6, total.length),
                         '7회 내원율': toPercent(cnt7, total.length),
                         '8회 이상 내원율': toPercent(cnt8p, total.length)
@@ -3455,7 +3460,7 @@ body.jinsul-analysis-open{
             function colGroup(headers) {
                 return '<colgroup>' + headers.map(h => `<col class="${colClass(h)}">`).join('') + '</colgroup>';
             }
-            const SUMMARY_COLUMNS = [
+            const SUMMARY_BASE_COLUMNS = [
                 '구분',
                 '초진환자수',
                 '초진 주사환자수',
@@ -3471,7 +3476,12 @@ body.jinsul-analysis-open{
                 '(18세▲)초진 주사수',
                 '(18세▲)초진 주사처방률',
                 '초진 평균 내원횟수',
-                '초진 재내원율',
+                '초진 재내원율'
+            ];
+            const SUMMARY_VISIT_COMPACT_COLUMNS = [
+                '1회 내원율','2회 내원율','3회 내원율','4회 내원율','5회 이상 내원율'
+            ];
+            const SUMMARY_VISIT_EXTENDED_COLUMNS = [
                 '1회 내원율',
                 '2회 내원율',
                 '3회 내원율',
@@ -3481,6 +3491,11 @@ body.jinsul-analysis-open{
                 '7회 내원율',
                 '8회 이상 내원율'
             ];
+            const SUMMARY_COLUMNS = [...SUMMARY_BASE_COLUMNS, ...SUMMARY_VISIT_EXTENDED_COLUMNS];
+
+            function visibleSummaryColumns(){
+                return [...SUMMARY_BASE_COLUMNS, ...(window.__showExtendedVisitDistribution ? SUMMARY_VISIT_EXTENDED_COLUMNS : SUMMARY_VISIT_COMPACT_COLUMNS)];
+            }
 
             function orderedSummaryRows(data) {
                 return (data || []).map(row => {
@@ -3493,13 +3508,13 @@ body.jinsul-analysis-open{
 
             function renderSummaryTable(data) {
                 if (!data.length) return '';
-                const headers = SUMMARY_COLUMNS;
+                const headers = visibleSummaryColumns();
                 const groups = [
                     { label:'환자 현황', span:8, cls:'group-basic' },
                     { label:'초진 주사치료', span:3, cls:'group-injection' },
                     { label:'18세 이상', span:3, cls:'group-adult' },
                     { label:'초진 성과', span:2, cls:'group-performance' },
-                    { label:'초진 내원분포', span:8, cls:'group-distribution' }
+                    { label:'초진 내원분포', span:headers.length-SUMMARY_BASE_COLUMNS.length, cls:'group-distribution' }
                 ];
                 const groupHead = '<tr class="summary-group-head">' + groups.map(g => `<th colspan="${g.span}" class="${g.cls}">${g.label}</th>`).join('') + '</tr>';
                 const columnHead = '<tr class="summary-column-head">' + headers.map(h => `<th class="${colClass(h)}">${h}</th>`).join('') + '</tr>';
@@ -3511,6 +3526,15 @@ body.jinsul-analysis-open{
                     return `<td class="${colClass(h)}">${fmt(row[h] ?? '-')}</td>`;
                 }).join('') + '</tr>').join('');
                 return `<table class="summary-table no-scroll-fit">${colGroup(headers)}<thead>${groupHead}${columnHead}</thead><tbody>${tbody}</tbody></table>`;
+            }
+
+            function toggleVisitDistribution(){
+                window.__showExtendedVisitDistribution=!window.__showExtendedVisitDistribution;
+                const extended=!!window.__showExtendedVisitDistribution;
+                const btn=$('#toggleVisitDistributionBtn');
+                btn.textContent=extended?'1~5회로 간단히':'1~8회 상세보기';
+                btn.setAttribute('aria-pressed',String(extended));
+                if(window.__latestStats) $('#output').innerHTML=renderSummaryTable(window.__latestStats);
             }
 
             function renderTableSimple(data) {
@@ -3708,6 +3732,15 @@ body.jinsul-analysis-open{
                 const hidden=card.classList.contains('is-hidden');
                 btn.textContent=hidden?'펼쳐보기':'접기';
                 btn.setAttribute('aria-expanded', String(!hidden));
+            }
+
+            function toggleFileDiagnosticDetail(){
+                const detail=$('#fileDiagnosticDetail'), btn=$('#toggleFileDiagnosticBtn');
+                if(!detail||!btn)return;
+                detail.classList.toggle('is-hidden');
+                const hidden=detail.classList.contains('is-hidden');
+                btn.textContent=hidden?'파일 날짜 인식 보기':'파일 날짜 인식 숨기기';
+                btn.setAttribute('aria-expanded',String(!hidden));
             }
 
             const DAILY_COLUMNS = [
@@ -4128,7 +4161,8 @@ body.jinsul-analysis-open{
                     diagnostic.innerHTML = `<strong>파일 인식 완료</strong><br>` +
                       `외래 내원 ${outpatientRows.toLocaleString()}건 · 초진/신환 ${initialCandidates.size.toLocaleString()}명 · 주사 환자일 ${injectionRows.toLocaleString()}건<br>` +
                       `진료실별 초진: ${Object.entries(roomCounts).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).map(([k,v])=>`${k} ${v}명`).join(' · ') || '없음'}` +
-                      `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;line-height:1.65">` +
+                      `<div class="file-diagnostic-actions"><button type="button" id="toggleFileDiagnosticBtn" class="ghost" onclick="toggleFileDiagnosticDetail()" aria-expanded="false">파일 날짜 인식 보기</button></div>` +
+                      `<div id="fileDiagnosticDetail" class="file-diagnostic-detail is-hidden" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;line-height:1.65">` +
                       `<strong>외래 파일 날짜 인식</strong><br>${outpatientDateInfo}<br>` +
                       `<strong>주사 파일 엑셀 내원일 인식</strong><br>${injectionDateInfo}</div>`;
                 }
@@ -4317,6 +4351,9 @@ body.jinsul-analysis-open{
                 $('#summary').style.display = 'none';
                 $('#downloadBtn').disabled = true;
                 window.__latestDailyStats = [];
+                window.__showExtendedVisitDistribution = false;
+                $('#toggleVisitDistributionBtn').textContent = '1~8회 상세보기';
+                $('#toggleVisitDistributionBtn').setAttribute('aria-pressed','false');
             }
             );
             $('#toggleCompactBtn').addEventListener('click', () => {
