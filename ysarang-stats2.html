@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -1390,6 +1391,11 @@
 
             /* ===== 중복 초진·신환 목록 ===== */
             .duplicate-card.is-hidden .duplicate-body { display:none; }
+            .daily-card.is-hidden .daily-body { display:none; }
+            #dailyOutput { width:100%; overflow:auto; border-radius:18px; border:1px solid rgba(190,169,139,.24); background:rgba(255,255,255,.045); }
+            #dailyOutput table { min-width:1120px; table-layout:auto; }
+            #dailyOutput th,#dailyOutput td { font-size:11px!important; padding:10px 8px!important; white-space:nowrap!important; }
+            body.light #dailyOutput { background:rgba(255,255,255,.62)!important; border-color:rgba(159,135,100,.28)!important; }
             .duplicate-summary {
                 display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
                 margin-bottom:12px; padding:13px 15px; border:1px solid var(--border);
@@ -2828,6 +2834,21 @@ body.jinsul-analysis-open{
                 <div id="output"></div>
             </div>
 
+            <div class="card table-card daily-card is-hidden" id="dailyCard">
+                <h3 class="card-title">
+                    <span>📅 일자별 상세 통계</span>
+                    <span class="toolbar no-print">
+                        <button type="button" id="toggleDailyBtn" onclick="toggleDailyStats()" aria-expanded="false">펼쳐보기</button>
+                        <button type="button" onclick="copyTable('#dailyOutput')">📋 복사</button>
+                        <button type="button" onclick="openFullTable('#dailyOutput', '일자별 상세 통계')">전체화면</button>
+                    </span>
+                </h3>
+                <div class="daily-body">
+                    <p class="hint" style="margin:0 0 12px">조회기간의 날짜별 초진·재진·주사·총내원 현황입니다. 같은 환자의 같은 날짜 중복 행은 1건으로 계산합니다.</p>
+                    <div id="dailyOutput"><p class="hint" style="padding:16px;margin:0">파일을 업로드하고 통계를 계산하면 결과가 표시됩니다.</p></div>
+                </div>
+            </div>
+
             <div class="card table-card duplicate-card is-hidden" id="duplicateInitialCard">
                 <h3 class="card-title">
                     <span>👥 중복 초진·신환 목록</span>
@@ -3680,6 +3701,67 @@ body.jinsul-analysis-open{
                 btn.textContent=card.classList.contains('is-hidden')?'펼쳐보기':'접기';
             }
 
+            function toggleDailyStats(){
+                const card=$('#dailyCard'), btn=$('#toggleDailyBtn');
+                card.classList.toggle('is-hidden');
+                const hidden=card.classList.contains('is-hidden');
+                btn.textContent=hidden?'펼쳐보기':'접기';
+                btn.setAttribute('aria-expanded', String(!hidden));
+            }
+
+            const DAILY_COLUMNS = [
+                '일자','초진환자수','초진주사수','초진주사처방률','재진','재진주사처방률','총내원수',
+                '(18세▲)초진환자수','(18세▲)초진 주사수','(18세▲)초진 주사처방률'
+            ];
+
+            function buildDailyStats(initialEvents, outpatientRecords, injectionDates, startDate='', endDate=''){
+                const observed=new Set();
+                (initialEvents||[]).forEach(e=>observed.add(e.date));
+                (outpatientRecords||[]).forEach(r=>observed.add(r.date));
+                const dates=[];
+                if(startDate && endDate){
+                    const cursor=new Date(startDate+'T12:00:00'), last=new Date(endDate+'T12:00:00');
+                    for(let guard=0; cursor<=last && guard<4000; guard++){
+                        dates.push(cursor.toISOString().slice(0,10));
+                        cursor.setDate(cursor.getDate()+1);
+                    }
+                }else{
+                    dates.push(...observed);
+                    dates.sort();
+                }
+                return dates.map(date=>{
+                    const initial=(initialEvents||[]).filter(e=>e.date===date && (e.finalClass==='초진'||e.finalClass==='90초진'));
+                    const initialIds=new Set(initial.map(e=>e.id));
+                    const initialInjectionIds=new Set(initial.filter(e=>injectionDates.get(e.id)?.has(date)).map(e=>e.id));
+                    const adultInitial=initial.filter(e=>Number.isFinite(Number(e.age)) && Number(e.age)>=18);
+                    const adultIds=new Set(adultInitial.map(e=>e.id));
+                    const adultInjectionIds=new Set(adultInitial.filter(e=>injectionDates.get(e.id)?.has(date)).map(e=>e.id));
+                    const dayRows=(outpatientRecords||[]).filter(r=>r.date===date);
+                    const visitIds=new Set(dayRows.map(r=>r.id));
+                    const revisitIds=new Set(dayRows.filter(r=>r.isRevisit).map(r=>r.id));
+                    const revisitInjectionIds=new Set([...revisitIds].filter(id=>injectionDates.get(id)?.has(date)));
+                    return {
+                        '일자':date,
+                        '초진환자수':initialIds.size,
+                        '초진주사수':initialInjectionIds.size,
+                        '초진주사처방률':toPercent(initialInjectionIds.size,initialIds.size),
+                        '재진':revisitIds.size,
+                        '재진주사처방률':toPercent(revisitInjectionIds.size,revisitIds.size),
+                        '총내원수':visitIds.size,
+                        '(18세▲)초진환자수':adultIds.size,
+                        '(18세▲)초진 주사수':adultInjectionIds.size,
+                        '(18세▲)초진 주사처방률':toPercent(adultInjectionIds.size,adultIds.size)
+                    };
+                });
+            }
+
+            function renderDailyTable(rows){
+                if(!rows.length) return '<p class="hint" style="padding:16px;margin:0">선택한 기간에 표시할 날짜가 없습니다.</p>';
+                const head='<tr>'+DAILY_COLUMNS.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+                const body=rows.map(r=>'<tr>'+DAILY_COLUMNS.map(h=>`<td>${r[h] ?? '-'}</td>`).join('')+'</tr>').join('');
+                return `<table class="daily-table"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+            }
+
             function escapeDuplicateText(value){
                 return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
             }
@@ -4101,8 +4183,10 @@ body.jinsul-analysis-open{
                 const visitSummaryMap = buildOverallVisitSummary(outpatientRecords, injectionDates);
                 const stats = computeStats(merged, visitSummaryMap);
                 const byAge = computeAgeBandStats(merged);
+                const dailyStats = buildDailyStats(allInitialEvents, outpatientRecords, injectionDates, startDate, endDate);
                 window.__latestStats = stats;
                 window.__latestByAge = byAge;
+                window.__latestDailyStats = dailyStats;
                 window.__latestPatients = Array.from(patients.values());
                 renderCharts(stats);
                 const overall = stats.find(s => s['구분'] === '전체');
@@ -4121,6 +4205,7 @@ body.jinsul-analysis-open{
                     $('#m-revisit-avg').textContent = fmt(overall['재진 평균 내원횟수']);
                 }
                 $('#output').innerHTML = renderSummaryTable(stats);
+                $('#dailyOutput').innerHTML = renderDailyTable(dailyStats);
 
                 const conversion = computeFirstInjectionConversion(merged, standardizedInjections, standardizedVisits, startDate, endDate);
                 window.__latestConversion = conversion;
@@ -4137,6 +4222,7 @@ body.jinsul-analysis-open{
                 $('#downloadBtn').onclick = () => exportXlsx([
                     {name:'요약_진료실', rows:orderedSummaryRows(stats)},
                     {name:'연령대별_진료실', rows:byAge},
+                    {name:'일자별_상세통계', rows:dailyStats},
                     {name:'초진후_최초주사전환', rows:conversion.rows},
                     {name:'중복_초진신환', rows:duplicateInitialRows}
                 ]);
@@ -4176,12 +4262,17 @@ body.jinsul-analysis-open{
                 $('#startDate').value = '';
                 $('#endDate').value = '';
                 $('#output').innerHTML = '';
+                $('#dailyOutput').innerHTML = '<p class="hint" style="padding:16px;margin:0">파일을 업로드하고 통계를 계산하면 결과가 표시됩니다.</p>';
+                $('#dailyCard').classList.add('is-hidden');
+                $('#toggleDailyBtn').textContent = '펼쳐보기';
+                $('#toggleDailyBtn').setAttribute('aria-expanded','false');
                 $('#byAgeOutput').innerHTML = '';
                 $('#conversionOutput').innerHTML = '<p class="hint" style="padding:16px;margin:0">파일을 업로드하고 통계를 계산하면 결과가 표시됩니다.</p>';
                 $('#conversionMethod').innerHTML = '';
                 $('#conversionDownloadBtn').disabled = true;
                 $('#summary').style.display = 'none';
                 $('#downloadBtn').disabled = true;
+                window.__latestDailyStats = [];
             }
             );
             $('#toggleCompactBtn').addEventListener('click', () => {
