@@ -78,7 +78,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <h1>수납·예약코드 통합 검수</h1>
 <p>수납대장과 병원 프로그램을 비교하고, 예약 엑셀 업로드 시 예약코드까지 함께 검수합니다.</p>
 </div>
-<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.6 · Data Verified</small></div>
+<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.7 · Date Sheet Fixed</small></div>
 </div>
 </section>
 <br>
@@ -419,9 +419,31 @@ function runReservationSummaryOnly(){const bad=bookingResults.filter(r=>r.oldCod
 function clearBookingOnly(){bookingRecords=[];bookingResults=[];document.getElementById('fileC').value='';document.getElementById('fileNameC').textContent='';document.getElementById('bookingInfo').textContent='파일을 선택하면 인식 상태가 여기에 표시됩니다.';setStatus('statusC','업로드 가능','ok');showAuditView(resultRows.length?'payment':'reservation')}
 function exportReservationResult(){if(!bookingResults.length){alert('저장할 예약 검수 결과가 없습니다.');return}const rows=bookingResults.map(r=>({'차트번호':r.id,'환자명':r.name,'기존 예약코드':r.oldCode??'','자동 판정코드':r.auto,'최종 수정코드':r.edit,'결과':r.oldCode===r.edit?'일치':'불일치','예약 건수':r.list.length,'예약일':[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),'예약 내용':r.list.map(x=>x.text).filter(Boolean).join(' / '),'매칭 기준':r.matched||'예약 없음'}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'예약코드 검수');XLSX.writeFile(wb,`JINSUL_예약코드검수_${selectedAuditDate()||'전체'}.xlsx`)}
 document.getElementById('reservationBody').onchange=e=>{if(!e.target.matches('.code-select'))return;const r=bookingResults.find(x=>x.no===Number(e.target.dataset.resNo));if(r){r.edit=Number(e.target.value);runReservationSummaryOnly();renderReservationRows()}};
-function sheetDay(name){const m=String(name).trim().match(/(?:^|\D)(\d{1,2})(?:일)?(?:\D|$)/);if(!m)return null;const d=Number(m[1]);return d>=1&&d<=31?d:null}
+/* 날짜 시트 판별: '2주통계'를 2일로 오인하지 않고 실제 '2' 시트를 최우선 사용 */
+function sheetDayCandidate(name){
+  const s=String(name??'').trim();
+  let m=s.match(/^(\d{1,2})$/);
+  if(m){const d=Number(m[1]);return d>=1&&d<=31?{day:d,rank:100,type:'숫자 날짜시트'}:null}
+  m=s.match(/^(\d{1,2})일$/);
+  if(m){const d=Number(m[1]);return d>=1&&d<=31?{day:d,rank:95,type:'일자 날짜시트'}:null}
+  m=s.match(/^(?:20\d{2}[._\/-])?(\d{1,2})[._\/-](\d{1,2})(?:일)?$/);
+  if(m){const d=Number(m[2]);return d>=1&&d<=31?{day:d,rank:90,type:'날짜형 시트'}:null}
+  /* 월/주 통계, 양식, 수정본, 사본 등은 날짜 버튼 후보에서 제외 */
+  if(/주통계|월통계|통계|양식|수정|사본|예약|template|summary/i.test(s))return null;
+  m=s.match(/(?:^|\D)(\d{1,2})(?:일)?(?:\D|$)/);
+  if(!m)return null;
+  const d=Number(m[1]);
+  return d>=1&&d<=31?{day:d,rank:20,type:'보조 날짜시트'}:null;
+}
+function sheetDay(name){const c=sheetDayCandidate(name);return c?c.day:null}
 function renderCalendar(){
-const grid=document.getElementById('calendarGrid');grid.innerHTML='';const dayMap=new Map();sheetNamesA.forEach(n=>{const d=sheetDay(n);if(d&&!dayMap.has(d))dayMap.set(d,n)});
+const grid=document.getElementById('calendarGrid');grid.innerHTML='';
+const dayMap=new Map(),dayRank=new Map();
+sheetNamesA.forEach(n=>{
+  const c=sheetDayCandidate(n);if(!c)return;
+  const prev=dayRank.get(c.day)??-1;
+  if(c.rank>prev){dayRank.set(c.day,c.rank);dayMap.set(c.day,n)}
+});
 const today=new Date().getDate(),days=[...dayMap.keys()].sort((a,b)=>a-b),initial=dayMap.has(today)?today:days[0];
 for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(bitRecords.length)runCheck()};grid.appendChild(btn)}
 document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(bitRecords.length)runCheck()})
@@ -449,7 +471,7 @@ try{
   }
   confA=parsed;dbA=parsed.data;
   document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';
-  setStatus('statusA',`${day}일 준비 완료 · 헤더 ${parsed.headerRow}행 · 수납 ${parsed.validRows||0}건 인식`,'ok');
+  setStatus('statusA',`${day}일 준비 완료 · 시트 ${sheetName} · 헤더 ${parsed.headerRow}행 · 수납 ${parsed.validRows||0}건 인식`,'ok');
   if(bookingRecords.length)runReservationCheck();
 }catch(err){
   console.error(err);dbA=[];confA=null;
