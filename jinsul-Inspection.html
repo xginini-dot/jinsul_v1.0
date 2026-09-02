@@ -78,7 +78,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <h1>수납·예약코드 통합 검수</h1>
 <p>수납대장과 병원 프로그램을 비교하고, 예약 엑셀 업로드 시 예약코드까지 함께 검수합니다.</p>
 </div>
-<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.1 · Optimized</small></div>
+<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.5 · Auto Detect</small></div>
 </div>
 </section>
 <br>
@@ -163,14 +163,25 @@ const normId=id=>String(id??'').trim().replace(/^0+/,'');
 const toN=v=>Math.round(Number(String(v??0).replace(/[^0-9.-]+/g,'')))||0;
 const won=v=>Number(v||0).toLocaleString()+'원';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const TAGS={
-id:['차트번호','챠트번호','등록번호','환자번호'],
-name:['성명','수진자명','수진자','이름','환자명'],
-date:['수납일자','수납일','진료일자','진료일','접수일자','내원일자','일자','날짜'],
-total:['원무과입금액','수납액','수납액합계','합계','본인부담총액'],
-cash:['현금수납액','현금수납','현금금액','현금'],
-card:['카드수납액','카드수납','카드금액','카드'],
-acc:['계좌이체액','계좌수납','계좌금액','계좌이체','계좌']
+const normHeader=s=>String(s??'').trim().toLowerCase().replace(/[\s\n\r\t\-_/()\[\]{}:·.,]+/g,'');
+/* 다양한 수납대장 자동 인식: 컬럼 순서/위치/헤더 1~3행 구조가 달라도 명칭을 기준으로 탐색합니다. */
+const FIELD_ALIASES={
+  id:['차트번호','챠트번호','등록번호','환자번호','차트no','chartno','환자id'],
+  name:['수진자명','환자명','성명','수진자','이름','고객명'],
+  date:['수납일자','수납일','진료일자','진료일','내원일자','내원일','접수일자','결제일자','거래일자','날짜','일자'],
+  total:['원무과입금액','수납액합계','총수납액','수납액','결제금액','입금액','본인부담총액','환자부담총액','본인부담금','금액'],
+  cash:['현금수납액','현금수납','현금금액','현금액','현금'],
+  card:['카드수납액','카드수납','카드금액','카드액','신용카드금액','신용카드','카드'],
+  acc:['계좌이체액','계좌이체금액','계좌수납','계좌금액','이체금액','계좌이체','이체','계좌'],
+  cashRefund:['현금환불','현금환불액','현금취소','현금취소액'],
+  cardRefund:['카드환불','카드환불액','카드취소','카드취소액'],
+  accRefund:['계좌환불','계좌환불액','이체환불','이체취소'],
+  method:['수단입력','수단(입력)','수납수단','결제수단','입금수단','수납방법','결제방법','수납구분','결제구분','수단'],
+  resCode:['예약코드','예약 code','예약code']
+};
+const FIELD_EXCLUDE={
+  total:['총진료비','요양비용총액','청구액','조합청구액','비급여','할인액','상한차액','지원금'],
+  cash:['미수현금','현금환불'],card:['미수카드','카드환불'],acc:['미수계좌','계좌환불']
 };
 const BOOKING_TAGS={id:['차트번호','챠트번호','환자번호','등록번호'],name:['이름','수진자명','환자명','성명'],date:['예약일','진료예약시간','예약일시','예약날짜'],type:['예약구분','참고사항','메모','예약내용','비고']};
 function goBack(){if(history.length>1)history.back();else location.href='https://xginini-dot.github.io/jinsul/'}
@@ -182,21 +193,91 @@ function showAuditView(view,scroll=false){currentAuditView=view;const tabs=docum
 function setLoading(on,title='엑셀을 분석하고 있습니다.',sub='필요한 데이터만 불러오는 중입니다.'){const el=document.getElementById('loadingOverlay');if(!el)return;document.getElementById('loadingTitle').textContent=title;document.getElementById('loadingSub').textContent=sub;el.classList.toggle('on',!!on)}
 function yieldUI(){return new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)))}
 function setStatus(id,text,type=''){const el=document.getElementById(id);el.className='status'+(type?' '+type:'');el.textContent=text}
+function fieldScore(cell,key){
+  const c=normHeader(cell);if(!c)return 0;
+  if((FIELD_EXCLUDE[key]||[]).some(x=>c.includes(normHeader(x))))return 0;
+  let best=0;
+  for(const a0 of (FIELD_ALIASES[key]||[])){
+    const a=normHeader(a0);if(!a)continue;let bonus=0;
+    if(key==='total'&&['원무과입금액','수납액합계','총수납액','수납액','결제금액','입금액'].map(normHeader).includes(a))bonus=350;
+    if(key==='date'&&['수납일자','진료일자','내원일자','결제일자'].map(normHeader).includes(a))bonus=120;
+    if(c===a)best=Math.max(best,100+a.length+bonus);
+    else if(a.length>=3&&c.startsWith(a))best=Math.max(best,72+a.length+bonus);
+    else if(a.length>=4&&c.includes(a))best=Math.max(best,45+a.length+bonus);
+  }
+  return best;
+}
+function findBestIndex(row,key,used=new Set()){
+  let idx,score=0;
+  row.forEach((cell,i)=>{if(used.has(i))return;const sc=fieldScore(cell,key);if(sc>score){score=sc;idx=i}});
+  return score?{idx,score}:null;
+}
+function mergeHeaderRows(rows,start,depth){
+  const width=Math.max(...rows.slice(start,start+depth).map(r=>Array.isArray(r)?r.length:0),0),out=[];
+  for(let c=0;c<width;c++){
+    const parts=[];
+    for(let r=start;r<Math.min(rows.length,start+depth);r++){
+      const v=rows[r]?.[c];if(v!==undefined&&v!==null&&String(v).trim()!=='')parts.push(String(v).trim());
+    }
+    out[c]=[...new Set(parts)].join(' ');
+  }
+  return out;
+}
 function getMap(rows,side){
-for(let i=0;i<Math.min(rows.length,80);i++){
-const row=rows[i];if(!Array.isArray(row))continue;const map={};
-row.forEach((cell,idx)=>{
-const c=norm(cell);if(!c)return;
-for(const k in TAGS){if(TAGS[k].some(t=>c===norm(t)||c.includes(norm(t)))&&map[k]===undefined)map[k]=idx}
-if(side==='A'){
-if(c.includes('수단(입력)')||c==='수단'||c.includes('결제수단'))map.method=idx;
-if(c.includes('금')&&c.includes('액')&&idx<12&&map.total===undefined)map.total=idx;
-if(c.includes('예약코드'))map.resCode=idx;
+  let best=null;const max=Math.min(rows.length,150);
+  for(let i=0;i<max;i++){
+    for(let depth=1;depth<=3&&i+depth<=max;depth++){
+      const row=mergeHeaderRows(rows,i,depth),used=new Set(),map={},scores={};
+      for(const key of ['id','name','date','cash','card','acc','cashRefund','cardRefund','accRefund','total','method','resCode']){
+        const hit=findBestIndex(row,key,used);if(hit){map[key]=hit.idx;scores[key]=hit.score;used.add(hit.idx)}
+      }
+      const hasMoney=map.total!==undefined||map.cash!==undefined||map.card!==undefined||map.acc!==undefined;
+      const valid=map.id!==undefined&&map.name!==undefined&&hasMoney&&(side!=='A'||map.method!==undefined||map.cash!==undefined||map.card!==undefined||map.acc!==undefined);
+      if(!valid)continue;
+      let score=Object.values(scores).reduce((a,b)=>a+b,0)+(map.total!==undefined?50:0)+(map.method!==undefined?40:0)+(map.date!==undefined?40:0)-((depth-1)*5);
+      if(!best||score>best.score)best={index:i+depth-1,headerStart:i,headerDepth:depth,map,score};
+    }
+  }
+  return best;
 }
-});
-if(map.id!==undefined&&map.name!==undefined)return{index:i,map};
+/* 진설 수납대장은 같은 시트에 예약/비트 원본 영역이 함께 있어도 실제 수납 입력표를 우선합니다. */
+function getLedgerMapA(rows){
+  let best=null;const max=Math.min(rows.length,120);
+  for(let i=0;i<max;i++){
+    for(let depth=1;depth<=3&&i+depth<=max;depth++){
+      const row=mergeHeaderRows(rows,i,depth),used=new Set(),map={},scores={};
+      for(const key of ['id','name','method','total','cash','card','acc','date','resCode']){
+        const hit=findBestIndex(row,key,used);if(hit){map[key]=hit.idx;scores[key]=hit.score;used.add(hit.idx)}
+      }
+      if(map.id===undefined||map.name===undefined)continue;
+      const transactionStyle=map.method!==undefined&&map.total!==undefined;
+      const splitStyle=map.cash!==undefined||map.card!==undefined||map.acc!==undefined;
+      if(!transactionStyle&&!splitStyle)continue;
+      let score=Object.values(scores).reduce((a,b)=>a+b,0);
+      if(transactionStyle)score+=1200;
+      if(splitStyle)score+=500;
+      if(i<50)score+=300-i;
+      if(!best||score>best.score)best={index:i+depth-1,headerStart:i,headerDepth:depth,map,score};
+    }
+  }
+  return best;
 }
-return null;
+function diagnoseSheet(rows){
+  const scan=rows.slice(0,150).map(r=>(r||[]).map(v=>normHeader(v)));
+  const has=terms=>scan.some(r=>r.some(c=>terms.some(t=>c.includes(normHeader(t)))));
+  const id=has(FIELD_ALIASES.id),name=has(FIELD_ALIASES.name),money=has([...FIELD_ALIASES.total,...FIELD_ALIASES.cash,...FIELD_ALIASES.card,...FIELD_ALIASES.acc]);
+  const reservation=has(['예약일시','예약과목','주치의','내원여부','변경취소사유'])&&!money;
+  if(reservation)return{type:'reservation',message:'예약관리 파일로 확인됩니다. 수납액·현금·카드·이체 등 수납 검수용 금액 항목이 없습니다.'};
+  const missing=[];if(!id)missing.push('차트번호');if(!name)missing.push('환자명');if(!money)missing.push('수납금액');
+  return{type:'unknown',message:missing.length?`필수 항목을 찾지 못했습니다: ${missing.join(', ')}`:'수납 표의 헤더 구조를 확인하지 못했습니다.'};
+}
+function parseLedgerMethod(v){
+  if(v===null||v===undefined||v==='')return null;
+  const n=parseInt(v);if([1,2,3,4,5,6].includes(n))return n;
+  const x=normHeader(v);
+  if(x.includes('미수현'))return 4;if(x.includes('미수카'))return 5;if(x==='미수'||x.includes('미수대기'))return 3;
+  if(x.includes('계좌')||x.includes('이체'))return 6;if(x.includes('카드'))return 2;if(x.includes('현금'))return 1;
+  return null;
 }
 function setupDropZone(dropId,inputId,handler,multiple=false){
 const zone=document.getElementById(dropId),input=document.getElementById(inputId);
@@ -305,7 +386,32 @@ document.getElementById('calendarArea').style.display='block';if(initial)loadShe
 }
 async function loadSheetData(sheetName,day){
 selectedSheet={name:sheetName,day,dateKey:sheetDateKey(sheetName)};
-try{setStatus('statusA',`${day}일 분석 중`,'loading');let parsed=cacheA.get(sheetName);if(!parsed){setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`선택한 ${day}일 시트만 불러옵니다.`);await yieldUI();const raw=readOneSheet(fileABuffer,sheetName,0);const res=getMap(raw,'A');if(!res)throw new Error('차트번호/환자명/금액 항목을 찾지 못했습니다.');parsed={data:raw.slice(res.index+1),map:res.map};cacheA.set(sheetName,parsed)}confA=parsed;dbA=parsed.data;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';setStatus('statusA',`${day}일 준비 완료`,'ok');if(bookingRecords.length)runReservationCheck()}catch(err){console.error(err);dbA=[];confA=null;setStatus('statusA','시트 항목 인식 실패','err');alert(`${day}일 시트를 읽는 중 오류가 발생했습니다.\n${err.message}`)}finally{setLoading(false)}
+try{
+  setStatus('statusA',`${day}일 분석 중`,'loading');
+  let parsed=cacheA.get(sheetName);
+  if(!parsed){
+    setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`헤더 위치와 컬럼 구성을 자동 탐색합니다.`);
+    await yieldUI();
+    const raw=readOneSheet(fileABuffer,sheetName,0);
+    const res=getLedgerMapA(raw)||getMap(raw,'A');
+    if(!res){const d=diagnoseSheet(raw);const er=new Error(d.message);er.code=d.type;throw er}
+    parsed={data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1};
+    cacheA.set(sheetName,parsed);
+  }
+  confA=parsed;dbA=parsed.data;
+  document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';
+  setStatus('statusA',`${day}일 준비 완료 · 헤더 ${parsed.headerRow}행 자동 인식`,'ok');
+  if(bookingRecords.length)runReservationCheck();
+}catch(err){
+  console.error(err);dbA=[];confA=null;
+  if(err.code==='reservation'){
+    setStatus('statusA','예약관리 파일 감지','err');
+    alert(`${day}일 시트는 예약관리 양식으로 확인됩니다.\n${err.message}`);
+  }else{
+    setStatus('statusA','수납 항목 인식 불가','err');
+    alert(`${day}일 시트의 수납 항목을 자동 인식하지 못했습니다.\n${err.message}\n\n컬럼 순서 변경, 헤더 위치 이동, 2~3줄 머리글은 자동 탐색합니다.`);
+  }
+}finally{setLoading(false)}
 }
 function recordsForSelectedDay(){
 if(!selectedSheet)return bitRecords;
@@ -319,12 +425,42 @@ return undated.length===bitRecords.length?bitRecords:undated;
 function runCheck(){
 if(!confA||!dbA.length||!bitRecords.length)return;
 const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set(),selectedB=recordsForSelectedDay();
-dbA.forEach(row=>{const id=normId(row[confA.map.id]),name=row[confA.map.name];if(!id||!name)return;allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});const e=aggA.get(id),amt=toN(row[confA.map.total]),met=parseInt(row[confA.map.method]);if([1,4,6].includes(met))e.cash+=amt;else if([2,5].includes(met))e.card+=amt;e.total+=amt;if(met)e.methods.add(met)});
+dbA.forEach(row=>{
+  const m=confA.map,id=normId(row[m.id]),name=String(row[m.name]??'').trim();if(!id||!name)return;
+  allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});
+  const e=aggA.get(id);
+  if(m.method!==undefined&&m.total!==undefined){
+    const amt=toN(row[m.total]),met=parseLedgerMethod(row[m.method]);
+    if([1,4,6].includes(met))e.cash+=amt;else if([2,5].includes(met))e.card+=amt;
+    e.total+=amt;if(met)e.methods.add(met);
+  }else{
+    const cash=toN(m.cash!==undefined?row[m.cash]:0)+toN(m.acc!==undefined?row[m.acc]:0);
+    const card=toN(m.card!==undefined?row[m.card]:0);
+    const total=m.total!==undefined?toN(row[m.total]):cash+card;
+    e.cash+=cash;e.card+=card;e.total+=total;
+    if(cash)e.methods.add(m.acc!==undefined&&toN(row[m.acc])&&!toN(m.cash!==undefined?row[m.cash]:0)?6:1);
+    if(card)e.methods.add(2);
+  }
+});
 selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
 let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
-[...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{const a=aggA.get(id),b=aggB.get(id);const misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}else if(!a&&b){result='수납대장 미기재';isError=true}else if(a&&b){const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;if(dTotal!==0&&!misuOnly){result='총액오류';isError=true}else if((Math.abs(dCash)>tolerance||Math.abs(dCard)>tolerance)&&!misuOnly){result='수단오류';isError=true}else if(misuOnly)result='미수대기'}const row={id,name:a?.name||b?.name||'',aCash:a?.cash||0,bCash:b?.cash||0,aCard:a?.card||0,bCard:b?.card||0,aTotal:a?.total||0,bTotal:b?.total||0,result,isError,methods:a?[...a.methods]:[],misuOnly};if(!misuOnly){totals.aCash+=row.aCash;totals.aCard+=row.aCard;totals.aTotal+=row.aTotal;totals.bCash+=row.bCash;totals.bCard+=row.bCard;totals.bTotal+=row.bTotal}resultRows.push(row)});
+[...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{
+  const a=aggA.get(id),b=aggB.get(id),misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;
+  if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}
+  else if(!a&&b){result='수납대장 미기재';isError=true}
+  else if(a&&b){
+    const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;
+    if(dTotal!==0&&!misuOnly){result='총액오류';isError=true}
+    else if((Math.abs(dCash)>tolerance||Math.abs(dCard)>tolerance)&&!misuOnly){result='수단오류';isError=true}
+    else if(misuOnly)result='미수대기';
+  }
+  const row={id,name:a?.name||b?.name||'',aCash:a?.cash||0,bCash:b?.cash||0,aCard:a?.card||0,bCard:b?.card||0,aTotal:a?.total||0,bTotal:b?.total||0,result,isError,methods:a?[...a.methods]:[],misuOnly};
+  if(!misuOnly){totals.aCash+=row.aCash;totals.aCard+=row.aCard;totals.aTotal+=row.aTotal;totals.bCash+=row.bCash;totals.bCard+=row.bCard;totals.bTotal+=row.bTotal}
+  resultRows.push(row);
+});
 updateSummary(totals);renderRows();const keepView=currentAuditView;if(bookingRecords.length)runReservationCheck(false);showAuditView(keepView==='reservation'&&bookingRecords.length?'reservation':'payment');
-const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
+const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;
+document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
 }
 function updateSummary(t){const all=resultRows.length,err=resultRows.filter(r=>r.isError).length,misu=resultRows.filter(r=>r.result==='미수대기').length,ok=resultRows.filter(r=>r.result==='정상').length;document.getElementById('kpiAll').textContent=all;document.getElementById('kpiOk').textContent=ok;document.getElementById('kpiErr').textContent=err;document.getElementById('kpiTotalErr').textContent=resultRows.filter(r=>r.result==='총액오류').length;document.getElementById('kpiMethodErr').textContent=resultRows.filter(r=>r.result==='수단오류').length;document.getElementById('kpiMisu').textContent=misu;document.getElementById('rateOk').textContent=(all?ok/all*100:0).toFixed(1)+'%';document.getElementById('rateErr').textContent=(all?err/all*100:0).toFixed(1)+'%';[['sumCashA',t.aCash],['sumCashB',t.bCash],['sumCardA',t.aCard],['sumCardB',t.bCard],['sumTotalA',t.aTotal],['sumTotalB',t.bTotal]].forEach(([id,v])=>document.getElementById(id).textContent=won(v));setDiff('diffCash',t.aCash-t.bCash);setDiff('diffCard',t.aCard-t.bCard);setDiff('diffTotal',t.aTotal-t.bTotal)}
 function setDiff(id,v){const el=document.getElementById(id);el.textContent=won(v);el.className=v===0?'diff-zero':'diff-bad'}
