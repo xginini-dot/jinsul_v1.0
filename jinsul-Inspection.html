@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>JINSUL | 수납 검수 시스템</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="./xlsx.full.min.js"></script>
 <style>
 :root{
 --navy:#111827;--deep:#0b1220;--gold:#b9a58a;--gold2:#d7c8ae;
@@ -159,7 +160,7 @@ let currentAuditView='payment';
 let bookingBusy=false;
 const methodNames={1:'현금',2:'카드',3:'미수',4:'미수(현)',5:'미수(카)',6:'이체'};
 const norm=s=>String(s??'').trim().replace(/\s/g,'');
-const normId=id=>String(id??'').trim().replace(/^0+/,'');
+const normId=id=>{const s=String(id??'').trim().replace(/\.0$/,'');const digits=s.replace(/\D/g,'');return (digits||s.replace(/[^0-9a-z가-힣]/gi,'')).replace(/^0+/,'')};
 const toN=v=>Math.round(Number(String(v??0).replace(/[^0-9.-]+/g,'')))||0;
 const won=v=>Number(v||0).toLocaleString()+'원';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -167,7 +168,7 @@ const normHeader=s=>String(s??'').trim().toLowerCase().replace(/[\s\n\r\t\-_/()\
 /* 다양한 수납대장 자동 인식: 컬럼 순서/위치/헤더 1~3행 구조가 달라도 명칭을 기준으로 탐색합니다. */
 const FIELD_ALIASES={
   id:['차트번호','챠트번호','등록번호','환자번호','차트no','chartno','환자id'],
-  name:['수진자명','환자명','성명','수진자','이름','고객명'],
+  name:['수진자명','환자명','성명','수진자','이름','고객명','이름중복x','이름중복제외'],
   date:['수납일자','수납일','진료일자','진료일','내원일자','내원일','접수일자','결제일자','거래일자','날짜','일자'],
   total:['원무과입금액','수납액합계','총수납액','수납액','결제금액','입금액','본인부담총액','환자부담총액','본인부담금','금액'],
   cash:['현금수납액','현금수납','현금금액','현금액','현금'],
@@ -197,6 +198,15 @@ function fieldScore(cell,key){
   const c=normHeader(cell);if(!c)return 0;
   if((FIELD_EXCLUDE[key]||[]).some(x=>c.includes(normHeader(x))))return 0;
   let best=0;
+  /* 양식 안내문이 헤더 뒤에 붙는 경우도 같은 필드로 인정합니다.
+     예: 이름(중복X), 차트번호(필수), 금액(원), 수단(입력/자동) */
+  const decorated={
+    id:['차트번호','챠트번호','등록번호','환자번호'],
+    name:['이름','성명','환자명','수진자명'],
+    total:['금액','수납액','총수납액','결제금액','입금액'],
+    method:['수단입력','수납수단','결제수단','수납방법']
+  };
+  if((decorated[key]||[]).some(x=>c.startsWith(normHeader(x))))best=95;
   for(const a0 of (FIELD_ALIASES[key]||[])){
     const a=normHeader(a0);if(!a)continue;let bonus=0;
     if(key==='total'&&['원무과입금액','수납액합계','총수납액','수납액','결제금액','입금액'].map(normHeader).includes(a))bonus=350;
