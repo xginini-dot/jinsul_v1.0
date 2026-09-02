@@ -370,7 +370,7 @@ function sheetDateKey(name){const m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2
 async function handleFileA(file){
 try{
 document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();
-fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};renderCalendar();setStatus('statusA','로드 완료','ok');
+fileABuffer=await file.arrayBuffer();await yieldUI();sheetNamesA=readSheetNames(fileABuffer);cacheA.clear();if(!sheetNamesA.length)throw new Error('시트를 찾지 못했습니다.');currentWbA={SheetNames:sheetNamesA};await renderCalendar();
 }catch(err){console.error(err);setStatus('statusA','파일 인식 실패','err');alert('수납 대장 엑셀을 읽는 중 오류가 발생했습니다.\n'+err.message)}finally{setLoading(false)}
 }
 async function handleFilesB(files){
@@ -446,7 +446,7 @@ function sheetDayCandidate(name){
   return d>=1&&d<=31?{day:d,rank:20,type:'보조 날짜시트'}:null;
 }
 function sheetDay(name){const c=sheetDayCandidate(name);return c?c.day:null}
-function renderCalendar(){
+async function renderCalendar(){
 const grid=document.getElementById('calendarGrid');grid.innerHTML='';
 const dayMap=new Map(),dayRank=new Map();
 sheetNamesA.forEach(n=>{
@@ -454,9 +454,26 @@ sheetNamesA.forEach(n=>{
   const prev=dayRank.get(c.day)??-1;
   if(c.rank>prev){dayRank.set(c.day,c.rank);dayMap.set(c.day,n)}
 });
-const today=new Date().getDate(),days=[...dayMap.keys()].sort((a,b)=>a-b),initial=dayMap.has(today)?today:days[0];
+const days=[...dayMap.keys()].sort((a,b)=>a-b);
+/* 현재 '일'을 무조건 고르면 미래/휴진일의 빈 시트가 오류처럼 보일 수 있습니다.
+   실제 수납 환자행이 있는 첫 날짜를 찾아 자동 선택하고, 판독 결과는 캐시에 보관합니다. */
+let initial=null;
+for(const d of days){
+  const sn=dayMap.get(d),raw=readOneSheet(fileABuffer,sn,0);
+  let res=getLedgerMapA(raw);
+  if(!res){
+    const fallback=getMap(raw,'A');
+    if(fallback){const checked=scoreLedgerCandidate(raw,{...fallback,headerScore:fallback.score||0});if(checked.validRows>=1)res=checked}
+  }
+  if(res&&res.validRows>=1){
+    cacheA.set(sn,{data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1,validRows:res.validRows||0,moneyRows:res.moneyRows||0});
+    initial=d;break;
+  }
+  await yieldUI();
+}
+if(initial===null)initial=days[0];
 for(let i=1;i<=31;i++){const btn=document.createElement('button');btn.type='button';btn.className='day-btn';btn.textContent=i;const exists=dayMap.has(i);if(!exists)btn.classList.add('disabled');if(i===initial&&exists)btn.classList.add('active');btn.onclick=async e=>{e.stopPropagation();if(!exists)return;document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');await loadSheetData(dayMap.get(i),i);if(bitRecords.length)runCheck()};grid.appendChild(btn)}
-document.getElementById('calendarArea').style.display='block';if(initial)loadSheetData(dayMap.get(initial),initial).then(()=>{if(bitRecords.length)runCheck()})
+document.getElementById('calendarArea').style.display='block';if(initial){await loadSheetData(dayMap.get(initial),initial);if(bitRecords.length)runCheck()}
 }
 async function loadSheetData(sheetName,day){
 selectedSheet={name:sheetName,day,dateKey:sheetDateKey(sheetName)};
@@ -475,7 +492,11 @@ try{
         if(checked.validRows>=1)res=checked;
       }
     }
-    if(!res){const d=diagnoseSheet(raw);const er=new Error(d.message);er.code=d.type;throw er}
+    if(!res){
+      const hasInput=raw.some((row,i)=>{if(i<8||!Array.isArray(row))return false;const cells=row.slice(0,10).map(v=>String(v??'').trim());return cells.some(v=>/^\D*\d+\D*$/.test(v))&&cells.some(v=>/^[가-힣]{2,}/.test(v))});
+      if(!hasInput){const er=new Error('선택한 날짜에는 입력된 수납 내역이 없습니다.');er.code='empty';throw er}
+      const d=diagnoseSheet(raw);const er=new Error(d.message);er.code=d.type;throw er
+    }
     parsed={data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1,validRows:res.validRows||0,moneyRows:res.moneyRows||0};
     cacheA.set(sheetName,parsed);
   }
@@ -485,7 +506,10 @@ try{
   if(bookingRecords.length)runReservationCheck();
 }catch(err){
   console.error(err);dbA=[];confA=null;
-  if(err.code==='reservation'){
+  if(err.code==='empty'){
+    document.getElementById('selectedDay').textContent=day+'일 · 수납 내역 없음';
+    setStatus('statusA','선택 날짜 수납 내역 없음','ok');
+  }else if(err.code==='reservation'){
     setStatus('statusA','예약관리 파일 감지','err');
     alert(`${day}일 시트는 예약관리 양식으로 확인됩니다.\n${err.message}`);
   }else{
