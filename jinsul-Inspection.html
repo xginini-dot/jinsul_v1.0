@@ -78,7 +78,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <h1>수납·예약코드 통합 검수</h1>
 <p>수납대장과 병원 프로그램을 비교하고, 예약 엑셀 업로드 시 예약코드까지 함께 검수합니다.</p>
 </div>
-<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.5 · Auto Detect</small></div>
+<div class="hero-badge"><span>RECEIPT AUDIT</span>Daily Payment Check<br><small style="margin-top:7px;opacity:.72">v 1.6 · Data Verified</small></div>
 </div>
 </section>
 <br>
@@ -240,9 +240,47 @@ function getMap(rows,side){
   }
   return best;
 }
-/* 진설 수납대장은 같은 시트에 예약/비트 원본 영역이 함께 있어도 실제 수납 입력표를 우선합니다. */
+/* 진설 수납대장은 같은 시트에 여러 표가 섞일 수 있으므로, 헤더명뿐 아니라 실제 아래 데이터까지 검증해 수납표를 선택합니다. */
+function ledgerRowEvidence(row,map){
+  if(!Array.isArray(row))return null;
+  const id=normId(map.id!==undefined?row[map.id]:'');
+  const name=String(map.name!==undefined?row[map.name]:'').trim();
+  if(!id||!name)return null;
+  let cash=0,card=0,total=0,method=null,amount=0;
+  if(map.method!==undefined&&map.total!==undefined){
+    method=parseLedgerMethod(row[map.method]);
+    amount=toN(row[map.total]);
+    if([1,4,6].includes(method))cash=amount;
+    else if([2,5].includes(method))card=amount;
+    total=amount;
+  }else{
+    const c=toN(map.cash!==undefined?row[map.cash]:0);
+    const a=toN(map.acc!==undefined?row[map.acc]:0);
+    const k=toN(map.card!==undefined?row[map.card]:0);
+    cash=c+a;card=k;total=map.total!==undefined?toN(row[map.total]):cash+card;
+  }
+  const hasMoney=total!==0||cash!==0||card!==0;
+  const methodUsable=map.method===undefined||method!==null||String(row[map.method]??'').trim()==='';
+  return {id,name,cash,card,total,hasMoney,methodUsable};
+}
+function scoreLedgerCandidate(rows,cand){
+  const start=cand.index+1,end=Math.min(rows.length,start+220);
+  let valid=0,money=0,methodOk=0,consecutive=0,maxConsecutive=0,noise=0;
+  for(let r=start;r<end;r++){
+    const ev=ledgerRowEvidence(rows[r],cand.map);
+    if(ev){
+      valid++;consecutive++;if(ev.hasMoney)money++;if(ev.methodUsable)methodOk++;
+      if(consecutive>maxConsecutive)maxConsecutive=consecutive;
+    }else{
+      if(valid&&consecutive===0)noise++;
+      consecutive=0;
+    }
+  }
+  const dataScore=valid*70+money*45+methodOk*10+maxConsecutive*30-noise*4;
+  return {...cand,validRows:valid,moneyRows:money,methodRows:methodOk,maxConsecutive,dataScore,finalScore:cand.headerScore+dataScore};
+}
 function getLedgerMapA(rows){
-  let best=null;const max=Math.min(rows.length,120);
+  const candidates=[];const max=Math.min(rows.length,180);
   for(let i=0;i<max;i++){
     for(let depth=1;depth<=3&&i+depth<=max;depth++){
       const row=mergeHeaderRows(rows,i,depth),used=new Set(),map={},scores={};
@@ -253,13 +291,17 @@ function getLedgerMapA(rows){
       const transactionStyle=map.method!==undefined&&map.total!==undefined;
       const splitStyle=map.cash!==undefined||map.card!==undefined||map.acc!==undefined;
       if(!transactionStyle&&!splitStyle)continue;
-      let score=Object.values(scores).reduce((a,b)=>a+b,0);
-      if(transactionStyle)score+=1200;
-      if(splitStyle)score+=500;
-      if(i<50)score+=300-i;
-      if(!best||score>best.score)best={index:i+depth-1,headerStart:i,headerDepth:depth,map,score};
+      let headerScore=Object.values(scores).reduce((a,b)=>a+b,0);
+      if(transactionStyle)headerScore+=1200;
+      if(splitStyle)headerScore+=500;
+      if(i<60)headerScore+=240-i;
+      candidates.push({index:i+depth-1,headerStart:i,headerDepth:depth,map,headerScore});
     }
   }
+  if(!candidates.length)return null;
+  const ranked=candidates.map(c=>scoreLedgerCandidate(rows,c)).sort((a,b)=>b.finalScore-a.finalScore);
+  /* 헤더만 그럴듯하고 실제 환자 데이터가 없는 표는 선택하지 않습니다. */
+  const best=ranked.find(c=>c.validRows>=2)||(ranked[0]&&ranked[0].validRows>=1?ranked[0]:null);
   return best;
 }
 function diagnoseSheet(rows){
@@ -393,14 +435,21 @@ try{
     setLoading(true,`${day}일 수납 대장을 분석하고 있습니다.`,`헤더 위치와 컬럼 구성을 자동 탐색합니다.`);
     await yieldUI();
     const raw=readOneSheet(fileABuffer,sheetName,0);
-    const res=getLedgerMapA(raw)||getMap(raw,'A');
+    let res=getLedgerMapA(raw);
+    if(!res){
+      const fallback=getMap(raw,'A');
+      if(fallback){
+        const checked=scoreLedgerCandidate(raw,{...fallback,headerScore:fallback.score||0});
+        if(checked.validRows>=1)res=checked;
+      }
+    }
     if(!res){const d=diagnoseSheet(raw);const er=new Error(d.message);er.code=d.type;throw er}
-    parsed={data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1};
+    parsed={data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1,validRows:res.validRows||0,moneyRows:res.moneyRows||0};
     cacheA.set(sheetName,parsed);
   }
   confA=parsed;dbA=parsed.data;
   document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||day+'일')+' 검수';
-  setStatus('statusA',`${day}일 준비 완료 · 헤더 ${parsed.headerRow}행 자동 인식`,'ok');
+  setStatus('statusA',`${day}일 준비 완료 · 헤더 ${parsed.headerRow}행 · 수납 ${parsed.validRows||0}건 인식`,'ok');
   if(bookingRecords.length)runReservationCheck();
 }catch(err){
   console.error(err);dbA=[];confA=null;
@@ -425,9 +474,10 @@ return undated.length===bitRecords.length?bitRecords:undated;
 function runCheck(){
 if(!confA||!dbA.length||!bitRecords.length)return;
 const tolerance=Number(document.getElementById('tolerance').value)||0,aggA=new Map(),aggB=new Map(),allIds=new Set(),selectedB=recordsForSelectedDay();
+let ledgerAcceptedRows=0;
 dbA.forEach(row=>{
   const m=confA.map,id=normId(row[m.id]),name=String(row[m.name]??'').trim();if(!id||!name)return;
-  allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});
+  ledgerAcceptedRows++;allIds.add(id);if(!aggA.has(id))aggA.set(id,{name,cash:0,card:0,total:0,methods:new Set()});
   const e=aggA.get(id);
   if(m.method!==undefined&&m.total!==undefined){
     const amt=toN(row[m.total]),met=parseLedgerMethod(row[m.method]);
@@ -442,6 +492,11 @@ dbA.forEach(row=>{
     if(card)e.methods.add(2);
   }
 });
+if(ledgerAcceptedRows===0){
+  setStatus('statusA','수납 데이터 재확인 필요','err');
+  alert('수납대장 헤더는 찾았지만 실제 환자 수납행을 읽지 못했습니다.\n\n이 버전에서는 다른 표를 잘못 선택하지 않도록 데이터 행까지 검증합니다. 해당 날짜 시트를 다시 선택하거나 파일 구조를 확인해주세요.');
+  return;
+}
 selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
 let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
 [...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{
