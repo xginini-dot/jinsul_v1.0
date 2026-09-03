@@ -59,8 +59,9 @@ html[data-theme="dark"] .dropzone{background:#0b1220;border-color:#475569}html[d
 .toolbar{display:flex;flex-wrap:wrap;grid-template-columns:none}.toolbar .search{flex:1 1 280px}.filter-tabs{display:flex;flex-wrap:wrap;gap:6px}.filter-tab{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:850;cursor:pointer}.filter-tab:hover{border-color:var(--gold)}.filter-tab.active{background:#363c43;border-color:#363c43;color:#fff;box-shadow:0 4px 12px rgba(54,60,67,.16)}html[data-theme="dark"] .filter-tab.active{background:#c2aa80;border-color:#c2aa80;color:#171717}
 .audit-tabs{display:flex;gap:8px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);margin:18px 0}.audit-tab{flex:1;height:52px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:15px;font-weight:900;cursor:pointer}.audit-tab:hover{background:var(--panel2);color:var(--text)}.audit-tab.active{background:#363c43;color:#fff;box-shadow:0 6px 16px rgba(54,60,67,.18)}html[data-theme="dark"] .audit-tab.active{background:#c2aa80;color:#171717}.view-empty{padding:44px 22px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;color:var(--muted);box-shadow:var(--shadow)}.view-empty b{display:block;color:var(--text);font-size:17px;margin-bottom:7px}
 html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8dc}
+.paste-ledger{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:12px}.paste-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.paste-head b{font-size:13px}.paste-date{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;font-weight:850}.paste-date input{height:34px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);padding:0 8px}.paste-box{width:100%;height:72px;resize:vertical;border:1px dashed #c7b9a4;border-radius:10px;background:var(--panel2);color:var(--text);padding:10px;font:12px/1.45 Arial,Pretendard,sans-serif;outline:none}.paste-box:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(181,154,105,.13)}.paste-actions{display:flex;align-items:center;gap:7px;margin-top:8px}.paste-btn{height:34px;border:0;border-radius:8px;padding:0 12px;background:#363c43;color:#fff;font-size:11px;font-weight:900;cursor:pointer}.paste-btn.light{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.paste-info{margin-left:auto;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}html[data-theme="dark"] .paste-btn{background:#c2aa80;color:#171717}html[data-theme="dark"] .paste-btn.light{background:#1f2937;color:#e5e7eb}
 @media(max-width:1000px){.upload-grid{grid-template-columns:1fr}.brand-copy{grid-template-columns:170px 1fr}.logo-box .logo{width:130px}.hero h1{font-size:24px}}
-@media(max-width:650px){.brand-copy{display:block}.brand-mark{margin-bottom:12px}.hero{padding:8px 8px 18px}.hero p{font-size:13px}.upload-grid{padding:12px}.reservation-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.brand-copy{display:block}.brand-mark{margin-bottom:12px}.hero{padding:8px 8px 18px}.hero p{font-size:13px}.upload-grid{padding:12px}.reservation-summary{grid-template-columns:repeat(2,1fr)}.paste-head{align-items:flex-start;flex-direction:column}.paste-actions{flex-wrap:wrap}.paste-info{width:100%;margin-left:0}}
 </style>
 </head>
 <body>
@@ -93,11 +94,21 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <div class="upload-card">
 <div class="upload-head"><h3>1. 진설 일일 수납 대장</h3><span id="statusA" class="status">파일 대기</span></div>
 <div class="dropzone" id="dropA"><strong>수납 대장 엑셀 업로드</strong><span>클릭하거나 파일을 끌어다 놓으세요.</span><div id="fileNameA" class="file-name"></div><input type="file" id="fileA" accept=".xlsx,.xls,.xlsm" hidden></div>
+<div class="paste-ledger">
+<div class="paste-head"><b>또는 스프레드시트 표 붙여넣기</b><label class="paste-date">검수일 <input type="date" id="pasteDateA"></label></div>
+<textarea id="pasteA" class="paste-box" spellcheck="false" aria-label="복사한 수납대장 표 붙여넣기" placeholder="Google 스프레드시트에서 수납대장 표 전체를 복사한 뒤 여기에 Ctrl+V 하세요."></textarea>
+<div class="paste-actions"><button type="button" class="paste-btn" onclick="analyzePastedLedger()">붙여넣기 분석</button><button type="button" class="paste-btn light" onclick="pasteFromClipboard()">클립보드에서 가져오기</button><button type="button" class="paste-btn light" onclick="clearPastedLedger()">지우기</button><span id="pasteInfoA" class="paste-info">Excel 업로드와 선택해서 사용</span></div>
+</div>
 <div id="calendarArea" class="calendar-area"><div class="calendar-title">검수할 날짜 선택</div><div id="calendarGrid" class="calendar-grid"></div></div>
 </div>
 <div class="upload-card">
 <div class="upload-head"><h3>2. 차트 일일 수납 엑셀</h3><span id="statusB" class="status">파일 대기</span></div>
 <div class="dropzone" id="dropB"><strong>병원 프로그램 수납 엑셀 업로드</strong><span>비트 기간 엑셀 1개 또는 일자별 엑셀 여러 개를 한 번에 선택할 수 있습니다.</span><div id="fileNameB" class="file-name"></div><div id="bitDateInfo" class="file-date-info"></div><input type="file" id="fileB" accept=".xlsx,.xls,.xlsm" multiple hidden></div>
+<div class="paste-ledger">
+<div class="paste-head"><b>또는 의사랑·비트 표 붙여넣기</b><label class="paste-date">기본 진료일 <input type="date" id="pasteDateB"></label></div>
+<textarea id="pasteB" class="paste-box" spellcheck="false" aria-label="복사한 병원 프로그램 수납 표 붙여넣기" placeholder="의사랑 또는 비트 수납 조회 화면의 표 전체를 복사한 뒤 여기에 Ctrl+V 하세요."></textarea>
+<div class="paste-actions"><button type="button" class="paste-btn" onclick="analyzePastedProgram()">붙여넣기 분석</button><button type="button" class="paste-btn light" onclick="pasteProgramFromClipboard()">클립보드에서 가져오기</button><button type="button" class="paste-btn light" onclick="clearPastedProgram()">지우기</button><span id="pasteInfoB" class="paste-info">의사랑·비트 자동 인식</span></div>
+</div>
 </div>
 <div class="upload-card">
 <div class="upload-head"><h3>3. 예약 엑셀 <span class="optional">선택</span></h3><span id="statusC" class="status ok">업로드 가능</span></div>
@@ -331,6 +342,15 @@ function parseLedgerMethod(v){
   if(x.includes('계좌')||x.includes('이체'))return 6;if(x.includes('카드'))return 2;if(x.includes('현금'))return 1;
   return null;
 }
+function programRowAmounts(row,m){
+  const hasSplit=m.cash!==undefined||m.card!==undefined||m.acc!==undefined;
+  if(hasSplit){
+    const cash=toN(m.cash!==undefined?row[m.cash]:0),acc=toN(m.acc!==undefined?row[m.acc]:0),card=toN(m.card!==undefined?row[m.card]:0);
+    return{cash:cash+acc,card,total:cash+acc+card};
+  }
+  const total=toN(m.total!==undefined?row[m.total]:0),method=parseLedgerMethod(m.method!==undefined?row[m.method]:null);
+  return{cash:[1,4,6].includes(method)?total:0,card:[2,5].includes(method)?total:0,total};
+}
 function setupDropZone(dropId,inputId,handler,multiple=false){
 const zone=document.getElementById(dropId),input=document.getElementById(inputId);
 zone.tabIndex=0;zone.setAttribute('role','button');zone.setAttribute('aria-label','엑셀 파일 선택');
@@ -344,6 +364,12 @@ input.onchange=e=>{const fs=[...(e.target.files||[])];if(fs.length)handler(multi
 setupDropZone('dropA','fileA',handleFileA,false);
 setupDropZone('dropB','fileB',handleFilesB,true);
 setupDropZone('dropC','fileC',handleFilesC,true);
+{
+  const now=new Date(),local=`${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+  document.getElementById('pasteDateA').value=local;document.getElementById('pasteDateB').value=local;
+  document.getElementById('pasteA').addEventListener('paste',()=>setTimeout(()=>analyzePastedLedger(),60));
+  document.getElementById('pasteB').addEventListener('paste',()=>setTimeout(()=>analyzePastedProgram(),60));
+}
 function setupBookingDropZone(){const zone=document.getElementById('dropC'),input=document.getElementById('fileC');zone.tabIndex=0;zone.setAttribute('role','group');zone.onclick=e=>{if(e.target.closest('input,button'))return;input.click()};zone.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('input,button')){e.preventDefault();input.click()}};zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag-over')};zone.ondragleave=()=>zone.classList.remove('drag-over');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag-over');const files=[...(e.dataTransfer.files||[])];if(files.length)handleFilesC(files)}}
 async function handleBookingInput(input){const files=[...(input?.files||[])];if(!files.length){setStatus('statusC','파일을 선택해주세요','err');document.getElementById('bookingInfo').textContent='선택된 예약 엑셀이 없습니다.';return}if(bookingBusy)return;bookingBusy=true;document.getElementById('fileNameC').textContent=`선택 파일 ${files.length}개 · ${files.slice(0,3).map(f=>f.name).join(', ')}${files.length>3?' 외 '+(files.length-3)+'개':''}`;document.getElementById('bookingInfo').textContent='파일 선택 확인 · 예약 데이터 분석을 시작합니다.';setStatus('statusC','분석 시작','loading');try{await handleFilesC(files)}finally{bookingBusy=false}}
 function readSheetNames(buffer){const wb=XLSX.read(new Uint8Array(buffer),{type:'array',bookSheets:true,bookProps:false});return wb.SheetNames||[]}
@@ -367,6 +393,73 @@ return null;
 }
 function dayFromDateKey(k){if(!k)return null;const m=String(k).match(/-(\d{2})$/);return m?Number(m[1]):null}
 function sheetDateKey(name){const m=String(name).match(/(20\d{2})[._\/-]?(\d{1,2})[._\/-]?(\d{1,2})/);return m?`${m[1]}-${pad2(m[2])}-${pad2(m[3])}`:null}
+/* Google 스프레드시트에서 복사한 탭 구분 표를 Excel 업로드와 같은 행 배열로 변환합니다. */
+function parsePastedTable(text){
+  const out=[],row=[];let cell='',quoted=false;
+  const pushCell=()=>{row.push(cell);cell=''};
+  const pushRow=()=>{pushCell();out.push(row.splice(0,row.length))};
+  const s=String(text??'').replace(/^\uFEFF/,'');
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    if(ch==='"'){
+      if(quoted&&s[i+1]==='"'){cell+='"';i++}else quoted=!quoted;
+    }else if(ch==='\t'&&!quoted)pushCell();
+    else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&s[i+1]==='\n')i++;pushRow()}
+    else cell+=ch;
+  }
+  if(cell!==''||row.length)pushRow();
+  return out.filter(r=>r.some(v=>String(v).trim()!==''));
+}
+async function analyzePastedLedger(){
+  const box=document.getElementById('pasteA'),text=box.value,date=document.getElementById('pasteDateA').value;
+  if(!text.trim()){setStatus('statusA','붙여넣을 표가 없습니다','err');box.focus();return}
+  if(!date){setStatus('statusA','검수일을 선택해주세요','err');document.getElementById('pasteDateA').focus();return}
+  try{
+    setLoading(true,'붙여넣은 수납대장을 분석하고 있습니다.','헤더 위치와 수납 환자행을 자동으로 찾습니다.');setStatus('statusA','붙여넣기 분석 중','loading');await yieldUI();
+    const raw=parsePastedTable(text);if(raw.length<2)throw new Error('복사된 표의 행이 부족합니다. 표 전체를 다시 복사해주세요.');
+    let res=getLedgerMapA(raw);
+    if(!res){const fallback=getMap(raw,'A');if(fallback){const checked=scoreLedgerCandidate(raw,{...fallback,headerScore:fallback.score||0});if(checked.validRows>=1)res=checked}}
+    if(!res){const d=diagnoseSheet(raw);throw new Error(d.message)}
+    const validRows=raw.slice(res.index+1).reduce((n,row)=>n+(ledgerRowEvidence(row,res.map)?1:0),0);
+    if(!validRows)throw new Error('헤더는 찾았지만 실제 환자 수납행이 없습니다. 차트번호·이름·수단·금액을 포함해 복사해주세요.');
+    currentWbA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();document.getElementById('fileA').value='';document.getElementById('calendarArea').style.display='none';
+    confA={data:raw.slice(res.index+1),map:res.map,headerRow:res.index+1,headerDepth:res.headerDepth||1,validRows,moneyRows:res.moneyRows||0};dbA=confA.data;
+    const d=new Date(date+'T00:00:00');selectedSheet={name:'스프레드시트 붙여넣기',day:d.getDate(),dateKey:date};
+    document.getElementById('fileNameA').textContent='스프레드시트에서 붙여넣은 수납대장';document.getElementById('pasteInfoA').textContent=`${raw.length.toLocaleString()}행 · 수납 ${validRows.toLocaleString()}건 인식`;
+    document.getElementById('selectedDay').textContent=date+' 검수';setStatus('statusA',`${date} · 붙여넣기 완료 · 헤더 ${confA.headerRow}행 · 수납 ${validRows.toLocaleString()}건`,'ok');
+    if(bitRecords.length)runCheck();if(bookingRecords.length)runReservationCheck();
+  }catch(err){console.error(err);setStatus('statusA','붙여넣기 인식 실패','err');document.getElementById('pasteInfoA').textContent=err.message;alert('붙여넣은 수납대장을 인식하지 못했습니다.\n'+err.message)}finally{setLoading(false)}
+}
+async function pasteFromClipboard(){
+  try{if(!navigator.clipboard?.readText)throw new Error('이 브라우저에서는 클립보드 직접 읽기를 지원하지 않습니다. 아래 칸을 클릭하고 Ctrl+V를 눌러주세요.');const text=await navigator.clipboard.readText();document.getElementById('pasteA').value=text;await analyzePastedLedger()}catch(err){setStatus('statusA','클립보드 접근 필요','err');document.getElementById('pasteInfoA').textContent=err.message;document.getElementById('pasteA').focus()}
+}
+function clearPastedLedger(){document.getElementById('pasteA').value='';document.getElementById('pasteInfoA').textContent='Excel 업로드와 선택해서 사용';if(selectedSheet?.name==='스프레드시트 붙여넣기'){dbA=[];confA=null;selectedSheet=null;document.getElementById('fileNameA').textContent='';setStatus('statusA','파일 대기','')}}
+async function analyzePastedProgram(){
+  const box=document.getElementById('pasteB'),text=box.value,fallbackDate=document.getElementById('pasteDateB').value;
+  if(!text.trim()){setStatus('statusB','붙여넣을 표가 없습니다','err');box.focus();return}
+  if(!fallbackDate){setStatus('statusB','기본 진료일을 선택해주세요','err');document.getElementById('pasteDateB').focus();return}
+  try{
+    setLoading(true,'붙여넣은 병원 프로그램 표를 분석하고 있습니다.','의사랑·비트 컬럼과 수납금액을 자동으로 찾습니다.');setStatus('statusB','붙여넣기 분석 중','loading');await yieldUI();
+    const raw=parsePastedTable(text);if(raw.length<2)throw new Error('복사된 표의 행이 부족합니다. 표 전체를 다시 복사해주세요.');
+    const res=getMap(raw,'B');if(!res){const d=diagnoseSheet(raw);throw new Error(d.message)}
+    const m=res.map,records=[];
+    for(const row of raw.slice(res.index+1)){
+      const id=normId(m.id!==undefined?row[m.id]:''),name=String(m.name!==undefined?row[m.name]:'').trim();if(!id&&!name)continue;
+      const dk=(m.date!==undefined?dateKey(row[m.date]):null)||fallbackDate,amounts=programRowAmounts(row,m);
+      records.push({id,name,cash:amounts.cash,card:amounts.card,total:amounts.total,dateKey:dk,day:dayFromDateKey(dk),source:'스프레드시트 붙여넣기',sheet:'붙여넣기'});
+      if(records.length%2000===0)await yieldUI();
+    }
+    if(!records.length)throw new Error('헤더는 찾았지만 차트번호·환자명 수납행을 읽지 못했습니다.');
+    bitRecords=records;bitFiles=['스프레드시트 붙여넣기'];bitDates=new Set(records.map(r=>r.dateKey).filter(Boolean));document.getElementById('fileB').value='';
+    const dates=[...bitDates].sort(),dateText=dates.length?`${dates[0]}${dates.length>1?' ~ '+dates[dates.length-1]:''} · ${dates.length}일 · ${records.length.toLocaleString()}건`:`날짜 미확인 · ${records.length.toLocaleString()}건`;
+    document.getElementById('fileNameB').textContent='의사랑·비트 스프레드시트 붙여넣기';document.getElementById('bitDateInfo').textContent=dateText;document.getElementById('pasteInfoB').textContent=`${raw.length.toLocaleString()}행 · 수납 ${records.length.toLocaleString()}건 인식`;setStatus('statusB','붙여넣기 로드 완료','ok');
+    if(dbA.length)runCheck();
+  }catch(err){console.error(err);setStatus('statusB','붙여넣기 인식 실패','err');document.getElementById('pasteInfoB').textContent=err.message;alert('붙여넣은 병원 프로그램 표를 인식하지 못했습니다.\n'+err.message)}finally{setLoading(false)}
+}
+async function pasteProgramFromClipboard(){
+  try{if(!navigator.clipboard?.readText)throw new Error('이 브라우저에서는 클립보드 직접 읽기를 지원하지 않습니다. 아래 칸을 클릭하고 Ctrl+V를 눌러주세요.');const text=await navigator.clipboard.readText();document.getElementById('pasteB').value=text;await analyzePastedProgram()}catch(err){setStatus('statusB','클립보드 접근 필요','err');document.getElementById('pasteInfoB').textContent=err.message;document.getElementById('pasteB').focus()}
+}
+function clearPastedProgram(){document.getElementById('pasteB').value='';document.getElementById('pasteInfoB').textContent='의사랑·비트 자동 인식';if(bitFiles.length===1&&bitFiles[0]==='스프레드시트 붙여넣기'){bitRecords=[];bitFiles=[];bitDates.clear();document.getElementById('fileNameB').textContent='';document.getElementById('bitDateInfo').textContent='';setStatus('statusB','파일 대기','')}}
 async function handleFileA(file){
 try{
 document.getElementById('fileNameA').textContent=file.name;setStatus('statusA','시트 목록 확인 중','loading');setLoading(true,'수납 대장을 불러오고 있습니다.','시트 목록만 먼저 확인해 업로드 시간을 줄이고 있습니다.');await yieldUI();
@@ -388,9 +481,8 @@ const raw=readOneSheet(buffer,sheet,0),fullRes=getMap(raw,'B')||res,m=fullRes.ma
 for(const row of data){
 const id=normId(row[m.id]),name=row[m.name];if(!id&&!name)continue;
 let dk=m.date!==undefined?dateKey(row[m.date]):null;dk=dk||fallbackDate||sheetDateKey(sheet);
-const cash=toN(m.cash!==undefined?row[m.cash]:0),acc=toN(m.acc!==undefined?row[m.acc]:0),card=toN(m.card!==undefined?row[m.card]:0);
-const total=(m.cash!==undefined||m.card!==undefined||m.acc!==undefined)?cash+acc+card:toN(m.total!==undefined?row[m.total]:0);
-bitRecords.push({id,name:name||'',cash:cash+acc,card,total,dateKey:dk,day:dayFromDateKey(dk),source:file.name,sheet});
+const amounts=programRowAmounts(row,m);
+bitRecords.push({id,name:name||'',cash:amounts.cash,card:amounts.card,total:amounts.total,dateKey:dk,day:dayFromDateKey(dk),source:file.name,sheet});
 if(dk)bitDates.add(dk);sheetRows++;fileRows++;
 }
 function getBookingMap(rows){let best=null;for(let i=0;i<Math.min(rows.length,150);i++){const row=rows[i];if(!Array.isArray(row))continue;const map={};row.forEach((cell,idx)=>{const c=norm(cell);if(!c)return;for(const k in BOOKING_TAGS)if(map[k]===undefined&&BOOKING_TAGS[k].some(t=>c===norm(t)||c.includes(norm(t))))map[k]=idx});const score=['id','name','date','type'].filter(k=>map[k]!==undefined).length;if(!best||score>best.score)best={index:i,map,score};if(score===4)break}return best&&best.score>=2&&(best.map.id!==undefined||best.map.name!==undefined)?best:null}
@@ -581,7 +673,7 @@ function activateFilterButton(groupId,btn){document.querySelectorAll(`#${groupId
 function setResultFilter(value,btn){document.getElementById('resultFilter').value=value;activateFilterButton('resultFilterTabs',btn);renderRows()}
 function setReservationFilter(value,btn){document.getElementById('reservationFilter').value=value;activateFilterButton('reservationFilterTabs',btn);renderReservationRows()}
 function exportResult(){if(!resultRows.length){alert('저장할 검수 결과가 없습니다.');return}const rows=resultRows.map(r=>({'차트번호':r.id,'환자명':r.name,'현금+이체(수납대장)':r.aCash,'현금+이체(프로그램)':r.bCash,'카드(수납대장)':r.aCard,'카드(프로그램)':r.bCard,'총액(수납대장)':r.aTotal,'총액(프로그램)':r.bTotal,'검수결과':r.result,'수단상세':r.methods.map(m=>methodNames[m]||m).join(', ')}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'수납 검수결과');if(bookingResults.length){const rr=bookingResults.map(r=>({'차트번호':r.id,'환자명':r.name,'기존 예약코드':r.oldCode??'','자동 판정코드':r.auto,'최종 수정코드':r.edit,'결과':r.oldCode===r.edit?'일치':'불일치','예약 건수':r.list.length,'예약일':[...new Set(r.list.map(x=>x.dateKey).filter(Boolean))].join(', '),'예약 내용':r.list.map(x=>x.text).filter(Boolean).join(' / ')}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rr),'예약코드 검수')}const day=selectedSheet?.dateKey?'_'+selectedSheet.dateKey:selectedSheet?.day?`_${selectedSheet.day}일`:'';XLSX.writeFile(wb,`JINSUL_수납검수${day}.xlsx`)}
-function resetAll(){currentWbA=confA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();dbA=[];bitRecords=[];bitFiles=[];bitDates.clear();bookingRecords=[];bookingResults=[];selectedSheet=null;resultRows=[];currentAuditView='payment';['fileA','fileB','fileC'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB','bitDateInfo','fileNameC','bookingInfo'].forEach(id=>document.getElementById(id).textContent='');['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});setStatus('statusC','업로드 가능','ok');document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('reservationPanel').classList.add('hidden-panel');document.getElementById('auditTabs').classList.add('hidden');document.getElementById('auditViewEmpty').classList.add('hidden');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';document.querySelectorAll('#resultFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));document.getElementById('reservationFilter').value='bad';document.querySelectorAll('#reservationFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='bad'));setLoading(false)}
+function resetAll(){currentWbA=confA=null;fileABuffer=null;sheetNamesA=[];cacheA.clear();dbA=[];bitRecords=[];bitFiles=[];bitDates.clear();bookingRecords=[];bookingResults=[];selectedSheet=null;resultRows=[];currentAuditView='payment';['fileA','fileB','fileC'].forEach(id=>document.getElementById(id).value='');['fileNameA','fileNameB','bitDateInfo','fileNameC','bookingInfo'].forEach(id=>document.getElementById(id).textContent='');document.getElementById('pasteA').value='';document.getElementById('pasteB').value='';document.getElementById('pasteInfoA').textContent='Excel 업로드와 선택해서 사용';document.getElementById('pasteInfoB').textContent='의사랑·비트 자동 인식';['statusA','statusB'].forEach(id=>{const e=document.getElementById(id);e.className='status';e.textContent='파일 대기'});setStatus('statusC','업로드 가능','ok');document.getElementById('calendarArea').style.display='none';document.getElementById('calendarGrid').innerHTML='';document.getElementById('resultPanel').classList.add('hidden-panel');document.getElementById('reservationPanel').classList.add('hidden-panel');document.getElementById('auditTabs').classList.add('hidden');document.getElementById('auditViewEmpty').classList.add('hidden');document.getElementById('searchInput').value='';document.getElementById('resultFilter').value='all';document.querySelectorAll('#resultFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));document.getElementById('reservationFilter').value='bad';document.querySelectorAll('#reservationFilterTabs .filter-tab').forEach(b=>b.classList.toggle('active',b.dataset.filter==='bad'));setLoading(false)}
 </script>
 </body>
 </html>
