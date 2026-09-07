@@ -1,12 +1,13 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
-<title>JINSUL MAP v3.1.7</title>
+<title>JINSUL MAP v3.2.0</title>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=458452c3d35cc85b5bacc8efebad33a4&libraries=services,drawing,clusterer&autoload=false"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=587d3b22c3896f92f134d03253e685bd&amp;libraries=services,drawing,clusterer&amp;autoload=false"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.0.0/encoding.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -607,115 +608,106 @@
     .fabAI{position:fixed;right:14px;bottom:14px;z-index:2500;}
     @media (max-width: 820px){ .rightDrawer{width:92vw;} }
 
-
-
-/* =========================================================
-   JINSUL PORTAL BRAND / THEME LAYER
-   기존 환자 구분 색상(--c-new, --c-conv, --c-90, --c-ret)은 변경하지 않습니다.
-   ========================================================= */
-:root{
-  --app-bg:#eef3f9;
-  --surface:#ffffff;
-  --surface-soft:#f7f9fc;
-  --surface-strong:#eef3f8;
-  --ink:#172033;
-  --ink-soft:#64748b;
-  --line:#dce4ee;
-  --header-bg:rgba(255,255,255,.94);
-  --modal-bg:#ffffff;
-  --control-bg:#ffffff;
-  --hover-bg:#f1f5f9;
-  --brand-navy:#102a43;
-  --brand-blue:#2563eb;
-  --brand-gold:#c89b3c;
-  color-scheme:light;
-}
-html[data-theme="dark"]{
-  --app-bg:#09111f;
-  --surface:#111c2d;
-  --surface-soft:#162235;
-  --surface-strong:#1d2a40;
-  --ink:#e8eef8;
-  --ink-soft:#9fb0c7;
-  --line:#2b3b52;
-  --header-bg:rgba(13,24,40,.95);
-  --modal-bg:#111c2d;
-  --control-bg:#17243a;
-  --hover-bg:#20304a;
-  --brand-navy:#e9f1fb;
-  color-scheme:dark;
-}
-html,body{background:var(--app-bg)!important;color:var(--ink)!important;}
-.sidebar{
-  background:linear-gradient(180deg,var(--surface-soft),var(--app-bg))!important;
-  color:var(--ink)!important;
-  border-right:1px solid var(--line)!important;
-  box-shadow:8px 0 28px rgba(15,23,42,.10)!important;
-}
-.sidebarHeader{
-  min-height:78px;padding:12px 14px!important;background:var(--header-bg)!important;
-  border-bottom:1px solid var(--line)!important;backdrop-filter:blur(14px);
-}
-.brandWrap{display:flex;align-items:center;gap:10px;min-width:0;}
-.brandLogo{width:42px;height:42px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 4px 8px rgba(15,23,42,.12));}
-.brand{font-size:16px!important;font-weight:900;color:var(--brand-navy)!important;letter-spacing:.2px;line-height:1.15;}
-.brandSub{font-size:10px;color:var(--ink-soft);margin-top:4px;white-space:nowrap;}
-.headerActions{display:flex;align-items:center;gap:6px;}
-.headerIconBtn{
-  width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:var(--control-bg);
-  color:var(--ink);cursor:pointer;font-size:17px;font-weight:800;display:grid;place-items:center;
-  box-shadow:0 4px 12px rgba(15,23,42,.08);transition:.2s ease;
-}
-.headerIconBtn:hover{transform:translateY(-1px);background:var(--hover-bg);border-color:#93a4ba;}
-.themeBtn{font-size:15px;}
-.section,.ai-section{
-  background:var(--surface)!important;border:1px solid var(--line)!important;
-  box-shadow:0 8px 22px rgba(15,23,42,.07)!important;color:var(--ink)!important;
-  backdrop-filter:none!important;
-}
-.sectionTitle{
-  background:none!important;-webkit-background-clip:initial!important;-webkit-text-fill-color:initial!important;
-  color:var(--ink)!important;
-}
-.sectionTitle::before{background:linear-gradient(180deg,var(--brand-blue),var(--brand-gold))!important;}
-.uploadBox,.statGrid,.statItem,.input-box,.miniInput,.aiTextarea,.aiOutput,
-.search-btn,.btn.outline,.chip,.chipBtn,select{
-  background:var(--control-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;
-}
-.uploadBox{background:var(--surface-soft)!important;}
-.statGrid{background:var(--surface-soft)!important;}
-.statLabel,.muted,.brandSub,#searchStatus{color:var(--ink-soft)!important;}
-.statValue,.row,.input-box::placeholder,.miniInput::placeholder,.aiTextarea::placeholder{color:var(--ink)!important;}
-.row{border-bottom-color:var(--line)!important;}
-.search-btn.active{background:rgba(37,99,235,.12)!important;color:#3b82f6!important;border-color:#3b82f6!important;}
-.btn.primary{background:linear-gradient(135deg,#1d4ed8,#3b82f6)!important;box-shadow:0 8px 18px rgba(37,99,235,.28)!important;}
-.btn.purple,#btnRouteOpt{background:linear-gradient(135deg,#6941c6,#8b5cf6)!important;box-shadow:0 8px 18px rgba(124,58,237,.26)!important;}
-.sidebar > div:last-child{background:var(--surface)!important;border-top-color:var(--line)!important;color:var(--ink-soft)!important;}
-#mapLegend,.map-type-group,.vertical-toolbar,.info,.info-overlay{
-  background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important;
-}
-.map-type-btn,.v-tool-btn{background:var(--control-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;}
-.map-type-btn:hover,.v-tool-btn:hover{background:var(--hover-bg)!important;}
-.map-type-btn.active,.v-tool-btn.active{background:#2563eb!important;color:white!important;}
-.v-tool-btn .lbl{color:var(--ink-soft)!important;}
-.v-tool-btn.active .lbl{color:white!important;}
-.modalPanel,.rightDrawer{background:var(--modal-bg)!important;color:var(--ink)!important;border-color:var(--line)!important;}
-.drawerHeader,.drawerFooter,.modalHeader{background:var(--header-bg)!important;border-color:var(--line)!important;color:var(--ink)!important;}
-.drawerTitle{background:none!important;-webkit-text-fill-color:initial!important;color:var(--ink)!important;}
-.tabBar,.tabBtn,table.miniTable td{border-color:var(--line)!important;}
-.tabBtn{background:var(--control-bg)!important;color:var(--ink)!important;}
-.tabBtn.active{background:#2563eb!important;color:white!important;border-color:#2563eb!important;}
-table.miniTable th{background:var(--surface-strong)!important;color:var(--ink)!important;}
-table.miniTable td{color:var(--ink)!important;}
-.result-item{border-color:var(--line)!important;}.result-item:hover{background:var(--hover-bg)!important;}
-.result-item .addr{color:var(--ink-soft)!important;}
-details{background:var(--surface-soft)!important;border-color:var(--line)!important;color:var(--ink)!important;}
-#roadviewModal{border-color:var(--line)!important;}
-.sidebarBody{scrollbar-color:#8393a8 transparent;}
-@media(max-width:760px){
-  .app{display:block;overflow:auto;}.sidebar{width:100%;min-width:0;height:auto;max-height:52vh;}
-  .mapArea{height:48vh;}.brandSub{display:none;}.sidebarHeader{min-height:64px;}
-}
+    /* ===========================
+       상권 스캔 v3.2.0
+       =========================== */
+    .sidebarTabs{
+      display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px 10px;
+      background:#fff;border-bottom:1px solid var(--border);
+    }
+    .sidebarModeBtn{
+      min-height:38px;border:1px solid #dbe4ff;border-radius:10px;background:#f8f9fa;
+      color:#495057;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;
+    }
+    .sidebarModeBtn:hover{background:#edf2ff;}
+    .sidebarModeBtn.active{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(37,99,235,.25);}
+    .sidebarBody[hidden]{display:none!important;}
+    .scanSidebarBody{padding-top:12px;}
+    .scanLead{font-size:12px;line-height:1.55;color:#475569;margin:0 2px 10px;}
+    .scanField{display:block;margin-bottom:10px;}
+    .scanFieldLabel{display:block;font-size:12px;font-weight:800;color:#475569;margin:0 0 6px;}
+    .scanInput,.scanSelect{
+      width:100%;min-height:40px;padding:9px 11px;border:1px solid #dbe2ea;border-radius:10px;
+      background:#fff;color:#1f2937;font-size:14px;
+    }
+    .scanInput:focus,.scanSelect:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.13);}
+    .scanChecks{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+    .scanCheck{
+      display:flex;align-items:center;gap:7px;min-height:38px;padding:8px 9px;border:1px solid #e5e7eb;
+      border-radius:10px;background:rgba(255,255,255,.86);font-size:12px;font-weight:700;color:#374151;cursor:pointer;
+    }
+    .scanCheck input{width:16px;height:16px;margin:0;accent-color:#3b82f6;}
+    .scanStatus{
+      margin-top:9px;padding:9px 10px;border-radius:9px;background:#f8fafc;border:1px solid #e2e8f0;
+      color:#64748b;font-size:12px;line-height:1.45;
+    }
+    .scanStatus.busy{color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe;}
+    .scanStatus.error{color:#b91c1c;background:#fff1f2;border-color:#fecdd3;}
+    .scanMetricGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .scanMetric{padding:10px;border:1px solid #e5e7eb;border-radius:12px;background:linear-gradient(180deg,#fff,#f8fafc);}
+    .scanMetric.wide{grid-column:1/-1;}
+    .scanMetricLabel{font-size:11px;color:#64748b;font-weight:700;line-height:1.35;}
+    .scanMetricValue{margin-top:4px;font-size:19px;color:#0f172a;font-weight:900;letter-spacing:-.3px;}
+    .scanMetricMeta{margin-top:3px;color:#64748b;font-size:11px;line-height:1.4;}
+    .scanLayerGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+    .scanLayerGrid .scanCheck{min-height:34px;padding:6px 8px;font-size:11px;}
+    .scanSwatch{width:10px;height:10px;border-radius:50%;flex:0 0 10px;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(15,23,42,.12);}
+    .scanFacilityList,.scanSpecialtyList{display:grid;gap:7px;}
+    .scanResultRow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #e5e7eb;}
+    .scanResultRow:last-child{border-bottom:0;}
+    .scanResultName{font-size:12px;color:#334155;font-weight:800;}
+    .scanResultValue{text-align:right;color:#0f172a;font-weight:900;font-size:12px;}
+    .scanResultSub{display:block;margin-top:2px;font-size:10px;font-weight:600;color:#64748b;}
+    .scanCandidateSummary{margin:0 0 10px;padding:10px;border-radius:11px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:12px;line-height:1.5;}
+    .scanNote{margin-top:9px;color:#64748b;font-size:11px;line-height:1.5;}
+    .scanLimitNote{display:none;margin-top:8px;padding:8px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px;line-height:1.45;}
+    .scanPopulationPicker{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-bottom:9px;}
+    .scanPopulationPicker .btn{width:auto;white-space:nowrap;margin:0;padding:8px 10px;}
+    .scanPopulationHero{padding:11px;border:1px solid #bae6fd;border-radius:12px;background:linear-gradient(145deg,#f0f9ff,#ecfeff);}
+    .scanPopulationTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+    .scanPopulationName{font-size:13px;font-weight:900;color:#0c4a6e;line-height:1.4;}
+    .scanPopulationDistance{display:block;margin-top:2px;color:#64748b;font-size:10px;font-weight:700;}
+    .scanCongestion{flex:0 0 auto;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;border:1px solid transparent;}
+    .scanCongestion.quiet{background:#ecfdf5;color:#047857;border-color:#a7f3d0;}
+    .scanCongestion.normal{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
+    .scanCongestion.busy{background:#fff7ed;color:#c2410c;border-color:#fed7aa;}
+    .scanCongestion.crowded{background:#fff1f2;color:#be123c;border-color:#fecdd3;}
+    .scanPopulationRange{margin-top:9px;color:#0f172a;font-size:22px;font-weight:950;letter-spacing:-.7px;}
+    .scanPopulationRange small{font-size:11px;color:#64748b;font-weight:700;letter-spacing:0;}
+    .scanPopulationMessage{margin-top:5px;color:#475569;font-size:10px;line-height:1.45;}
+    .scanPopulationStats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+    .scanPopulationStat{padding:8px;border-radius:9px;background:rgba(255,255,255,.78);border:1px solid #e0f2fe;}
+    .scanPopulationStat span{display:block;color:#64748b;font-size:10px;font-weight:700;}
+    .scanPopulationStat b{display:block;margin-top:3px;color:#0f172a;font-size:13px;}
+    .scanAgeBars{display:grid;gap:6px;margin-top:10px;}
+    .scanAgeRow{display:grid;grid-template-columns:40px minmax(0,1fr) 42px;align-items:center;gap:7px;font-size:10px;color:#64748b;font-weight:700;}
+    .scanAgeTrack{height:7px;border-radius:999px;background:#e2e8f0;overflow:hidden;}
+    .scanAgeFill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#2563eb);}
+    .scanAgeValue{text-align:right;color:#334155;}
+    .scanForecast{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;}
+    .scanForecastItem{padding:7px 5px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;text-align:center;}
+    .scanForecastItem time{display:block;color:#64748b;font-size:9px;font-weight:700;}
+    .scanForecastItem b{display:block;margin-top:3px;color:#0f172a;font-size:10px;line-height:1.35;}
+    .scanPopulationFoot{margin-top:9px;padding-top:8px;border-top:1px dashed #bae6fd;color:#64748b;font-size:10px;line-height:1.5;}
+    .scanPopulationFoot a{color:#0369a1;font-weight:800;text-decoration:none;}
+    .scanPlaceList{display:grid;gap:6px;max-height:210px;overflow:auto;}
+    .scanPlaceButton{width:100%;padding:8px 9px;border:1px solid #e5e7eb;border-radius:9px;background:#fff;text-align:left;cursor:pointer;}
+    .scanPlaceButton:hover{border-color:#93c5fd;background:#eff6ff;}
+    .scanPlaceButton strong{display:block;color:#1e3a8a;font-size:12px;}
+    .scanPlaceButton span{display:block;margin-top:2px;color:#64748b;font-size:10px;}
+    .scanCompareList{display:grid;gap:8px;}
+    .scanCompareCard{position:relative;padding:11px;border:1px solid #dbeafe;border-radius:12px;background:linear-gradient(180deg,#fff,#eff6ff);}
+    .scanCompareTitle{padding-right:28px;font-size:12px;font-weight:900;color:#1e3a8a;line-height:1.4;}
+    .scanCompareMeta{margin-top:7px;display:grid;gap:4px;color:#475569;font-size:11px;line-height:1.4;}
+    .scanCompareRemove{position:absolute;top:8px;right:8px;width:24px;height:24px;border:0;border-radius:7px;background:#fff1f2;color:#e11d48;cursor:pointer;font-weight:900;}
+    .scanEmpty{padding:12px;border:1px dashed #cbd5e1;border-radius:10px;text-align:center;color:#94a3b8;font-size:11px;line-height:1.5;}
+    #scanLegend{top:auto;bottom:14px;display:none;gap:7px;}
+    #scanLegend .legend-item{font-weight:700;color:#334155;}
+    #btnRunScan:disabled{cursor:not-allowed;opacity:.58;box-shadow:none;transform:none;}
+    @media (max-width: 760px){
+      .sidebar{width:340px;min-width:340px;}
+      .scanChecks{grid-template-columns:1fr;}
+    }
 
 </style>
 </head>
@@ -723,19 +715,14 @@ details{background:var(--surface-soft)!important;border-color:var(--line)!import
 <div class="app">
 <div class="sidebar">
 <div class="sidebarHeader">
-  <div class="brandWrap">
-    <img class="brandLogo" src="https://raw.githubusercontent.com/jinsul-lab/openteam/main/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL 로고" onerror="this.style.display='none'">
-    <div>
-      <div class="brand">JINSUL MAP</div>
-      <div class="brandSub">환자 분포 · 지역 통계 분석</div>
-    </div>
-  </div>
-  <div class="headerActions">
-    <button type="button" class="headerIconBtn" id="btnBack" title="뒤로가기" aria-label="뒤로가기">←</button>
-    <button type="button" class="headerIconBtn themeBtn" id="btnTheme" title="다크/라이트 전환" aria-label="다크/라이트 전환">🌙</button>
-  </div>
+<div class="brand">JINSUL MAP v3.2.0</div>
+<div style="font-size:11px;color:#868e96;">v3.2.0</div>
 </div>
-<div class="sidebarBody">
+<div class="sidebarTabs" role="tablist" aria-label="분석 모드">
+<button class="sidebarModeBtn active" id="btnModePatients" type="button" role="tab" aria-selected="true" aria-controls="patientSidebarPanel">환자 분석</button>
+<button class="sidebarModeBtn" id="btnModeScan" type="button" role="tab" aria-selected="false" aria-controls="scanSidebarPanel">상권 스캔</button>
+</div>
+<div class="sidebarBody" id="patientSidebarPanel" role="tabpanel" aria-labelledby="btnModePatients">
 <div class="section">
 <div class="sectionTitle">환자 데이터 업로드 <span class="pill">Excel</span></div>
 <div class="uploadBox" id="uploadBox" onclick="document.getElementById('fileInput').click()">
@@ -850,8 +837,103 @@ details{background:var(--surface-soft)!important;border-color:var(--line)!import
 <button class="btn purple" id="btnRouteOpt">🚀 최적 방문 경로 생성</button>
 </div>
 </div>
+<div class="sidebarBody scanSidebarBody" id="scanSidebarPanel" role="tabpanel" aria-labelledby="btnModeScan" hidden>
+<p class="scanLead">후보지를 기준으로 경쟁 의원과 생활 동선을 한 번에 확인합니다. 검색은 버튼을 누를 때만 실행됩니다.</p>
+<div class="section">
+<div class="sectionTitle">후보 입지 <span class="pill">Kakao</span></div>
+<label class="scanField" for="scanAddress">
+<span class="scanFieldLabel">주소 또는 지역명</span>
+<input class="scanInput" id="scanAddress" type="search" autocomplete="street-address" placeholder="예: 서울시청 또는 세종대로 110"/>
+</label>
+<label class="scanField" for="scanRadius">
+<span class="scanFieldLabel">분석 반경</span>
+<select class="scanSelect" id="scanRadius">
+<option value="500">0.5km</option>
+<option value="1000" selected>1km</option>
+<option value="1500">1.5km</option>
+<option value="2000">2km</option>
+<option value="3000">3km</option>
+<option value="5000">5km</option>
+</select>
+</label>
+<div class="scanFieldLabel">경쟁 진료과</div>
+<div class="scanChecks" id="scanSpecialtyChecks">
+<label class="scanCheck"><input class="scanSpecialty" type="checkbox" value="정형외과" checked/>정형외과</label>
+<label class="scanCheck"><input class="scanSpecialty" type="checkbox" value="신경외과" checked/>신경외과</label>
+<label class="scanCheck"><input class="scanSpecialty" type="checkbox" value="마취통증의학과" checked/>마취통증의학과</label>
+<label class="scanCheck"><input class="scanSpecialty" type="checkbox" value="재활의학과" checked/>재활의학과</label>
+</div>
+<div class="btnRow">
+<button class="btn primary" id="btnRunScan" type="button" disabled>상권 스캔</button>
+<button class="btn outline" id="btnClearScan" type="button">결과 지우기</button>
+</div>
+<div class="scanStatus" id="scanStatus" role="status" aria-live="polite">지도를 준비하는 중입니다.</div>
+</div>
+
+<div class="section" id="scanResultSection">
+<div class="sectionTitle">핵심 지표 <span class="pill">직선거리</span></div>
+<div class="scanEmpty" id="scanResultEmpty">주소와 반경을 선택한 뒤 상권 스캔을 실행하세요.</div>
+<div id="scanResultContent" hidden>
+<div class="scanCandidateSummary" id="scanCandidateSummary"></div>
+<div class="scanMetricGrid">
+<div class="scanMetric"><div class="scanMetricLabel">고유 경쟁 의원</div><div class="scanMetricValue" id="scanUniqueCount">-</div><div class="scanMetricMeta">진료과 간 중복 제거</div></div>
+<div class="scanMetric"><div class="scanMetricLabel">경쟁 밀도</div><div class="scanMetricValue" id="scanDensity">-</div><div class="scanMetricMeta">곳 / km²</div></div>
+<div class="scanMetric wide"><div class="scanMetricLabel">최근접 경쟁 의원</div><div class="scanMetricValue" id="scanNearest">-</div><div class="scanMetricMeta" id="scanNearestName">선택 반경 내 검색 결과 없음</div></div>
+</div>
+<div class="scanLimitNote" id="scanLimitNote"></div>
+<div class="scanNote">모든 거리는 후보 입지 좌표를 기준으로 계산한 직선거리입니다. 개수는 카카오 검색 결과 기준의 <b>검색된 개수</b>입니다.</div>
+</div>
+</div>
+
+<div class="section" id="scanPopulationSection">
+<div class="sectionTitle">서울 실시간 인구 <span class="pill">서울시</span></div>
+<div class="scanEmpty" id="scanPopulationEmpty">서울 소재 후보지를 스캔하면 가장 가까운 서울시 지정 장소의 실시간 인구를 연결합니다.</div>
+<div id="scanPopulationContent" hidden>
+<div class="scanPopulationPicker">
+<select class="scanSelect" id="scanHotspotSelect" aria-label="서울시 실시간 인구 장소"></select>
+<button class="btn outline" id="btnRefreshPopulation" type="button">새로고침</button>
+</div>
+<div id="scanPopulationBody"></div>
+</div>
+</div>
+
+<div class="section">
+<div class="sectionTitle">지도 표시 <span class="pill">필터</span></div>
+<div class="scanLayerGrid" id="scanLayerFilters">
+<label class="scanCheck"><input class="scanLayerFilter" type="checkbox" value="candidate" checked/><span class="scanSwatch" style="background:#4f46e5"></span>후보지·반경</label>
+<label class="scanCheck"><input class="scanLayerFilter" type="checkbox" value="competitor" checked/><span class="scanSwatch" style="background:#e11d48"></span>경쟁 의원</label>
+<label class="scanCheck"><input class="scanLayerFilter" type="checkbox" value="subway" checked/><span class="scanSwatch" style="background:#0284c7"></span>지하철역</label>
+<label class="scanCheck"><input class="scanLayerFilter" type="checkbox" value="parking" checked/><span class="scanSwatch" style="background:#059669"></span>주차장</label>
+<label class="scanCheck"><input class="scanLayerFilter" type="checkbox" value="pharmacy" checked/><span class="scanSwatch" style="background:#7c3aed"></span>약국</label>
+</div>
+</div>
+
+<div class="section">
+<div class="sectionTitle">진료과별 검색 결과</div>
+<div class="scanSpecialtyList" id="scanSpecialtyResults"><div class="scanEmpty">스캔 전입니다.</div></div>
+</div>
+
+<div class="section">
+<div class="sectionTitle">동선 분석 <span class="pill">검색된 개수</span></div>
+<div class="scanFacilityList" id="scanFacilityResults"><div class="scanEmpty">스캔 전입니다.</div></div>
+</div>
+
+<div class="section">
+<div class="sectionTitle">경쟁 의원 목록 <span class="pill" id="scanPlaceCount">0</span></div>
+<div class="scanPlaceList" id="scanPlaceList"><div class="scanEmpty">지도 마커를 누르면 상세 정보를 볼 수 있습니다.</div></div>
+</div>
+
+<div class="section">
+<div class="sectionTitle">후보지 비교 <span class="pill" id="scanCompareCount">0</span></div>
+<div class="btnRow" style="margin-top:0;margin-bottom:10px;">
+<button class="btn primary" id="btnAddComparison" type="button" disabled>현재 결과 추가</button>
+<button class="btn outline" id="btnClearComparisons" type="button">전체 초기화</button>
+</div>
+<div class="scanCompareList" id="scanCompareList"><div class="scanEmpty">스캔 결과를 추가하면 후보지를 나란히 비교할 수 있습니다.</div></div>
+</div>
+</div>
 <div style="padding:10px;text-align:center;font-size:10px;color:#adb5bd;border-top:1px solid #eee;">
-      JINSUL MAP v3.1.7<br/>All Rights Reserved.
+      JINSUL MAP v3.2.0<br/>All Rights Reserved.
     </div>
 </div>
 <div class="mapArea">
@@ -861,6 +943,13 @@ details{background:var(--surface-soft)!important;border-color:var(--line)!import
 <div class="legend-item"><div class="dot" style="background:#00c853"></div>재진전환</div>
 <div class="legend-item"><div class="dot" style="background:#ffd400"></div>90일초</div>
 <div class="legend-item"><div class="dot" style="background:#228be6"></div>재진</div>
+</div>
+<div id="scanLegend">
+<div class="legend-item"><div class="dot" style="background:#4f46e5"></div>후보지</div>
+<div class="legend-item"><div class="dot" style="background:#e11d48"></div>경쟁 의원</div>
+<div class="legend-item"><div class="dot" style="background:#0284c7"></div>지하철역</div>
+<div class="legend-item"><div class="dot" style="background:#059669"></div>주차장</div>
+<div class="legend-item"><div class="dot" style="background:#7c3aed"></div>약국</div>
 </div>
 <div class="map-controls-container">
 <div class="map-type-group">
@@ -1405,6 +1494,43 @@ let pointMode = false, promoPoints = [];
 let roadviewMode = false;
 const toggleState = { all: true, new_only: true, new_conv: true, bit_90: true, old: true };
 
+const SCAN_SPECIALTY_ORDER = ['정형외과','신경외과','마취통증의학과','재활의학과'];
+const SCAN_FACILITY_CONFIG = {
+  subway: { code:'SW8', label:'지하철역', color:'#0284c7' },
+  parking: { code:'PK6', label:'주차장', color:'#059669' },
+  pharmacy: { code:'PM9', label:'약국', color:'#7c3aed' }
+};
+const SCAN_LAYER_CONFIG = {
+  candidate: { label:'후보지', color:'#4f46e5', glyph:'★', size:38 },
+  competitor: { label:'경쟁 의원', color:'#e11d48', glyph:'의', size:32 },
+  subway: { label:'지하철역', color:'#0284c7', glyph:'역', size:30 },
+  parking: { label:'주차장', color:'#059669', glyph:'P', size:30 },
+  pharmacy: { label:'약국', color:'#7c3aed', glyph:'약', size:30 }
+};
+const SEOUL_REALTIME_API_KEY = '4c7a575343796d7338346d6d497573';
+const SEOUL_REALTIME_API_BASE = 'http://openapi.seoul.go.kr:8088';
+const SEOUL_REALTIME_SOURCE_URL = 'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do';
+const SEOUL_REALTIME_HOTSPOTS = [["강남 MICE 관광특구","관광특구",37.511,127.06007],["동대문 관광특구","관광특구",37.56731,127.011024],["명동 관광특구","관광특구",37.564148,126.98185],["이태원 관광특구","관광특구",37.53444,126.99437],["잠실 관광특구","관광특구",37.51648,127.11527],["동대문역","인구밀집지역",37.57148,127.00965],["종로·청계 관광특구","관광특구",37.57,126.99737],["홍대 관광특구","관광특구",37.553917,126.92127],["경복궁","고궁·문화유산",37.579876,126.97677],["보신각","고궁·문화유산",37.570583,126.98341],["서울 암사동 유적","고궁·문화유산",37.56063,127.13076],["창덕궁·종묘","고궁·문화유산",37.578697,126.993355],["가산디지털단지역","인구밀집지역",37.48089,126.880104],["강남역","인구밀집지역",37.498856,127.02814],["건대입구역","인구밀집지역",37.539967,127.0682],["고덕역","인구밀집지역",37.553455,127.15487],["고속터미널역","인구밀집지역",37.504814,127.00585],["교대역","인구밀집지역",37.492203,127.01396],["구로디지털단지역","인구밀집지역",37.48388,126.89618],["구로역","인구밀집지역",37.50235,126.88212],["군자역","인구밀집지역",37.556316,127.08019],["대림역","인구밀집지역",37.49267,126.895546],["뚝섬역","인구밀집지역",37.54829,127.046135],["미아사거리역","인구밀집지역",37.612194,127.03074],["발산역","인구밀집지역",37.55915,126.83917],["사당역","인구밀집지역",37.477932,126.98126],["삼각지역","인구밀집지역",37.53534,126.973885],["서울대입구역","인구밀집지역",37.480614,126.953064],["서울식물원·마곡나루역","인구밀집지역",37.567596,126.83106],["서울역","인구밀집지역",37.556595,126.97303],["선릉역","인구밀집지역",37.506054,127.049805],["성신여대입구역","인구밀집지역",37.592392,127.01687],["수유역","인구밀집지역",37.64106,127.02572],["신논현역·논현역","인구밀집지역",37.50808,127.02341],["신도림역","인구밀집지역",37.509098,126.890205],["신림역","인구밀집지역",37.484676,126.92934],["신촌·이대역","인구밀집지역",37.557037,126.93897],["양재역","인구밀집지역",37.48534,127.03397],["역삼역","인구밀집지역",37.500393,127.038185],["연신내역","인구밀집지역",37.61866,126.92072],["오목교역·목동운동장","인구밀집지역",37.528812,126.87664],["왕십리역","인구밀집지역",37.562218,127.0389],["용산역","인구밀집지역",37.530254,126.96082],["이태원역","인구밀집지역",37.534187,126.99305],["장지역","인구밀집지역",37.478752,127.123276],["장한평역","인구밀집지역",37.561806,127.06479],["천호역","인구밀집지역",37.539238,127.125015],["총신대입구(이수)역","인구밀집지역",37.486004,126.98104],["충정로역","인구밀집지역",37.559696,126.96369],["합정역","인구밀집지역",37.549377,126.911736],["혜화역","인구밀집지역",37.58248,127.00176],["홍대입구역(2호선)","인구밀집지역",37.556763,126.923004],["회기역","인구밀집지역",37.59054,127.05616],["가락시장","발달상권",37.49347,127.11189],["가로수길","발달상권",37.52139,127.023575],["여의도","발달상권",37.52502,126.92553],["광장(전통)시장","발달상권",37.570004,126.9999],["김포공항","발달상권",37.56227,126.8026],["노량진","발달상권",37.513893,126.94405],["덕수궁길·정동길","발달상권",37.56635,126.97179],["난지한강공원","공원",37.5665,126.87733],["남산공원","공원",37.55158,126.99376],["북촌한옥마을","발달상권",37.582237,126.984],["서촌","발달상권",37.580368,126.969574],["성수카페거리","발달상권",37.542965,127.056595],["쌍문역","인구밀집지역",37.647762,127.03309],["압구정로데오거리","발달상권",37.525494,127.038734],["연남동","발달상권",37.56162,126.92234],["영등포 타임스퀘어","발달상권",37.516865,126.90615],["용리단길","발달상권",37.531185,126.97129],["이태원 앤틱가구거리","발달상권",37.53223,126.99392],["인사동","발달상권",37.573864,126.98606],["창동 신경제 중심지","발달상권",37.656147,127.0547],["청담동 명품거리","발달상권",37.525833,127.04376],["청량리 제기동 일대 전통시장","발달상권",37.58083,127.03998],["해방촌·경리단길","발달상권",37.54237,126.98718],["DDP(동대문디자인플라자)","발달상권",37.56699,127.01029],["DMC(디지털미디어시티)","발달상권",37.579277,126.89179],["강서한강공원","공원",37.586514,126.81855],["고척돔","공원",37.497673,126.86702],["광나루한강공원","공원",37.55399,127.12982],["광화문광장","공원",37.57341,126.97692],["국립중앙박물관·용산가족공원","공원",37.522766,126.98143],["노들섬","공원",37.51756,126.958664],["뚝섬한강공원","공원",37.529186,127.07152],["망원한강공원","공원",37.55328,126.89927],["반포한강공원","공원",37.509827,126.994675],["북서울꿈의숲","공원",37.621853,127.041115],["서리풀공원·몽마르뜨공원","공원",37.491585,127.002686],["서울대공원","공원",37.42901,127.01716],["서울숲공원","공원",37.542965,127.03765],["아차산","공원",37.56684,127.10281],["청계산","공원",37.44074,127.05002],["양화한강공원","공원",37.541306,126.898186],["어린이대공원","공원",37.54906,127.08136],["여의도한강공원","공원",37.528988,126.92822],["월드컵공원","공원",37.570187,126.8842],["응봉산","공원",37.548214,127.030464],["이촌한강공원","공원",37.5194,126.96665],["잠실종합운동장","공원",37.514523,127.07365],["잠실한강공원","공원",37.519234,127.0843],["잠원한강공원","공원",37.52381,127.014725],["북창동 먹자골목","발달상권",37.562263,126.9785],["남대문시장","발달상권",37.559914,126.97852],["익선동","발달상권",37.572662,126.98963],["올림픽공원","공원",37.51941,127.12241],["신정네거리역","인구밀집지역",37.521305,126.85528],["잠실새내역","인구밀집지역",37.510414,127.08266],["잠실역","인구밀집지역",37.511997,127.100365],["송리단길·호수단길","발달상권",37.50805,127.106316],["신촌 스타광장","발달상권",37.55651,126.93693],["보라매공원","공원",37.49296,126.92006],["서대문독립공원","공원",37.574093,126.956604],["안양천","공원",37.51867,126.8797],["홍제폭포","공원",37.580788,126.93698],["송현녹지광장","공원",37.577858,126.98371],["시의회 앞","인구밀집지역",37.56707,126.97694],["숭례문","인구밀집지역",37.560486,126.97573],["광화문·덕수궁","고궁·문화유산",37.57093,126.97719],["여의서로","공원",37.5327,126.91458],["잠실롯데타워·석촌호수","발달상권",37.51156,127.10331]];
+const scanState = {
+  candidate: null,
+  radiusMeters: 1000,
+  result: null,
+  population: null,
+  populationCandidates: [],
+  populationRequestToken: 0,
+  comparisons: [],
+  comparisonSeq: 0,
+  requestToken: 0,
+  isScanning: false,
+  ready: false,
+  circle: null,
+  markers: { candidate:[], competitor:[], subway:[], parking:[], pharmacy:[] },
+  infoWindow: null,
+  markerImages: {},
+  layerVisible: { candidate:true, competitor:true, subway:true, parking:true, pharmacy:true },
+  mode: 'patients'
+};
+
 
 var drawingFlag = false; var centerPosition = null; var drawingCircle = null; var drawingLine = null; var drawingOverlay = null; var circles = [];
 var distDrawing = false; var distLine = null; var distOverlay = null; var distMeasurements = []; var distPathData = [];
@@ -1523,8 +1649,9 @@ function initKakao(){
     });
     roadview = new kakao.maps.Roadview($('roadviewContainer'));
     roadviewClient = new kakao.maps.RoadviewClient();
-    setupMapListeners(); setupToolbar(); 
-    toast("시스템 준비 완료 (v3.1.2)");
+    setupMapListeners(); setupToolbar();
+    setScanReady(true);
+    toast("시스템 준비 완료 (v3.2.0)");
   });
 }
 initKakao();
@@ -1658,6 +1785,7 @@ function setupToolbar(){
     window.__areaPolys.forEach(a => { a.poly.setMap(null); a.overlay.setMap(null); }); window.__areaPolys = [];
     distMeasurements.forEach(d => { d.line.setMap(null); d.overlay.setMap(null); }); distMeasurements = [];
     try{ routeLines.forEach(l=>l&&l.setMap&&l.setMap(null)); }catch(e){} routeLines=[]; routeMarkers.forEach(m => m.setMap(null)); routeMarkers = [];
+    try{ scanClearMapArtifacts(); }catch(e){}
     Object.values(targetMarkers).forEach(a=>a.forEach(m=>m.setMap(null)));
   try{ Object.values(targetOverlays).forEach(a=>a.forEach(o=>o && o.setMap && o.setMap(null))); }catch(e){}
   targetMarkers = { senior:[], welfare:[], ortho:[], banner:[], recommend:[] };
@@ -3985,19 +4113,703 @@ window.switchTab = (id) => {
 };
 
 
-/* ===========================   [배포 환경 확인]   =========================== */
-(function validateDeploymentOrigin(){
-  const allowedHost = "xginini-dot.github.io";
-  window.addEventListener("DOMContentLoaded", () => {
-    if(location.protocol === "file:"){
-      console.warn("JINSUL MAP은 file:// 직접 실행이 아니라 GitHub Pages에서 실행해야 API가 연결됩니다.");
-      return;
-    }
-    if(location.hostname && location.hostname !== allowedHost && location.hostname !== "localhost" && location.hostname !== "127.0.0.1"){
-      console.warn(`현재 호스트(${location.origin})는 운영 주소(${JINSUL_SITE_BASE})와 다릅니다.`);
+/* ===========================   [상권 스캔 v3.2.0]   =========================== */
+function setScanReady(ready){
+  scanState.ready = !!ready;
+  const btn = $('btnRunScan');
+  if(btn) btn.disabled = !scanState.ready || scanState.isScanning;
+  if(ready && $('scanStatus') && $('scanStatus').textContent.includes('준비')){
+    scanSetStatus('주소와 반경을 선택한 뒤 스캔을 실행하세요.');
+  }
+}
+
+function scanSetStatus(message, tone=''){
+  const el = $('scanStatus');
+  if(!el) return;
+  el.textContent = message;
+  el.classList.remove('busy','error');
+  if(tone) el.classList.add(tone);
+}
+
+function scanEscapeHTML(value){
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function scanFormatDistance(meters){
+  const n = Number(meters);
+  if(!Number.isFinite(n)) return '-';
+  if(n < 1000) return `${Math.round(n).toLocaleString()}m`;
+  return `${(n/1000).toFixed(n < 10000 ? 2 : 1)}km`;
+}
+
+function scanHaversineMeters(lat1, lng1, lat2, lng2){
+  const rad = Math.PI / 180;
+  const a1 = Number(lat1) * rad;
+  const a2 = Number(lat2) * rad;
+  const dLat = (Number(lat2) - Number(lat1)) * rad;
+  const dLng = (Number(lng2) - Number(lng1)) * rad;
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(a1) * Math.cos(a2) * Math.sin(dLng/2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function scanNumber(value){
+  const parsed = Number(String(value ?? '').replace(/,/g,''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function scanFormatPopulationRange(min,max){
+  if(!Number.isFinite(min) || !Number.isFinite(max)) return '-';
+  return `${Math.round(min).toLocaleString('ko-KR')}–${Math.round(max).toLocaleString('ko-KR')}명`;
+}
+
+function scanNearestSeoulHotspots(candidate,limit=5){
+  const lat = Number(candidate?.lat);
+  const lng = Number(candidate?.lng);
+  if(!Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+  const insideSeoulBounds = lat >= 37.40 && lat <= 37.72 && lng >= 126.72 && lng <= 127.30;
+  if(!insideSeoulBounds) return [];
+  const nearest = SEOUL_REALTIME_HOTSPOTS.map(item=>({
+    name:item[0],category:item[1],lat:Number(item[2]),lng:Number(item[3]),
+    distance:scanHaversineMeters(lat,lng,Number(item[2]),Number(item[3]))
+  })).filter(item=>Number.isFinite(item.distance)).sort((a,b)=>a.distance-b.distance);
+  if(!nearest.length || nearest[0].distance > 20000) return [];
+  return nearest.slice(0,limit);
+}
+
+function scanResetPopulationUI(message='서울 소재 후보지를 스캔하면 가장 가까운 서울시 지정 장소의 실시간 인구를 연결합니다.'){
+  scanState.populationRequestToken += 1;
+  scanState.population = null;
+  scanState.populationCandidates = [];
+  const empty = $('scanPopulationEmpty');
+  const content = $('scanPopulationContent');
+  const select = $('scanHotspotSelect');
+  const body = $('scanPopulationBody');
+  if(empty){ empty.textContent = message; empty.hidden = false; }
+  if(content) content.hidden = true;
+  if(select) select.innerHTML = '';
+  if(body) body.innerHTML = '';
+}
+
+function scanCongestionTone(level){
+  const text = String(level || '');
+  if(text.includes('붐빔')) return 'crowded';
+  if(text.includes('약간')) return 'busy';
+  if(text.includes('보통')) return 'normal';
+  return 'quiet';
+}
+
+function scanNormalizePopulation(row,hotspot){
+  const forecastRows = Array.isArray(row?.FCST_PPLTN) ? row.FCST_PPLTN : [];
+  const ages = {};
+  [0,10,20,30,40,50,60,70].forEach(age=>{ ages[age] = scanNumber(row?.[`PPLTN_RATE_${age}`]) || 0; });
+  return {
+    areaName:String(row?.AREA_NM || hotspot.name),
+    areaCode:String(row?.AREA_CD || ''),
+    category:hotspot.category,
+    distance:hotspot.distance,
+    min:scanNumber(row?.AREA_PPLTN_MIN),
+    max:scanNumber(row?.AREA_PPLTN_MAX),
+    congestion:String(row?.AREA_CONGEST_LVL || '정보 없음'),
+    message:String(row?.AREA_CONGEST_MSG || ''),
+    maleRate:scanNumber(row?.MALE_PPLTN_RATE),
+    femaleRate:scanNumber(row?.FEMALE_PPLTN_RATE),
+    residentRate:scanNumber(row?.RESNT_PPLTN_RATE),
+    nonResidentRate:scanNumber(row?.NON_RESNT_PPLTN_RATE),
+    ages,
+    updateTime:String(row?.PPLTN_TIME || ''),
+    replacement:String(row?.REPLACE_YN || 'N') === 'Y',
+    forecast:forecastRows.map(item=>({
+      time:String(item?.FCST_TIME || ''),
+      congestion:String(item?.FCST_CONGEST_LVL || ''),
+      min:scanNumber(item?.FCST_PPLTN_MIN),
+      max:scanNumber(item?.FCST_PPLTN_MAX)
+    })).filter(item=>item.time),
+    fetchedAt:new Date().toISOString()
+  };
+}
+
+async function scanFetchSeoulPopulation(hotspot){
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(),12000);
+  const url = `${SEOUL_REALTIME_API_BASE}/${encodeURIComponent(SEOUL_REALTIME_API_KEY)}/json/citydata_ppltn/1/5/${encodeURIComponent(hotspot.name)}`;
+  try{
+    const response = await fetch(url,{ cache:'no-store', mode:'cors', signal:controller.signal });
+    if(!response.ok) throw new Error('서울시 API 응답 오류');
+    const payload = await response.json();
+    const resultCode = payload?.RESULT?.['RESULT.CODE'];
+    if(resultCode && resultCode !== 'INFO-000') throw new Error('서울시 API 조회 실패');
+    const rows = payload?.['SeoulRtd.citydata_ppltn'];
+    if(!Array.isArray(rows) || !rows.length) throw new Error('실시간 인구 데이터 없음');
+    return scanNormalizePopulation(rows[0],hotspot);
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+
+function scanRenderPopulation(data){
+  const body = $('scanPopulationBody');
+  if(!body) return;
+  const ageGroups = [
+    ['0–19세',(data.ages[0]||0)+(data.ages[10]||0)],
+    ['20–39세',(data.ages[20]||0)+(data.ages[30]||0)],
+    ['40–59세',(data.ages[40]||0)+(data.ages[50]||0)],
+    ['60세+',(data.ages[60]||0)+(data.ages[70]||0)]
+  ];
+  const over50 = (data.ages[50]||0)+(data.ages[60]||0)+(data.ages[70]||0);
+  const percent = value=>Number.isFinite(value) ? `${value.toFixed(1)}%` : '-';
+  const forecast = data.forecast.slice(0,6);
+  const forecastHTML = forecast.length ? `<div class="scanForecast" aria-label="예측 인구">${forecast.map(item=>`
+    <div class="scanForecastItem"><time>${scanEscapeHTML(item.time.replace(/^.*\s/,''))}</time><b>${scanEscapeHTML(scanFormatPopulationRange(item.min,item.max))}</b></div>`).join('')}</div>` : '';
+  body.innerHTML = `
+    <div class="scanPopulationHero">
+      <div class="scanPopulationTop">
+        <div><div class="scanPopulationName">${scanEscapeHTML(data.areaName)}</div><span class="scanPopulationDistance">${scanEscapeHTML(data.category || '서울시 지정 장소')} · 후보지에서 ${scanFormatDistance(data.distance)}</span></div>
+        <span class="scanCongestion ${scanCongestionTone(data.congestion)}">${scanEscapeHTML(data.congestion)}</span>
+      </div>
+      <div class="scanPopulationRange">${scanEscapeHTML(scanFormatPopulationRange(data.min,data.max))} <small>실시간 추정</small></div>
+      ${data.message?`<div class="scanPopulationMessage">${scanEscapeHTML(data.message)}</div>`:''}
+      <div class="scanPopulationStats">
+        <div class="scanPopulationStat"><span>비상주 인구</span><b>${percent(data.nonResidentRate)}</b></div>
+        <div class="scanPopulationStat"><span>50대 이상</span><b>${percent(over50)}</b></div>
+        <div class="scanPopulationStat"><span>여성 비율</span><b>${percent(data.femaleRate)}</b></div>
+        <div class="scanPopulationStat"><span>남성 비율</span><b>${percent(data.maleRate)}</b></div>
+      </div>
+      <div class="scanAgeBars" aria-label="연령대별 비율">${ageGroups.map(([label,value])=>`
+        <div class="scanAgeRow"><span>${label}</span><div class="scanAgeTrack"><div class="scanAgeFill" style="width:${Math.max(0,Math.min(100,value*2))}%"></div></div><span class="scanAgeValue">${percent(value)}</span></div>`).join('')}</div>
+      ${forecastHTML}
+      <div class="scanPopulationFoot">기준 ${scanEscapeHTML(data.updateTime || '시각 정보 없음')}${data.replacement?' · 대체 데이터':''}<br><b>주의:</b> 후보지 반경 인구가 아니라 가장 가까운 서울시 지정 장소의 순간 추정치입니다. <a href="${SEOUL_REALTIME_SOURCE_URL}" target="_blank" rel="noopener noreferrer">서울 열린데이터광장 ↗</a></div>
+    </div>`;
+}
+
+async function scanLoadSeoulPopulation(hotspotName=null,marketToken=scanState.requestToken){
+  const hotspot = scanState.populationCandidates.find(item=>item.name===(hotspotName || $('scanHotspotSelect')?.value)) || scanState.populationCandidates[0];
+  const body = $('scanPopulationBody');
+  if(!hotspot || !body) return;
+  const requestToken = ++scanState.populationRequestToken;
+  scanState.population = null;
+  if(scanState.result) scanState.result.population = null;
+  body.innerHTML = '<div class="scanEmpty">서울시 실시간 인구를 불러오는 중입니다.</div>';
+  try{
+    const data = await scanFetchSeoulPopulation(hotspot);
+    if(requestToken !== scanState.populationRequestToken || marketToken !== scanState.requestToken) return;
+    scanState.population = data;
+    if(scanState.result) scanState.result.population = data;
+    scanRenderPopulation(data);
+  }catch(error){
+    if(requestToken !== scanState.populationRequestToken || marketToken !== scanState.requestToken) return;
+    const protocolHint = location.protocol === 'https:' ? ' 현재 HTTPS 환경에서는 서울시 HTTP API가 브라우저 보안 정책에 의해 차단될 수 있습니다.' : '';
+    body.innerHTML = `<div class="scanEmpty">실시간 인구를 불러오지 못했습니다. 인터넷 연결과 서울시 API 상태를 확인해주세요.${scanEscapeHTML(protocolHint)}</div>`;
+  }
+}
+
+function scanPrepareSeoulPopulation(candidate,marketToken){
+  const candidates = scanNearestSeoulHotspots(candidate,5);
+  if(!candidates.length){
+    scanResetPopulationUI('서울시 지정 장소와 연결할 수 없는 후보지입니다. 서울 소재 후보지에서 이용할 수 있습니다.');
+    return;
+  }
+  scanState.populationCandidates = candidates;
+  const empty = $('scanPopulationEmpty');
+  const content = $('scanPopulationContent');
+  const select = $('scanHotspotSelect');
+  if(empty) empty.hidden = true;
+  if(content) content.hidden = false;
+  if(select){
+    select.innerHTML = candidates.map((item,index)=>`<option value="${scanEscapeHTML(item.name)}"${index===0?' selected':''}>${scanEscapeHTML(item.name)} · ${scanFormatDistance(item.distance)}</option>`).join('');
+  }
+  scanLoadSeoulPopulation(candidates[0].name,marketToken);
+}
+
+function scanKakaoMapUrl(place){
+  const supplied = String(place.placeUrl || '');
+  if(/^https:\/\/(place|map)\.kakao\.com\//i.test(supplied)) return supplied;
+  return `https://map.kakao.com/link/map/${encodeURIComponent(place.name || '장소')},${Number(place.lat)},${Number(place.lng)}`;
+}
+
+function scanSelectedSpecialties(){
+  return Array.from(document.querySelectorAll('.scanSpecialty:checked')).map(el=>el.value);
+}
+
+function scanAbortActive(message=''){
+  if(scanState.isScanning){
+    scanState.requestToken += 1;
+    scanState.isScanning = false;
+    const btn = $('btnRunScan');
+    if(btn){ btn.disabled = !scanState.ready; btn.textContent = '상권 스캔'; }
+    if(message) scanSetStatus(message);
+  }
+}
+
+function scanClearMapArtifacts(){
+  if(scanState.infoWindow){ try{ scanState.infoWindow.close(); }catch(e){} scanState.infoWindow = null; }
+  Object.keys(scanState.markers).forEach(type=>{
+    scanState.markers[type].forEach(marker=>{ try{ marker.setMap(null); }catch(e){} });
+    scanState.markers[type] = [];
+  });
+  if(scanState.circle){ try{ scanState.circle.setMap(null); }catch(e){} scanState.circle = null; }
+  const legend = $('scanLegend'); if(legend) legend.style.display = 'none';
+}
+
+function scanResetResultUI(){
+  const empty = $('scanResultEmpty'); if(empty) empty.hidden = false;
+  const content = $('scanResultContent'); if(content) content.hidden = true;
+  const specialty = $('scanSpecialtyResults'); if(specialty) specialty.innerHTML = '<div class="scanEmpty">스캔 전입니다.</div>';
+  const facilities = $('scanFacilityResults'); if(facilities) facilities.innerHTML = '<div class="scanEmpty">스캔 전입니다.</div>';
+  const list = $('scanPlaceList'); if(list) list.innerHTML = '<div class="scanEmpty">지도 마커를 누르면 상세 정보를 볼 수 있습니다.</div>';
+  const count = $('scanPlaceCount'); if(count) count.textContent = '0';
+  const add = $('btnAddComparison'); if(add) add.disabled = true;
+  const limit = $('scanLimitNote'); if(limit){ limit.style.display='none'; limit.textContent=''; }
+  scanResetPopulationUI();
+}
+
+function scanClearCurrent(){
+  scanAbortActive();
+  scanState.requestToken += 1;
+  scanClearMapArtifacts();
+  scanState.candidate = null;
+  scanState.result = null;
+  scanResetResultUI();
+  scanSetStatus(scanState.ready ? '현재 상권 결과를 지웠습니다.' : '지도를 준비하는 중입니다.');
+}
+
+function setSidebarMode(mode){
+  const next = mode === 'scan' ? 'scan' : 'patients';
+  scanState.mode = next;
+  const patientPanel = $('patientSidebarPanel');
+  const scanPanel = $('scanSidebarPanel');
+  const patientBtn = $('btnModePatients');
+  const scanBtn = $('btnModeScan');
+  if(patientPanel) patientPanel.hidden = next !== 'patients';
+  if(scanPanel) scanPanel.hidden = next !== 'scan';
+  if(patientBtn){ patientBtn.classList.toggle('active',next==='patients'); patientBtn.setAttribute('aria-selected',String(next==='patients')); }
+  if(scanBtn){ scanBtn.classList.toggle('active',next==='scan'); scanBtn.setAttribute('aria-selected',String(next==='scan')); }
+  const patientLegend = $('mapLegend');
+  if(patientLegend) patientLegend.style.display = next === 'patients' ? 'flex' : 'none';
+  if(next === 'patients'){
+    scanAbortActive('상권 스캔을 중단하고 지도 표시를 정리했습니다.');
+    scanClearMapArtifacts();
+  }else if(scanState.result){
+    scanDrawResult(scanState.result);
+  }
+  if(map){ setTimeout(()=>{ try{ map.relayout(); }catch(e){} },0); }
+}
+
+function scanResolveCandidate(query){
+  return new Promise((resolve,reject)=>{
+    geocoder.addressSearch(query,(data,status)=>{
+      if(status === kakao.maps.services.Status.OK && data && data[0]){
+        const item = data[0];
+        const address = item.road_address?.address_name || item.address?.address_name || item.address_name || query;
+        resolve({ name:query, address, lat:Number(item.y), lng:Number(item.x), placeUrl:'' });
+        return;
+      }
+      places.keywordSearch(query,(placeData,placeStatus)=>{
+        if(placeStatus === kakao.maps.services.Status.OK && placeData && placeData[0]){
+          const item = placeData[0];
+          resolve({
+            name:item.place_name || query,
+            address:item.road_address_name || item.address_name || query,
+            lat:Number(item.y), lng:Number(item.x), placeUrl:item.place_url || ''
+          });
+        }else{
+          reject(new Error('입력한 주소나 지역을 찾지 못했습니다.'));
+        }
+      });
+    });
+  });
+}
+
+function scanSearchAllPages(method, key, center, radius, token){
+  return new Promise((resolve)=>{
+    const collected = [];
+    let pages = 0;
+    let finished = false;
+    const done = (extra={})=>{
+      if(finished) return;
+      finished = true;
+      resolve({ places:collected, pages, truncated:false, error:false, cancelled:false, ...extra });
+    };
+    const callback = (data,status,pagination)=>{
+      if(token !== scanState.requestToken){ done({cancelled:true}); return; }
+      if(status === kakao.maps.services.Status.OK){
+        pages += 1;
+        if(Array.isArray(data)) collected.push(...data);
+        if(pagination && pagination.hasNextPage && pages < 45){
+          pagination.nextPage();
+        }else{
+          done({ truncated: pages >= 45 });
+        }
+      }else if(status === kakao.maps.services.Status.ZERO_RESULT){
+        done();
+      }else{
+        done({error:true});
+      }
+    };
+    const options = { location:center, radius, sort:kakao.maps.services.SortBy.DISTANCE };
+    try{
+      if(method === 'category') places.categorySearch(key,callback,options);
+      else places.keywordSearch(key,callback,options);
+    }catch(e){
+      done({error:true});
     }
   });
-})();
+}
+
+function scanNormalizePlace(item,candidate){
+  const lat = Number(item.y);
+  const lng = Number(item.x);
+  if(!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return {
+    id:String(item.id || ''),
+    name:item.place_name || '이름 없음',
+    address:item.road_address_name || item.address_name || '',
+    phone:item.phone || '',
+    category:item.category_name || '',
+    lat,lng,
+    placeUrl:item.place_url || '',
+    distance:scanHaversineMeters(candidate.lat,candidate.lng,lat,lng),
+    specialties:[]
+  };
+}
+
+function scanGenericPlaceKey(place){
+  if(place.id) return `id:${place.id}`;
+  const name = String(place.name||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
+  const address = String(place.address||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
+  return `fallback:${name}|${address}|${place.lat.toFixed(5)}|${place.lng.toFixed(5)}`;
+}
+
+function scanNormalizeStationName(name){
+  let normalized = String(name||'').normalize('NFKC').replace(/\([^)]*\)/g,' ').replace(/\s*[0-9]+\s*호선/gi,' ');
+  const stationAt = normalized.indexOf('역');
+  if(stationAt >= 0) normalized = normalized.slice(0,stationAt+1);
+  normalized = normalized.replace(/\s*[0-9]+\s*번?\s*출구.*$/,'').replace(/\s+/g,'').toLowerCase();
+  return normalized || String(name||'').replace(/\s+/g,'').toLowerCase();
+}
+
+function scanDedupPlaces(list,keyFn=scanGenericPlaceKey){
+  const unique = new Map();
+  list.forEach(place=>{
+    const key = keyFn(place);
+    const prior = unique.get(key);
+    if(!prior || place.distance < prior.distance) unique.set(key,place);
+  });
+  return Array.from(unique.values()).sort((a,b)=>a.distance-b.distance);
+}
+
+function scanPlacesWithinRadius(items,candidate,radius){
+  return items.map(item=>scanNormalizePlace(item,candidate)).filter(Boolean).filter(place=>place.distance <= radius + 1);
+}
+
+function scanMarkerImage(type){
+  if(scanState.markerImages[type]) return scanState.markerImages[type];
+  const config = SCAN_LAYER_CONFIG[type];
+  const size = config.size;
+  const fontSize = type === 'candidate' ? 17 : (type === 'competitor' ? 13 : 12);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2-2}" fill="${config.color}" stroke="white" stroke-width="3"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-size="${fontSize}" font-weight="800">${config.glyph}</text></svg>`;
+  scanState.markerImages[type] = new kakao.maps.MarkerImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,new kakao.maps.Size(size,size));
+  return scanState.markerImages[type];
+}
+
+function scanOpenPlaceInfo(place,type,marker=null){
+  if(scanState.infoWindow){ try{ scanState.infoWindow.close(); }catch(e){} }
+  const title = type === 'candidate' ? '후보지' : SCAN_LAYER_CONFIG[type].label;
+  const url = scanKakaoMapUrl(place);
+  const content = `<div style="width:230px;padding:11px 12px;font-size:12px;line-height:1.5;color:#1f2937;"><div style="font-size:10px;font-weight:800;color:${SCAN_LAYER_CONFIG[type].color};margin-bottom:3px;">${scanEscapeHTML(title)}</div><b style="font-size:13px;">${scanEscapeHTML(place.name)}</b><div style="margin-top:4px;color:#64748b;">${scanEscapeHTML(place.address || '주소 정보 없음')}</div>${type==='candidate'?'':`<div style="margin-top:4px;"><b>${scanFormatDistance(place.distance)}</b> · 직선거리</div>`}<a href="${scanEscapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:7px;color:#2563eb;font-weight:800;">카카오맵에서 보기 ↗</a></div>`;
+  scanState.infoWindow = new kakao.maps.InfoWindow({ content, removable:true, position:new kakao.maps.LatLng(place.lat,place.lng) });
+  if(marker) scanState.infoWindow.open(map,marker);
+  else scanState.infoWindow.open(map);
+}
+
+function scanAddMarker(place,type){
+  const marker = new kakao.maps.Marker({
+    position:new kakao.maps.LatLng(place.lat,place.lng),
+    image:scanMarkerImage(type),
+    map:scanState.layerVisible[type] ? map : null,
+    zIndex:type === 'candidate' ? 500000 : 400000,
+    title:place.name
+  });
+  kakao.maps.event.addListener(marker,'click',()=>scanOpenPlaceInfo(place,type,marker));
+  scanState.markers[type].push(marker);
+  return marker;
+}
+
+function scanDrawCandidate(candidate,radius){
+  const position = new kakao.maps.LatLng(candidate.lat,candidate.lng);
+  scanState.circle = new kakao.maps.Circle({
+    center:position,radius,
+    strokeWeight:2,strokeColor:'#4f46e5',strokeOpacity:.9,strokeStyle:'solid',
+    fillColor:'#6366f1',fillOpacity:.12,
+    map:scanState.layerVisible.candidate ? map : null,
+    zIndex:100
+  });
+  scanAddMarker({...candidate,distance:0},'candidate');
+  map.setCenter(position);
+  const level = radius <= 500 ? 5 : radius <= 1000 ? 6 : radius <= 2000 ? 7 : radius <= 3000 ? 8 : 9;
+  map.setLevel(level,{anchor:position});
+}
+
+function scanApplyLayerVisibility(){
+  Object.entries(scanState.markers).forEach(([type,markers])=>{
+    markers.forEach(marker=>marker.setMap(scanState.layerVisible[type] ? map : null));
+  });
+  if(scanState.circle) scanState.circle.setMap(scanState.layerVisible.candidate ? map : null);
+}
+
+function scanDrawResult(result){
+  if(!map || !result) return;
+  scanClearMapArtifacts();
+  scanDrawCandidate(result.candidate,result.radiusMeters);
+  result.competitors.forEach(place=>scanAddMarker(place,'competitor'));
+  Object.keys(SCAN_FACILITY_CONFIG).forEach(type=>result.facilities[type].places.forEach(place=>scanAddMarker(place,type)));
+  scanApplyLayerVisibility();
+  const legend = $('scanLegend'); if(legend && scanState.mode === 'scan') legend.style.display = 'flex';
+}
+
+function scanRenderResult(result){
+  const empty = $('scanResultEmpty'); if(empty) empty.hidden = true;
+  const content = $('scanResultContent'); if(content) content.hidden = false;
+  $('scanCandidateSummary').innerHTML = `<strong>${scanEscapeHTML(result.candidate.name)}</strong><br>${scanEscapeHTML(result.candidate.address)} · 반경 ${(result.radiusMeters/1000).toFixed(result.radiusMeters%1000?1:0)}km`;
+  $('scanUniqueCount').textContent = `${result.competitors.length.toLocaleString()}곳`;
+  $('scanDensity').textContent = result.density.toFixed(2);
+  if(result.nearestCompetitor){
+    $('scanNearest').textContent = scanFormatDistance(result.nearestCompetitor.distance);
+    $('scanNearestName').textContent = result.nearestCompetitor.name;
+  }else{
+    $('scanNearest').textContent = '-';
+    $('scanNearestName').textContent = '선택 반경 내 검색 결과 없음';
+  }
+
+  $('scanSpecialtyResults').innerHTML = result.specialties.map(item=>`
+    <div class="scanResultRow"><div class="scanResultName">${scanEscapeHTML(item.name)}</div><div class="scanResultValue">검색된 ${item.count.toLocaleString()}곳<span class="scanResultSub">${item.pages.toLocaleString()}페이지${item.error?' · 검색 오류':''}${item.truncated?' · 한도 도달':''}</span></div></div>`).join('');
+
+  $('scanFacilityResults').innerHTML = Object.keys(SCAN_FACILITY_CONFIG).map(type=>{
+    const item = result.facilities[type];
+    const nearest = item.nearest ? `최단 ${scanFormatDistance(item.nearest.distance)}` : '검색 결과 없음';
+    return `<div class="scanResultRow"><div class="scanResultName">${scanEscapeHTML(item.label)}</div><div class="scanResultValue">검색된 ${item.count.toLocaleString()}곳<span class="scanResultSub">${nearest}${item.error?' · 검색 오류':''}${item.truncated?' · 한도 도달':''}</span></div></div>`;
+  }).join('');
+
+  $('scanPlaceCount').textContent = result.competitors.length.toLocaleString();
+  const placeList = $('scanPlaceList');
+  if(result.competitors.length){
+    placeList.innerHTML = result.competitors.slice(0,50).map((place,index)=>`
+      <button class="scanPlaceButton" type="button" data-place-index="${index}"><strong>${scanEscapeHTML(place.name)}</strong><span>${scanFormatDistance(place.distance)} · ${scanEscapeHTML(place.specialties.join(', '))}</span></button>`).join('') +
+      (result.competitors.length>50?`<div class="scanNote">가까운 순 50곳까지 목록에 표시했습니다. 지도에는 검색된 ${result.competitors.length.toLocaleString()}곳을 모두 표시합니다.</div>`:'');
+    placeList.querySelectorAll('[data-place-index]').forEach(button=>{
+      button.onclick = ()=>{
+        const place = result.competitors[Number(button.dataset.placeIndex)];
+        if(!place) return;
+        map.panTo(new kakao.maps.LatLng(place.lat,place.lng));
+        scanOpenPlaceInfo(place,'competitor');
+      };
+    });
+  }else{
+    placeList.innerHTML = '<div class="scanEmpty">선택 반경 내에서 검색된 경쟁 의원이 없습니다.</div>';
+  }
+
+  const notices = [];
+  if(result.truncatedLabels.length) notices.push(`${result.truncatedLabels.join(', ')} 검색이 지원 페이지 한도에 도달했습니다.`);
+  if(result.errorLabels.length) notices.push(`${result.errorLabels.join(', ')} 검색 중 일부 요청이 실패했습니다.`);
+  const limit = $('scanLimitNote');
+  if(notices.length){ limit.textContent = `${notices.join(' ')} 따라서 표시값은 전체 개수가 아닌 검색된 개수입니다.`; limit.style.display='block'; }
+  else{ limit.textContent=''; limit.style.display='none'; }
+  $('btnAddComparison').disabled = false;
+}
+
+async function runMarketScan(){
+  if(!scanState.ready || !map || !geocoder || !places){ scanSetStatus('지도가 준비될 때까지 잠시 기다려주세요.','error'); return; }
+  const query = ($('scanAddress')?.value || '').trim();
+  const specialties = scanSelectedSpecialties();
+  if(!query){ scanSetStatus('주소 또는 지역명을 입력해주세요.','error'); $('scanAddress')?.focus(); return; }
+  if(!specialties.length){ scanSetStatus('경쟁 진료과를 하나 이상 선택해주세요.','error'); return; }
+
+  scanAbortActive();
+  const token = ++scanState.requestToken;
+  scanState.isScanning = true;
+  const runBtn = $('btnRunScan');
+  runBtn.disabled = true; runBtn.textContent = '스캔 중…';
+  $('btnAddComparison').disabled = true;
+  scanClearMapArtifacts();
+  scanState.result = null;
+  scanResetResultUI();
+  scanSetStatus('후보지 좌표를 확인하는 중입니다.','busy');
+
+  try{
+    const candidate = await scanResolveCandidate(query);
+    if(token !== scanState.requestToken) return;
+    const radius = Number($('scanRadius').value || 1000);
+    scanState.candidate = candidate;
+    scanState.radiusMeters = radius;
+    scanDrawCandidate(candidate,radius);
+    scanPrepareSeoulPopulation(candidate,token);
+
+    const specialtyResults = [];
+    const mergedCompetitors = new Map();
+    const facilityResults = {};
+    const truncatedLabels = [];
+    const errorLabels = [];
+    const totalSteps = specialties.length + Object.keys(SCAN_FACILITY_CONFIG).length;
+    let completed = 0;
+
+    for(const specialty of specialties){
+      scanSetStatus(`경쟁 의원 검색 중 ${completed+1}/${totalSteps} · ${specialty}`,'busy');
+      const response = await scanSearchAllPages('keyword',specialty,new kakao.maps.LatLng(candidate.lat,candidate.lng),radius,token);
+      if(response.cancelled || token !== scanState.requestToken) return;
+      const unique = scanDedupPlaces(scanPlacesWithinRadius(response.places,candidate,radius));
+      unique.forEach(place=>{
+        const key = scanGenericPlaceKey(place);
+        const prior = mergedCompetitors.get(key);
+        if(prior){
+          if(!prior.specialties.includes(specialty)) prior.specialties.push(specialty);
+          if(place.distance < prior.distance){
+            const specialtyCopy = prior.specialties.slice();
+            Object.assign(prior,place,{specialties:specialtyCopy});
+          }
+        }else{
+          place.specialties = [specialty];
+          mergedCompetitors.set(key,place);
+        }
+      });
+      specialtyResults.push({ name:specialty, count:unique.length, pages:response.pages, truncated:response.truncated, error:response.error });
+      if(response.truncated) truncatedLabels.push(specialty);
+      if(response.error) errorLabels.push(specialty);
+      completed += 1;
+    }
+
+    for(const [type,config] of Object.entries(SCAN_FACILITY_CONFIG)){
+      scanSetStatus(`동선 시설 검색 중 ${completed+1}/${totalSteps} · ${config.label}`,'busy');
+      const response = await scanSearchAllPages('category',config.code,new kakao.maps.LatLng(candidate.lat,candidate.lng),radius,token);
+      if(response.cancelled || token !== scanState.requestToken) return;
+      const within = scanPlacesWithinRadius(response.places,candidate,radius);
+      const unique = type === 'subway'
+        ? scanDedupPlaces(within,place=>`station:${scanNormalizeStationName(place.name)}`)
+        : scanDedupPlaces(within);
+      facilityResults[type] = { label:config.label, count:unique.length, nearest:unique[0] || null, places:unique, pages:response.pages, truncated:response.truncated, error:response.error };
+      if(response.truncated) truncatedLabels.push(config.label);
+      if(response.error) errorLabels.push(config.label);
+      completed += 1;
+    }
+
+    const competitors = Array.from(mergedCompetitors.values()).sort((a,b)=>a.distance-b.distance);
+    const density = competitors.length / (Math.PI * (radius/1000) ** 2);
+    const orderedSpecialties = SCAN_SPECIALTY_ORDER.filter(name=>specialties.includes(name)).map(name=>specialtyResults.find(item=>item.name===name));
+    const result = {
+      candidate,radiusMeters:radius,
+      competitors,
+      nearestCompetitor:competitors[0] || null,
+      density,
+      specialties:orderedSpecialties,
+      facilities:facilityResults,
+      truncatedLabels,errorLabels,
+      population:scanState.population,
+      createdAt:new Date().toISOString()
+    };
+    scanState.result = result;
+    scanDrawResult(result);
+    scanRenderResult(result);
+    const issueText = truncatedLabels.length || errorLabels.length ? ' 일부 항목은 안내 문구를 확인하세요.' : '';
+    scanSetStatus(`스캔 완료 · 고유 경쟁 의원 ${competitors.length.toLocaleString()}곳.${issueText}`);
+    toast('상권 스캔 완료');
+  }catch(error){
+    if(token !== scanState.requestToken) return;
+    scanState.result = null;
+    scanClearMapArtifacts();
+    scanResetResultUI();
+    scanSetStatus(error?.message || '상권 스캔 중 오류가 발생했습니다.','error');
+  }finally{
+    if(token === scanState.requestToken){
+      scanState.isScanning = false;
+      runBtn.disabled = !scanState.ready;
+      runBtn.textContent = '상권 스캔';
+    }
+  }
+}
+
+function scanAddComparison(){
+  const result = scanState.result;
+  if(!result) return;
+  const item = {
+    id:++scanState.comparisonSeq,
+    name:result.candidate.name,
+    address:result.candidate.address,
+    radiusMeters:result.radiusMeters,
+    uniqueCount:result.competitors.length,
+    density:result.density,
+    nearestCompetitor:result.nearestCompetitor ? {name:result.nearestCompetitor.name,distance:result.nearestCompetitor.distance} : null,
+    facilities:Object.fromEntries(Object.entries(result.facilities).map(([type,value])=>[type,{label:value.label,count:value.count,nearestDistance:value.nearest?.distance ?? null}])),
+    population:result.population ? {
+      areaName:result.population.areaName,
+      min:result.population.min,
+      max:result.population.max,
+      congestion:result.population.congestion,
+      distance:result.population.distance,
+      updateTime:result.population.updateTime
+    } : null
+  };
+  const duplicateIndex = scanState.comparisons.findIndex(saved=>saved.address===item.address && saved.radiusMeters===item.radiusMeters);
+  if(duplicateIndex >= 0) scanState.comparisons.splice(duplicateIndex,1,item);
+  else scanState.comparisons.push(item);
+  scanRenderComparisons();
+  toast(duplicateIndex >= 0 ? '동일 후보지 비교 결과를 갱신했습니다.' : '비교 목록에 추가했습니다.');
+}
+
+function scanRenderComparisons(){
+  const list = $('scanCompareList');
+  const count = $('scanCompareCount');
+  if(count) count.textContent = String(scanState.comparisons.length);
+  if(!list) return;
+  if(!scanState.comparisons.length){
+    list.innerHTML = '<div class="scanEmpty">스캔 결과를 추가하면 후보지를 나란히 비교할 수 있습니다.</div>';
+    return;
+  }
+  list.innerHTML = scanState.comparisons.map(item=>{
+    const nearest = item.nearestCompetitor ? `${scanEscapeHTML(item.nearestCompetitor.name)} · ${scanFormatDistance(item.nearestCompetitor.distance)}` : '없음';
+    const facilityLine = ['subway','parking','pharmacy'].map(type=>{
+      const value = item.facilities[type];
+      return `${scanEscapeHTML(value.label)} ${value.count.toLocaleString()}곳 / ${value.nearestDistance===null?'최단 -':`최단 ${scanFormatDistance(value.nearestDistance)}`}`;
+    }).join('<br>');
+    const populationLine = item.population
+      ? `실시간: ${scanEscapeHTML(item.population.areaName)} · ${scanEscapeHTML(scanFormatPopulationRange(item.population.min,item.population.max))} · ${scanEscapeHTML(item.population.congestion)}`
+      : '실시간 인구: 저장 시점에 조회되지 않음';
+    return `<article class="scanCompareCard"><button class="scanCompareRemove" type="button" aria-label="${scanEscapeHTML(item.name)} 비교 삭제" data-compare-id="${item.id}">×</button><div class="scanCompareTitle">${scanEscapeHTML(item.name)}</div><div class="scanCompareMeta"><div>${scanEscapeHTML(item.address)}</div><div>반경 ${(item.radiusMeters/1000).toFixed(item.radiusMeters%1000?1:0)}km · 경쟁 ${item.uniqueCount.toLocaleString()}곳 · ${item.density.toFixed(2)}곳/km²</div><div>최근접: ${nearest}</div><div>${facilityLine}</div><div>${populationLine}</div></div></article>`;
+  }).join('');
+  list.querySelectorAll('[data-compare-id]').forEach(button=>{
+    button.onclick = ()=>{
+      const id = Number(button.dataset.compareId);
+      scanState.comparisons = scanState.comparisons.filter(item=>item.id!==id);
+      scanRenderComparisons();
+    };
+  });
+}
+
+function initMarketScan(){
+  const patientBtn = $('btnModePatients');
+  const scanBtn = $('btnModeScan');
+  if(patientBtn) patientBtn.onclick = ()=>setSidebarMode('patients');
+  if(scanBtn) scanBtn.onclick = ()=>setSidebarMode('scan');
+  const runBtn = $('btnRunScan'); if(runBtn) runBtn.onclick = runMarketScan;
+  const clearBtn = $('btnClearScan'); if(clearBtn) clearBtn.onclick = scanClearCurrent;
+  const refreshPopulation = $('btnRefreshPopulation'); if(refreshPopulation) refreshPopulation.onclick = ()=>scanLoadSeoulPopulation();
+  const hotspotSelect = $('scanHotspotSelect'); if(hotspotSelect) hotspotSelect.onchange = ()=>scanLoadSeoulPopulation(hotspotSelect.value);
+  const address = $('scanAddress');
+  if(address) address.addEventListener('keydown',event=>{ if(event.key==='Enter'){ event.preventDefault(); runMarketScan(); } });
+  document.querySelectorAll('.scanLayerFilter').forEach(input=>{
+    input.onchange = ()=>{ scanState.layerVisible[input.value] = input.checked; scanApplyLayerVisibility(); };
+  });
+  const addComparison = $('btnAddComparison'); if(addComparison) addComparison.onclick = scanAddComparison;
+  const clearComparisons = $('btnClearComparisons');
+  if(clearComparisons) clearComparisons.onclick = ()=>{ scanState.comparisons=[]; scanRenderComparisons(); toast('비교 목록을 초기화했습니다.'); };
+  scanResetResultUI();
+  scanRenderComparisons();
+}
+
+setTimeout(initMarketScan,0);
+
 
 /* ===========================   [AI 전략 컨설턴트: Gemini ↔ GPT(OpenAI)]   =========================== */
 const DEFAULT_GEMINI_KEY = "";
@@ -4005,11 +4817,9 @@ const DEFAULT_OPENAI_KEY = "";
 const DEFAULT_OPENAI_PROXY = "";
 
 
-/* ===========================   [AI PANEL v3.1.6: GPT 기본 + Gemini 보조, Worker Proxy 고정]   =========================== */
+/* ===========================   [AI PANEL v3.2.0: GPT 기본 + Gemini 보조, Worker Proxy 고정]   =========================== */
 
-const AI_STORE_KEY = "jinsul_ai_settings_v3";
-const JINSUL_SITE_ORIGIN = "https://xginini-dot.github.io";
-const JINSUL_SITE_BASE = "https://xginini-dot.github.io/jinsul/";
+const AI_STORE_KEY = "jinsul_ai_settings_v2";
 const AI_PROXY_BASE_DEFAULT = "https://jinsul-lab.yms0127.workers.dev"; // Cloudflare Worker (Secrets에 키 저장)
 const OPENAI_MODEL_DEFAULT = "gpt-4o-mini";
 const GEMINI_MODEL_DEFAULT = "gemini-2.5-flash";
@@ -4058,18 +4868,15 @@ function getProxyCandidates(proxyBase){
 
 async function proxyCallJSON(proxyBase, payload){
   const b = String(proxyBase||"").trim().replace(/\/+$/,"");
-  // Worker가 루트(/) 또는 /ai 경로로 배포된 경우를 모두 지원합니다.
-  const bases = getProxyCandidates(b);
-  if(!bases.length) throw new Error("AI Worker 프록시 URL이 설정되지 않았습니다.");
+  // We only call the base URL; if you want "/ai" you can put it in the proxy URL field.
+  const bases = [b].filter(Boolean);
 
   let lastErr = null;
   for(const base of bases){
     try{
       const res = await fetch(base, {
         method: "POST",
-        headers: { "Content-Type":"application/json", "Accept":"application/json" },
-        credentials: "omit",
-        mode: "cors",
+        headers: { "Content-Type":"application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -4092,7 +4899,7 @@ async function proxyCallJSON(proxyBase, payload){
 
         // Friendly hints for common cases
         if(res.status === 403 && /forbidden origin/i.test(msg)){
-          msg = "403: Cloudflare Worker의 허용 Origin에 https://xginini-dot.github.io 가 등록되어 있지 않습니다. Worker의 CORS 허용 목록에 이 Origin을 추가한 뒤 https://xginini-dot.github.io/jinsul/ 에서 실행해주세요. (file:// 직접 실행은 차단됩니다.)";
+          msg = "403: 현재 열어둔 페이지의 주소(Origin)가 Worker에서 허용되지 않았습니다. GitHub Pages(https://jinsul-lab.github.io) 또는 로컬 서버(http://localhost:8000)로 열어주세요. (파일을 더블클릭해서 file:// 로 열면 차단됩니다.)";
         }
 
         throw new Error(`${res.status}: ${msg}`);
@@ -4505,50 +5312,6 @@ function initAIPanel(){
 }
 
 setTimeout(initAIPanel, 0);
-
-
-/* ===== JINSUL 상단 뒤로가기 / 다크·라이트 ===== */
-(function initJinsulShell(){
-  const THEME_KEY = 'jinsul_map_theme';
-  const root = document.documentElement;
-  const themeBtn = document.getElementById('btnTheme');
-  const backBtn = document.getElementById('btnBack');
-
-  function applyTheme(theme){
-    const next = theme === 'dark' ? 'dark' : 'light';
-    root.setAttribute('data-theme', next);
-    if(themeBtn){
-      themeBtn.textContent = next === 'dark' ? '☀️' : '🌙';
-      themeBtn.title = next === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
-      themeBtn.setAttribute('aria-label', themeBtn.title);
-    }
-    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
-    setTimeout(()=>{
-      try{ if(window.map && kakao?.maps?.event) kakao.maps.event.trigger(map,'resize'); }catch(e){}
-      try{ if(typeof resizeAllStatCharts === 'function') resizeAllStatCharts(); }catch(e){}
-    },80);
-  }
-
-  let saved = 'light';
-  try{ saved = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){}
-  applyTheme(saved);
-
-  if(themeBtn){
-    themeBtn.addEventListener('click',()=>{
-      applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    });
-  }
-  if(backBtn){
-    backBtn.addEventListener('click',()=>{
-      const portal = 'https://xginini-dot.github.io/jinsul/';
-      if(document.referrer && document.referrer !== location.href){
-        try{ history.back(); return; }catch(e){}
-      }
-      location.href = portal;
-    });
-  }
-})();
-
 </script>
 </body>
 </html>
