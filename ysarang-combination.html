@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>신경차단술 LA코드 단독/조합 + 추가처방 통합통계</title>
+<title>의사랑 차단술·부가처방·지급불능 통합통계</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -109,8 +110,11 @@ td{font-weight:800} td.left,th.left{text-align:left} tbody tr:nth-child(even) td
 .smalltable{min-width:1000px}.smalltable th,.smalltable td{padding:9px 10px;font-size:12px}
 .arrow{font-size:15px;transition:.18s}.open .arrow{transform:rotate(90deg)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.legend span{font-size:12px;color:var(--muted);font-weight:800}
+.payout-upload-grid{grid-template-columns:1.2fr .6fr .6fr;border-top:1px solid var(--line);padding-top:18px}
+.match-state{height:50px;display:flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:15px;background:var(--panel2);font-size:13px;font-weight:900;color:var(--accent)}
+.denied-row td{background:rgba(255,141,141,.08)!important}.rate-high{color:var(--red);font-weight:1000}.rate-mid{color:#f2bd68;font-weight:1000}.rate-low{color:var(--green);font-weight:1000}
+.flow-card{border:1px solid var(--line);border-radius:18px;background:var(--panel2);margin:12px 0;padding:16px}.flow-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.flow-line{display:flex;gap:10px;overflow-x:auto;padding:8px 2px 14px}.flow-item{min-width:220px;border:1px solid var(--line);border-radius:15px;padding:12px;background:var(--panel)}.flow-item.denied{border-color:rgba(255,141,141,.65);box-shadow:inset 0 0 0 1px rgba(255,141,141,.18)}.flow-date{font-size:12px;color:var(--muted);font-weight:900}.flow-rx{margin-top:7px;font-size:12px;line-height:1.55;font-weight:900;white-space:normal}.insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.insight-card{border:1px solid var(--line);border-radius:18px;background:var(--panel2);padding:17px}.insight-card h3{margin:0 0 8px;font-size:15px}.insight-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.65;font-weight:800}.risk-badge{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:1000}.risk-high{background:rgba(255,141,141,.16);color:var(--red)}.risk-watch{background:rgba(242,189,104,.16);color:#d99c34}.risk-low{background:rgba(107,214,168,.14);color:var(--green)}
 footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margin-top:22px}
-
 .page-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:10px;z-index:20;padding:10px;border:1px solid var(--line);border-radius:20px;background:var(--panel);backdrop-filter:blur(18px)}
 .page-tab{flex:1;min-width:190px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:14px;padding:12px 15px;font-weight:1000;cursor:pointer}
 .page-tab.active{background:linear-gradient(135deg,#bda98b,#dfcaa4);color:#fff;border-color:transparent}
@@ -123,7 +127,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
 @media(max-width:1200px){.price-edit-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.price-edit-grid{grid-template-columns:1fr}.price-edit-item{grid-template-columns:75px 1fr 105px}}
 @media(max-width:1200px){.summary.six{grid-template-columns:repeat(3,1fr)}.price-grid{grid-template-columns:repeat(2,1fr)}.combo-filter{grid-template-columns:1fr}.combo-head{min-width:1500px}.combo-block{overflow:auto}}
-@media(max-width:980px){.wrap{padding:18px 14px 50px}.top,.grid,.filters,.summary,.summary.six{display:block}.field,.kpi{margin-top:12px}.codebox{text-align:left;min-width:0;margin-top:18px}.actions{justify-content:flex-start}h1{font-size:27px}.card{padding:22px 18px}.brand-chip{display:none}.price-grid{grid-template-columns:1fr}}
+@media(max-width:980px){.wrap{padding:18px 14px 50px}.top,.grid,.filters,.summary,.summary.six,.insight-grid{display:block}.field,.kpi,.insight-card{margin-top:12px}.codebox{text-align:left;min-width:0;margin-top:18px}.actions{justify-content:flex-start}h1{font-size:27px}.card{padding:22px 18px}.brand-chip{display:none}.price-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -140,51 +144,96 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
       <button class="nav-btn" onclick="toggleTheme()">◐ <span id="themeLabel">다크</span> 모드</button>
     </div>
   </div>
-
   <div class="card hero">
     <div class="top">
       <div>
         <div class="badge"><span class="dot"></span>신경차단술 LA코드 자동 통계</div>
-        <h1>신경차단술 LA코드 단독/조합 + 추가처방 통합통계</h1>
+        <h1>의사랑 차단술·부가처방·지급불능 통합통계</h1>
         <div class="sub">
-          기존 <b>LA코드 단독/조합 통계와 총투여량 통계</b>는 그대로 유지합니다.<br>
-          추가로 동일 환자·동일 날짜 기준 <b>LA코드 조합 + KK090/N0780/MM410/HA280</b> 조합을 함께 집계합니다.<br>
+          기존 <b>LA코드 단독/조합 통계와 총투여량 통계</b>는 그대로 유지합니다.
+          추가로 동일 환자·동일 날짜 기준 <b>LA코드 조합 + KK090/N0780/MM410/HA280</b> 조합을 함께 집계합니다.
           LA 총투여량과 추가 처방 총투여량은 <b>서로 별도</b>로 표시하며, 각 코드 단가를 이용해 금액도 계산합니다.
         </div>
       </div>
       <div class="codebox">인식된 코드<br><code id="codeList">-</code></div>
     </div>
-
     <div class="grid">
       <div class="field">
-        <label>엑셀 파일 업로드 (*.xls, *.xlsx) — 여러 파일 선택 가능</label>
+        <label>LA코드·부가처방 엑셀 업로드 (*.xls, *.xlsx) — 여러 파일 선택 가능</label>
         <div class="filebox"><input type="file" id="fileInput" multiple accept=".xls,.xlsx"></div>
         <div class="hint">
-          ① 파일명이 <b>LA241.xls, LA3581.xls, KK090.xls, N0780.xls</b> 형태이면 자동 인식합니다.<br>
-          ② <b>LA2751 → LA275</b>처럼 뒤에 숫자가 붙어도 앞 코드 기준으로 인식합니다.<br>
+          ① 파일명이 <b>LA241.xls, LA3581.xls, KK061.xls, KK061..xls</b> 형태이면 자동 인식합니다.<br>
+          ② <b>LA2751 → LA275</b>처럼 뒤에 숫자가 붙어도 앞 코드 기준으로 인식하며, 코드의 점(.)은 무시합니다.<br>
           ③ 차트번호가 있으면 차트번호를 우선 사용하고, 없으면 환자명으로 매칭합니다. A1에 환자명만 있는 형식도 보조 인식합니다.
         </div>
       </div>
       <div class="field"><label>시작 월</label><select id="monthStart" disabled></select></div>
       <div class="field"><label>종료 월</label><select id="monthEnd" disabled></select></div>
     </div>
-
+    <div class="grid payout-upload-grid">
+      <div class="field">
+        <label>지급불능 내역 업로드 — 여러 월·보험유형 동시 선택 가능</label>
+        <div class="filebox"><input type="file" id="denialInput" multiple accept=".xls,.xlsx"></div>
+        <div class="hint">심사결과의 <b>수진자성명 + 요양개시일</b>을 시행내역과 매칭합니다. 파일명에 건보·보호·자보 등이 있으면 보험유형도 함께 표시합니다.</div>
+      </div>
+      <div class="field"><label>지급불능 매칭</label><div class="match-state" id="denialStatus">지급불능 파일 미업로드</div></div>
+      <div class="field"><label>매칭 기준</label><div class="match-state">이름 + 진료일 우선</div></div>
+    </div>
     <div class="filters">
       <div class="field"><label>LA 조합 검색</label><input id="searchInput" placeholder="예: LA358 또는 LA274 + LA358"></div>
       <div class="field"><label>구분</label><select id="typeFilter"><option value="all">전체</option><option value="single">단독</option><option value="combo">조합</option></select></div>
       <div class="field"><label>최소 건수</label><input id="minCount" type="number" min="1" value="1"></div>
     </div>
-
     <div class="actions">
       <button class="btn gray" id="resetBtn">초기화</button>
       <button class="btn primary" id="exportBtn">엑셀 다운로드</button>
     </div>
     <div class="status" id="status">엑셀 파일을 선택하면 자동으로 분석합니다.</div>
   </div>
-
   <div class="page-nav">
     <button class="page-tab active" data-page="laPage">① LA 단독/조합 통계</button>
     <button class="page-tab" data-page="crossPage">② LA × 추가처방 조합</button>
+    <button class="page-tab" data-page="denialPage">③ 지급불능 매칭</button>
+  </div>
+  <div id="denialPage" class="page-view">
+    <div class="card">
+      <div class="sectionTitle"><div><h2>③ 처방별 지급불능 분석</h2><div class="hint">처방 표기는 <b>LA코드 + 부가처방</b> 순서이며, 차단술 총투여량은 LA코드만 합산합니다.</div></div></div>
+      <div class="summary six">
+        <div class="kpi"><div class="t">전체 처방건</div><div class="v" id="dTotal">0</div></div>
+        <div class="kpi"><div class="t">지급불능 매칭건</div><div class="v" id="dMatched">0</div></div>
+        <div class="kpi"><div class="t">지급불능 비율</div><div class="v" id="dRatio">0%</div></div>
+        <div class="kpi"><div class="t">지급불능 환자</div><div class="v" id="dPatients">0</div></div>
+        <div class="kpi"><div class="t">미매칭 지급불능</div><div class="v" id="dUnmatched">0</div></div>
+        <div class="kpi"><div class="t">지급불능 청구액</div><div class="v" id="dClaim">0원</div></div>
+      </div>
+      <div class="summary six">
+        <div class="kpi"><div class="t">전체 환자 1명당 차단술 총합</div><div class="v" id="dAvgDoseAll">0</div></div>
+        <div class="kpi"><div class="t">전체 환자 1명당 부가처방 총합</div><div class="v" id="dAvgExtraAll">0</div></div>
+        <div class="kpi"><div class="t">지급불능 환자 1명당 차단술 총합</div><div class="v" id="dAvgDoseDenied">0</div></div>
+        <div class="kpi"><div class="t">지급불능 환자 1명당 부가처방 총합</div><div class="v" id="dAvgExtraDenied">0</div></div>
+        <div class="kpi"><div class="t">전체 환자 1명당 처방건</div><div class="v" id="dAvgVisitsAll">0</div></div>
+        <div class="kpi"><div class="t">지급불능 환자 1명당 처방건</div><div class="v" id="dAvgVisitsDenied">0</div></div>
+      </div>
+      <div class="filters">
+        <div class="field"><label>환자명·처방 검색</label><input id="denialSearch" placeholder="예: 문윤수, LA358, KK061"></div>
+        <div class="field"><label>보험유형</label><select id="insuranceFilter"><option value="all">전체</option></select></div>
+        <div class="field"><label>보기</label><select id="denialView"><option value="all">전체 처방</option><option value="denied">지급불능만</option></select></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-group="denial" data-tab="combo">처방 조합별</button>
+        <button class="tab" data-group="denial" data-tab="detail">환자별 상세</button>
+        <button class="tab" data-group="denial" data-tab="monthly">월별 비교</button>
+        <button class="tab" data-group="denial" data-tab="flow">지급불능 환자 처방 흐름</button>
+        <button class="tab" data-group="denial" data-tab="insight">심사 위험 분석</button>
+        <button class="tab" data-group="denial" data-tab="unmatched">미매칭 지급불능</button>
+      </div>
+      <div id="denial-combo"><div class="tableWrap"><table id="denialComboTable"></table></div></div>
+      <div id="denial-detail" class="hidden"><div class="tableWrap"><table id="denialDetailTable"></table></div></div>
+      <div id="denial-monthly" class="hidden"><div class="tableWrap"><table id="denialMonthlyTable"></table></div></div>
+      <div id="denial-flow" class="hidden"><div class="actions" style="margin-top:0"><button class="btn primary" type="button" onclick="copyAllPatientFlows()">전체 환자 흐름 보고용 복사</button></div><div class="hint" style="margin:10px 0">환자별 버튼은 해당 환자만, 전체 복사는 현재 검색 조건에 표시된 환자를 모두 복사합니다.</div><div id="denialFlowList"></div></div>
+      <div id="denial-insight" class="hidden"><div id="denialInsight"></div></div>
+      <div id="denial-unmatched" class="hidden"><div class="tableWrap"><table id="denialUnmatchedTable"></table></div></div>
+    </div>
   </div>
   <div id="laPage" class="page-view active">
   <!-- 기존 기능 유지 -->
@@ -195,23 +244,19 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         <div class="hint">건수 = 동일 환자·동일 날짜 기준 LA 방문 수 / 비율 = 전체 LA 방문 대비 비율</div>
       </div>
     </div>
-
     <div class="summary">
       <div class="kpi"><div class="t">전체 차단술 방문</div><div class="v" id="kTotal">0</div></div>
       <div class="kpi"><div class="t">단독 방문</div><div class="v" id="kSingle">0</div></div>
       <div class="kpi"><div class="t">조합 방문</div><div class="v" id="kCombo">0</div></div>
       <div class="kpi"><div class="t">인식 LA코드 수</div><div class="v" id="kCodes">0</div></div>
     </div>
-
     <div class="tabs">
       <button class="tab active" data-group="old" data-tab="code">코드 조합 기준</button>
       <button class="tab" data-group="old" data-tab="dose">총투여량 포함 기준</button>
     </div>
-
     <div id="old-code"><div class="tableWrap"><table id="codeTable"></table></div></div>
     <div id="old-dose" class="hidden"><div class="tableWrap"><table id="doseTable"></table></div></div>
   </div>
-
   </div>
   <div id="crossPage" class="page-view">
   <!-- 신규 기능 -->
@@ -224,14 +269,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         </div>
       </div>
     </div>
-
     <div class="price-grid">
+      <div class="price-card"><b>KK061 <strong>별도 단가 미설정</strong></b><span>신경간내주사</span></div>
       <div class="price-card"><b>KK090 <strong>18,340원</strong></b><span>관절강내주사</span></div>
       <div class="price-card"><b>N0780 <strong>107,170원</strong></b><span>비관혈관절수동술 · 브리즈망</span></div>
       <div class="price-card"><b>MM410 <strong>68,660원</strong></b><span>수압팽창술</span></div>
       <div class="price-card"><b>HA280 <strong>102,500원</strong></b><span>관절조영</span></div>
     </div>
-
     <div class="combo-filter">
       <div class="select-box">
         <b>추가처방 선택</b>
@@ -251,12 +295,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         <input id="comboLaSearch" placeholder="예: LA241 또는 LA241 + LA358">
       </div>
     </div>
-
     <div class="actions">
       <button class="btn gray" id="selectAllBtn">추가처방 전체선택</button>
       <button class="btn gray" id="clearSelectBtn">선택해제</button>
     </div>
-
     <div class="summary six">
       <div class="kpi"><div class="t">전체 LA 방문</div><div class="v" id="xTotal">0</div></div>
       <div class="kpi"><div class="t">조건 일치 방문</div><div class="v" id="xMatched">0</div></div>
@@ -265,14 +307,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
       <div class="kpi"><div class="t">LA 총금액</div><div class="v" id="xLaAmount">0원</div></div>
       <div class="kpi"><div class="t">추가처방 총금액</div><div class="v" id="xExtraAmount">0원</div></div>
     </div>
-
     <div class="hint" style="margin-bottom:10px">
       아래 표에서 <b>LA 총투여량</b>과 <b>추가처방 총투여량</b>은 별도 집계합니다.
       금액은 각 코드의 단가 × 총투여량으로 계산합니다.
     </div>
     <div id="comboList"></div>
   </div>
-
   <!-- 단가표 -->
   <div class="card">
     <div class="price-toggle" id="priceToggle">
@@ -290,10 +330,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
     </div>
   </div>
   </div>
-
   <footer>© JINSUL. Internal analytics dashboard.</footer>
 </div>
-
 <script>
 const DEFAULT_LA_INFO={
   LA241:{name:'대소후두신경',price:31010},
@@ -326,12 +364,12 @@ const DEFAULT_LA_INFO={
   LA367:{name:'외톨이신경절',price:138230}
 };
 const DEFAULT_EXTRA_INFO={
+  KK061:{name:'신경간내주사',price:0},
   KK090:{name:'관절강내주사',price:18340},
   N0780:{name:'비관혈관절수동술(브리즈망)',price:107170},
   MM410:{name:'수압팽창술',price:68660},
   HA280:{name:'관절조영',price:102500}
 };
-
 const LA_INFO=JSON.parse(JSON.stringify(DEFAULT_LA_INFO));
 const EXTRA_INFO=JSON.parse(JSON.stringify(DEFAULT_EXTRA_INFO));
 try{
@@ -339,7 +377,6 @@ try{
   Object.entries(saved.LA||{}).forEach(([c,p])=>{if(LA_INFO[c])LA_INFO[c].price=Number(p)||0});
   Object.entries(saved.EXTRA||{}).forEach(([c,p])=>{if(EXTRA_INFO[c])EXTRA_INFO[c].price=Number(p)||0});
 }catch(e){}
-
 const fileInput=document.getElementById('fileInput');
 const monthStart=document.getElementById('monthStart'),monthEnd=document.getElementById('monthEnd');
 const searchInput=document.getElementById('searchInput'),typeFilter=document.getElementById('typeFilter'),minCount=document.getElementById('minCount');
@@ -347,8 +384,11 @@ const matchMode=document.getElementById('matchMode'),comboLaSearch=document.getE
 const statusEl=document.getElementById('status'),codeListEl=document.getElementById('codeList');
 const codeTable=document.getElementById('codeTable'),doseTable=document.getElementById('doseTable');
 const comboList=document.getElementById('comboList');
-let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[];
-
+const denialInput=document.getElementById('denialInput'),denialStatus=document.getElementById('denialStatus');
+const denialSearch=document.getElementById('denialSearch'),insuranceFilter=document.getElementById('insuranceFilter'),denialView=document.getElementById('denialView');
+const denialComboTable=document.getElementById('denialComboTable'),denialDetailTable=document.getElementById('denialDetailTable'),denialUnmatchedTable=document.getElementById('denialUnmatchedTable');
+const denialMonthlyTable=document.getElementById('denialMonthlyTable'),denialFlowList=document.getElementById('denialFlowList'),denialInsight=document.getElementById('denialInsight');
+let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[],denialRows=[],denialMatches=[],flowCopyData=[];
 (function(){
   const saved=localStorage.getItem('jinsul-theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
@@ -361,7 +401,6 @@ let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[];
   };
   window.addEventListener('DOMContentLoaded',()=>document.getElementById('themeLabel').textContent=saved==='dark'?'다크':'라이트');
 })();
-
 function initUI(){
   document.getElementById('extraChecks').innerHTML=Object.entries(EXTRA_INFO)
     .map(([c,o])=>`<label class="check"><input type="checkbox" value="${c}"> ${c} · ${o.name}</label>`).join('');
@@ -382,9 +421,10 @@ document.getElementById('priceToggle').addEventListener('click',()=>{
 });
 document.getElementById('savePriceBtn').addEventListener('click',e=>{e.stopPropagation();saveEditedPrices()});
 document.getElementById('restorePriceBtn').addEventListener('click',e=>{e.stopPropagation();restoreDefaultPrices()});
-
 fileInput.addEventListener('change',handleFiles);
+denialInput.addEventListener('change',handleDenialFiles);
 [monthStart,monthEnd,searchInput,typeFilter,minCount,matchMode,comboLaSearch].forEach(el=>el.addEventListener('input',recalc));
+[denialSearch,insuranceFilter,denialView].forEach(el=>el.addEventListener('input',renderDenial));
 document.getElementById('resetBtn').onclick=resetAll;
 document.getElementById('exportBtn').onclick=exportExcel;
 document.getElementById('selectAllBtn').onclick=()=>{document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=true);recalc()};
@@ -393,9 +433,9 @@ document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
   const group=btn.dataset.group;
   document.querySelectorAll(`.tab[data-group="${group}"]`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  ['code','dose'].forEach(t=>document.getElementById(`${group}-${t}`).classList.toggle('hidden',btn.dataset.tab!==t));
+  const names=group==='denial'?['combo','detail','monthly','flow','insight','unmatched']:['code','dose'];
+  names.forEach(t=>document.getElementById(`${group}-${t}`).classList.toggle('hidden',btn.dataset.tab!==t));
 });
-
 async function handleFiles(e){
   const files=[...(e.target.files||[])]; if(!files.length)return;
   rawRows=[]; statusEl.textContent='엑셀을 읽는 중입니다...';
@@ -413,13 +453,77 @@ async function handleFiles(e){
       }catch(err){console.error(err);failed.push(f.name)}
     }
     months=[...new Set(rawRows.map(r=>r.ym).filter(Boolean))].sort();
-    setupMonths();buildVisits();recalc();
+    setupMonths();buildVisits();matchDenials();recalc();
     statusEl.textContent=`파일 ${files.length}개 / 유효 행 ${rawRows.length.toLocaleString()}건 / LA 방문 ${visits.length.toLocaleString()}건 분석 완료${failed.length?' · 읽기 실패: '+failed.join(', '):''}`;
   }catch(err){
     console.error(err);statusEl.textContent='엑셀 분석 중 오류가 발생했습니다. 파일 형식을 확인해주세요.';
   }
 }
-
+async function handleDenialFiles(e){
+  const files=[...(e.target.files||[])];if(!files.length)return;
+  denialRows=[];denialStatus.textContent='지급불능 내역을 읽는 중입니다...';const failed=[];
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});
+      for(const sname of wb.SheetNames){
+        const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sname],{header:1,defval:null,raw:false});
+        denialRows.push(...parseDenialRows(aoa,f.name,sname));
+      }
+    }catch(err){console.error(err);failed.push(f.name)}
+  }
+  setupInsuranceFilter();matchDenials();renderDenial();
+  denialStatus.textContent=`${files.length}개 파일 · ${denialRows.length.toLocaleString()}건 인식${failed.length?' · 실패 '+failed.length+'개':''}`;
+}
+function parseDenialRows(aoa,fileName,sheetName){
+  const hi=findDenialHeader(aoa);if(hi<0)return [];
+  const top=aoa[hi]||[],sub=aoa[hi+1]||[];let group='';
+  const h=Array.from({length:Math.max(top.length,sub.length)},(_,i)=>{if(clean(top[i]))group=clean(top[i]);return (group+' '+clean(sub[i])).replace(/\s/g,'')});
+  const nameIdx=findIdx(h,['수진자성명','수진자명','환자명','성명']);
+  const dateIdx=findIdx(h,['요양개시일','진료일','내원일','시행일']);
+  const serialIdx=findIdx(h,['명일련','명세서일련번호','일련번호']);
+  const bundleIdx=findIdx(h,['묶음번호']);
+  const claimIdx=h.findIndex(x=>x.includes('청구사항')&&x.includes('청구액'));
+  const decisionIdx=h.findIndex(x=>x.includes('심사결정사항')&&x.includes('청구액'));
+  const reasonIdx=findIdx(h,['심사조정내역','조정내역','지급불능사유','사유']);
+  const insurance=insuranceFromName(fileName);
+  const out=[];
+  for(let i=hi+2;i<aoa.length;i++){
+    const row=aoa[i]||[],name=nameIdx>=0?clean(row[nameIdx]):'',d=dateIdx>=0?parseDate(row[dateIdx]):null;
+    if(!name||!d)continue;
+    out.push({id:`D${out.length+1}-${fileName}`,name,dateKey:dateKey(d),ym:ymKey(d),insurance,fileName,sheetName,
+      serial:serialIdx>=0?clean(row[serialIdx]):'',bundle:bundleIdx>=0?clean(row[bundleIdx]):'',
+      claim:claimIdx>=0?toNum(row[claimIdx]):0,decision:decisionIdx>=0?toNum(row[decisionIdx]):0,
+      reason:reasonIdx>=0?clean(row[reasonIdx]):''});
+  }
+  return out;
+}
+function findDenialHeader(aoa){
+  for(let i=0;i<Math.min(20,aoa.length);i++){
+    const s=(aoa[i]||[]).map(v=>clean(v).replace(/\s/g,'')).join('|');
+    if(/수진자성명|수진자명|환자명/.test(s)&&/요양개시일|진료일|내원일/.test(s))return i;
+  }
+  return -1;
+}
+function insuranceFromName(name){
+  const s=clean(name);if(/보호|의료급여/.test(s))return '의료급여';if(/자보|자동차/.test(s))return '자동차보험';if(/산재/.test(s))return '산재';if(/건보|건강보험/.test(s))return '건강보험';return '미분류';
+}
+function setupInsuranceFilter(){
+  const before=insuranceFilter.value;insuranceFilter.innerHTML='<option value="all">전체</option>';
+  [...new Set(denialRows.map(r=>r.insurance))].sort().forEach(x=>insuranceFilter.add(new Option(x,x)));
+  if([...insuranceFilter.options].some(o=>o.value===before))insuranceFilter.value=before;
+}
+function matchDenials(){
+  const byNameDate=new Map();
+  visits.forEach(v=>{const k=`${normalizeName(v.name)}|${v.dateKey}`;if(!byNameDate.has(k))byNameDate.set(k,[]);byNameDate.get(k).push(v)});
+  const used=new Set();denialMatches=[];
+  denialRows.forEach(d=>{
+    const candidates=(byNameDate.get(`${normalizeName(d.name)}|${d.dateKey}`)||[]).filter(v=>!used.has(v));
+    const visit=candidates[0]||null;if(visit)used.add(visit);
+    denialMatches.push({denial:d,visit,matchType:visit?'이름+진료일 일치':'미매칭'});
+  });
+  renderDenial();
+}
+function normalizeName(v){return clean(v).replace(/\s|[.·ㆍ]/g,'').toUpperCase()}
 function parseAoaRows(aoa,fileCode,fileName,sheetName){
   const headerIdx=findHeaderRow(aoa); if(headerIdx<0)return [];
   const headers=(aoa[headerIdx]||[]).map(v=>clean(v));
@@ -481,7 +585,7 @@ function clean(v){return (v??'').toString().trim()}
 function toNum(v){if(v===null||v===undefined||v==='')return 0;const n=parseFloat(v.toString().replace(/,/g,'').replace(/[^\d.-]/g,''));return isNaN(n)?0:n}
 function parseDate(v){
   if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate());
-  let s=clean(v);if(!s)return null;s=s.split(' ')[0].replace(/[.\/]/g,'-');
+  let s=clean(v);if(!s)return null;s=s.split(' ')[0].replace(/[.\\/]/g,'-');
   let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
   m=s.match(/^(\d{4})(\d{2})(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
   const d=new Date(s);return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
@@ -517,6 +621,7 @@ function recalc(){
   const pv=periodVisits();
   renderBase(pv);
   renderCross(pv);
+  renderDenial();
   const codes=[...new Set(rawRows.filter(r=>r.ym>=(monthStart.value||'')&&r.ym<=(monthEnd.value||'9999-99')).map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
   codeListEl.textContent=codes.length?codes.join(', '):'-';
 }
@@ -525,7 +630,6 @@ function extraAmount(v){let n=0;for(const [c,d] of v.extra)n+=(EXTRA_INFO[c]?.pr
 function sumMap(m){return [...m.values()].reduce((a,b)=>a+b,0)}
 function laKey(v){return [...v.la.keys()].sort().join(' + ')}
 function extraKey(v){return [...v.extra.keys()].sort().join(' + ')}
-
 function renderBase(pv){
   const codeMap=new Map(),doseMap=new Map();let single=0,combo=0;
   for(const v of pv){
@@ -556,7 +660,7 @@ function filterBase(rows){
   const t=typeFilter.value,min=Number(minCount.value)||1;
   return rows.filter(r=>r.count>=min)
     .filter(r=>t==='all'||(t==='single'&&r.codeCount===1)||(t==='combo'&&r.codeCount>1))
-    .filter(r=>!q||r.key.toUpperCase().includes(q.replace(/\s*\+\s*/g,' + ')));
+    .filter(r=>!q||r.key.toUpperCase().includes(q.replace(/\s*\\+\s*/g,' + ')));
 }
 function renderBaseTable(el,rows,mode){
   if(!rows.length){el.innerHTML='<tbody><tr><td class="empty">조회되는 결과가 없습니다.</td></tr></tbody>';return}
@@ -603,7 +707,6 @@ function renderCross(pv){
   xPatients.textContent=fmtInt(patients.size);
   xLaAmount.textContent=fmtWon(matched.reduce((a,v)=>a+laAmount(v),0));
   xExtraAmount.textContent=fmtWon(matched.reduce((a,v)=>a+extraAmount(v),0));
-
   const map=new Map();
   for(const v of matched){
     const lk=laKey(v),ek=extraKey(v)||'추가처방 없음',key=lk+'||'+ek;
@@ -649,8 +752,83 @@ function comboBlock(r,i,total){
     </div>
   </div>`;
 }
-
-
+function prescriptionLabel(v){
+  const la=[...v.la.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`);
+  const ex=[...v.extra.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`);
+  return [...la,...ex].join(' + ');
+}
+function denialRateClass(n){return n>=50?'rate-high':n>=20?'rate-mid':'rate-low'}
+function renderDenial(){
+  if(!denialComboTable)return;
+  const pv=periodVisits(),visitSet=new Set(pv),q=normalizeName(denialSearch?.value||''),ins=insuranceFilter?.value||'all';
+  const matchByVisit=new Map();
+  denialMatches.forEach(m=>{if(m.visit&&visitSet.has(m.visit)&&(ins==='all'||m.denial.insurance===ins))matchByVisit.set(m.visit,m.denial)});
+  const visible=pv.filter(v=>{
+    const d=matchByVisit.get(v),denied=!!d;if(denialView?.value==='denied'&&!denied)return false;
+    if(ins!=='all'&&!denied)return false;
+    if(!q)return true;return normalizeName(`${v.name} ${v.chart} ${prescriptionLabel(v)}`).includes(q);
+  });
+  const matched=[...matchByVisit.entries()].filter(([v])=>visitSet.has(v));
+  const start=monthStart.value||months[0]||'',end=monthEnd.value||months[months.length-1]||'9999-99';
+  const unmatched=denialMatches.filter(m=>!m.visit&&m.denial.ym>=start&&m.denial.ym<=end&&(ins==='all'||m.denial.insurance===ins)&&(!q||normalizeName(`${m.denial.name} ${m.denial.dateKey}`).includes(q)));
+  dTotal.textContent=fmtInt(pv.length);dMatched.textContent=fmtInt(matched.length);dRatio.textContent=(pv.length?matched.length/pv.length*100:0).toFixed(1)+'%';
+  dPatients.textContent=fmtInt(new Set(matched.map(([,d])=>normalizeName(d.name))).size);dUnmatched.textContent=fmtInt(unmatched.length);dClaim.textContent=fmtWon(matched.reduce((a,[,d])=>a+d.claim,0));
+  const allPatients=new Set(pv.map(v=>v.patientKey)),deniedPatientKeys=new Set(matched.map(([v])=>v.patientKey));
+  const deniedPatientVisits=pv.filter(v=>deniedPatientKeys.has(v.patientKey));
+  dAvgDoseAll.textContent=fmtDose(allPatients.size?pv.reduce((a,v)=>a+sumMap(v.la),0)/allPatients.size:0);
+  dAvgExtraAll.textContent=fmtDose(allPatients.size?pv.reduce((a,v)=>a+sumMap(v.extra),0)/allPatients.size:0);
+  dAvgDoseDenied.textContent=fmtDose(deniedPatientKeys.size?deniedPatientVisits.reduce((a,v)=>a+sumMap(v.la),0)/deniedPatientKeys.size:0);
+  dAvgExtraDenied.textContent=fmtDose(deniedPatientKeys.size?deniedPatientVisits.reduce((a,v)=>a+sumMap(v.extra),0)/deniedPatientKeys.size:0);
+  dAvgVisitsAll.textContent=(allPatients.size?pv.length/allPatients.size:0).toFixed(2);
+  dAvgVisitsDenied.textContent=(deniedPatientKeys.size?deniedPatientVisits.length/deniedPatientKeys.size:0).toFixed(2);
+  const groups=new Map();
+  pv.forEach(v=>{const key=prescriptionLabel(v);if(!groups.has(key))groups.set(key,{key,total:0,denied:0,patients:new Set(),claim:0,laDose:0});const o=groups.get(key);o.total++;o.laDose+=sumMap(v.la);const d=matchByVisit.get(v);if(d){o.denied++;o.patients.add(normalizeName(v.name));o.claim+=d.claim}});
+  let rows=[...groups.values()].filter(r=>!q||normalizeName(r.key).includes(q));if(denialView?.value==='denied')rows=rows.filter(r=>r.denied);rows.sort((a,b)=>(b.denied/b.total)-(a.denied/a.total)||b.total-a.total);
+  denialComboTable.innerHTML='<thead><tr><th>순위</th><th class="left">처방 조합 (LA → 부가처방)</th><th>전체 처방건</th><th>지급불능건</th><th>지급불능 비율</th><th>지급불능 환자</th><th>차단술 총투여량</th><th>지급불능 청구액</th></tr></thead><tbody>'+ (rows.length?rows.map((r,i)=>{const rate=r.total?r.denied/r.total*100:0;return `<tr class="${r.denied?'denied-row':''}"><td>${i+1}</td><td class="left"><b>${esc(r.key)}</b></td><td>${fmtInt(r.total)}</td><td>${fmtInt(r.denied)}</td><td class="${denialRateClass(rate)}">${rate.toFixed(1)}%</td><td>${fmtInt(r.patients.size)}</td><td class="num">${fmtDose(r.laDose)}</td><td class="money">${fmtWon(r.claim)}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
+  denialDetailTable.innerHTML='<thead><tr><th>상태</th><th>보험</th><th>차트번호</th><th>환자명</th><th>시행일</th><th class="left">처방 조합 (LA → 부가처방)</th><th>차단술 총투여량</th><th>부가처방 총투여량</th><th>청구액</th><th>명일련</th><th>매칭기준</th></tr></thead><tbody>'+ (visible.length?visible.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)||a.name.localeCompare(b.name,'ko')).map(v=>{const d=matchByVisit.get(v);return `<tr class="${d?'denied-row':''}"><td><span class="pill ${d?'combo':''}">${d?'지급불능':'전체'}</span></td><td>${esc(d?.insurance||'-')}</td><td>${esc(v.chart||'-')}</td><td><b>${esc(v.name)}</b></td><td>${v.dateKey}</td><td class="left">${esc(prescriptionLabel(v))}</td><td class="num">${fmtDose(sumMap(v.la))}</td><td>${fmtDose(sumMap(v.extra))}</td><td class="money">${d?fmtWon(d.claim):'-'}</td><td>${esc(d?.serial||'-')}</td><td>${d?'이름+진료일':'-'}</td></tr>`}).join(''):'<tr><td colspan="11" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
+  denialUnmatchedTable.innerHTML='<thead><tr><th>보험</th><th>환자명</th><th>요양개시일</th><th>청구액</th><th>명일련</th><th>묶음번호</th><th>원본 파일</th><th>사유</th></tr></thead><tbody>'+ (unmatched.length?unmatched.map(m=>{const d=m.denial;return `<tr><td>${esc(d.insurance)}</td><td><b>${esc(d.name)}</b></td><td>${d.dateKey}</td><td class="money">${fmtWon(d.claim)}</td><td>${esc(d.serial||'-')}</td><td>${esc(d.bundle||'-')}</td><td>${esc(d.fileName)}</td><td class="left">${esc(d.reason||'동일 이름·진료일의 처방 없음')}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">미매칭 지급불능 건이 없습니다.</td></tr>')+'</tbody>';
+  renderDenialMonthly(pv,matchByVisit);
+  renderDenialFlow(pv,matchByVisit,deniedPatientKeys,q);
+  renderDenialInsight(pv,matchByVisit);
+}
+function renderDenialMonthly(pv,matchByVisit){
+  const mm=new Map();
+  pv.forEach(v=>{if(!mm.has(v.ym))mm.set(v.ym,{ym:v.ym,visits:0,patients:new Set(),laDose:0,extraDose:0,denied:0,deniedPatients:new Set(),deniedPatientKeys:new Set(),claim:0});const o=mm.get(v.ym),d=matchByVisit.get(v);o.visits++;o.patients.add(v.patientKey);o.laDose+=sumMap(v.la);o.extraDose+=sumMap(v.extra);if(d){o.denied++;o.deniedPatients.add(normalizeName(v.name));o.deniedPatientKeys.add(v.patientKey);o.claim+=d.claim}});
+  const rows=[...mm.values()].sort((a,b)=>a.ym.localeCompare(b.ym));
+  denialMonthlyTable.innerHTML='<thead><tr><th>월</th><th>전체 처방건</th><th>전체 환자</th><th>차단술 총투여량</th><th>1명당 차단술</th><th>부가처방 총투여량</th><th>1명당 부가처방</th><th>지급불능건</th><th>지급불능률</th><th>지급불능 환자</th><th>불능 환자 1명당 차단술</th><th>불능 환자 1명당 부가처방</th><th>지급불능 청구액</th><th>전월 대비</th></tr></thead><tbody>'+ (rows.length?rows.map((r,i)=>{const rate=r.visits?r.denied/r.visits*100:0,prev=i?rows[i-1]:null,prevRate=prev&&prev.visits?prev.denied/prev.visits*100:0,delta=prev?rate-prevRate:null;const deniedMonthVisits=pv.filter(v=>v.ym===r.ym&&r.deniedPatientKeys.has(v.patientKey));const deniedLa=deniedMonthVisits.reduce((a,v)=>a+sumMap(v.la),0),deniedExtra=deniedMonthVisits.reduce((a,v)=>a+sumMap(v.extra),0);return `<tr><td><b>${r.ym}</b></td><td>${fmtInt(r.visits)}</td><td>${fmtInt(r.patients.size)}</td><td class="num">${fmtDose(r.laDose)}</td><td>${fmtDose(r.patients.size?r.laDose/r.patients.size:0)}</td><td class="num">${fmtDose(r.extraDose)}</td><td>${fmtDose(r.patients.size?r.extraDose/r.patients.size:0)}</td><td>${fmtInt(r.denied)}</td><td class="${denialRateClass(rate)}">${rate.toFixed(1)}%</td><td>${fmtInt(r.deniedPatients.size)}</td><td>${fmtDose(r.deniedPatientKeys.size?deniedLa/r.deniedPatientKeys.size:0)}</td><td>${fmtDose(r.deniedPatientKeys.size?deniedExtra/r.deniedPatientKeys.size:0)}</td><td class="money">${fmtWon(r.claim)}</td><td>${delta===null?'-':(delta>0?'+':'')+delta.toFixed(1)+'%p'}</td></tr>`}).join(''):'<tr><td colspan="14" class="empty">월별 데이터가 없습니다.</td></tr>')+'</tbody>';
+}
+function renderDenialFlow(pv,matchByVisit,deniedPatientKeys,q){
+  const pm=new Map();
+  pv.filter(v=>deniedPatientKeys.has(v.patientKey)).forEach(v=>{if(!pm.has(v.patientKey))pm.set(v.patientKey,{name:v.name,chart:v.chart,items:[]});pm.get(v.patientKey).items.push(v)});
+  let rows=[...pm.values()].filter(p=>!q||normalizeName(`${p.name} ${p.chart} ${p.items.map(prescriptionLabel).join(' ')}`).includes(q));rows.sort((a,b)=>b.items.length-a.items.length||a.name.localeCompare(b.name,'ko'));
+  flowCopyData=rows.map(p=>buildPatientFlowReport(p,matchByVisit));
+  denialFlowList.innerHTML=rows.length?rows.map((p,idx)=>{const laDose=p.items.reduce((a,v)=>a+sumMap(v.la),0),extraDose=p.items.reduce((a,v)=>a+sumMap(v.extra),0),denied=p.items.filter(v=>matchByVisit.has(v)).length;return `<div class="flow-card"><div class="flow-head"><div><b>${esc(p.name)}</b> <span class="pill">${esc(p.chart||'차트번호 없음')}</span></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="hint">기간 ${p.items.length}건 · 지급불능 ${denied}건 · 차단술 ${fmtDose(laDose)} · 부가처방 ${fmtDose(extraDose)}</div><button class="btn gray" type="button" onclick="copyPatientFlow(${idx})">이 환자 보고용 복사</button></div></div><div class="flow-line">${p.items.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchByVisit.get(v);return `<div class="flow-item ${d?'denied':''}"><div class="flow-date">${v.dateKey} · ${d?'<span class="rate-high">지급불능</span>':'인정/미등록'}</div><div class="flow-rx">${esc(prescriptionLabel(v))}</div><div class="hint">차단술 ${fmtDose(sumMap(v.la))} · 부가처방 ${fmtDose(sumMap(v.extra))}${d?' · '+esc(d.insurance):''}</div></div>`}).join('')}</div></div>`}).join(''):'<div class="empty">조회되는 지급불능 환자 흐름이 없습니다.</div>';
+}
+function buildPatientFlowReport(p,matchByVisit){
+  const items=[...p.items].sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+  const laTotal=items.reduce((a,v)=>a+sumMap(v.la),0),extraTotal=items.reduce((a,v)=>a+sumMap(v.extra),0),denied=items.filter(v=>matchByVisit.has(v)).length;
+  const lines=[`■ ${p.name}${p.chart?' ('+p.chart+')':''}`,`- 기간 내 처방 ${items.length}건 / 지급불능 ${denied}건`,`- 차단술 총투여량 ${fmtDose(laTotal)} / 부가처방 총투여량 ${fmtDose(extraTotal)}`,'- 처방 흐름'];
+  items.forEach((v,i)=>{const d=matchByVisit.get(v),gap=i?daysBetween(items[i-1].dateKey,v.dateKey):null;lines.push(`  ${v.dateKey}${gap===null?'':' ('+gap+'일 간격)'} | ${prescriptionLabel(v)} | 차단술 ${fmtDose(sumMap(v.la))} / 부가처방 ${fmtDose(sumMap(v.extra))} | ${d?'지급불능'+(d.insurance?' ['+d.insurance+']':''):'인정 또는 지급불능 미등록'}`)});
+  return lines.join('\n');
+}
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
+async function copyText(text,label){
+  try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(text);else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}denialStatus.textContent=label+' 복사 완료';}
+  catch(e){alert('복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해주세요.')}
+}
+function copyPatientFlow(i){if(flowCopyData[i])copyText(flowCopyData[i],'환자 흐름')}
+function copyAllPatientFlows(){if(!flowCopyData.length){alert('복사할 환자 흐름이 없습니다.');return}copyText(flowCopyData.join('\n\n'),'전체 환자 흐름')}
+function renderDenialInsight(pv,matchByVisit){
+  const base=pv.length?matchByVisit.size/pv.length*100:0,combo=new Map(),code=new Map();
+  pv.forEach(v=>{const denied=matchByVisit.has(v),key=prescriptionLabel(v);if(!combo.has(key))combo.set(key,{key,total:0,denied:0});const c=combo.get(key);c.total++;c.denied+=denied?1:0;[...v.la.keys(),...v.extra.keys()].forEach(k=>{if(!code.has(k))code.set(k,{key:k,total:0,denied:0});const o=code.get(k);o.total++;o.denied+=denied?1:0})});
+  const grade=r=>{const rate=r.total?r.denied/r.total*100:0;if((r.total>=10&&rate>=Math.max(20,base*1.5))||(r.total>=5&&r.denied>=2&&rate>=50))return['높은 주의','risk-high'];if(r.total>=5&&r.denied>=2&&rate>base)return['관찰 필요','risk-watch'];return['근거 부족','risk-low']};
+  const comboRows=[...combo.values()].map(r=>({...r,rate:r.total?r.denied/r.total*100:0,g:grade(r)})).filter(r=>r.denied).sort((a,b)=>{const rank=x=>x.g[0]==='높은 주의'?2:x.g[0]==='관찰 필요'?1:0;return rank(b)-rank(a)||b.rate-a.rate||b.total-a.total});
+  const codeRows=[...code.values()].map(r=>({...r,rate:r.total?r.denied/r.total*100:0,g:grade(r)})).filter(r=>r.denied).sort((a,b)=>b.rate-a.rate||b.total-a.total);
+  const high=comboRows.filter(r=>r.g[0]==='높은 주의').length,watch=comboRows.filter(r=>r.g[0]==='관찰 필요').length;
+  denialInsight.innerHTML=`<div class="insight-grid"><div class="insight-card"><h3>전체 기준선</h3><p>선택 기간 전체 지급불능률은 <b>${base.toFixed(1)}%</b>입니다. 각 조합은 이 기준선과 표본 수를 함께 비교합니다.</p></div><div class="insight-card"><h3>우선 점검 조합</h3><p>높은 주의 ${high}개 · 관찰 필요 ${watch}개입니다. 건수가 적고 비율만 높은 조합은 근거 부족으로 분리했습니다.</p></div><div class="insight-card"><h3>해석 원칙</h3><p>이 결과는 심사 경향을 찾는 신호이며 확정 기준은 아닙니다. 상병·부위·시술 간격·기록을 함께 확인한 뒤 변경 여부를 판단해야 합니다.</p></div></div>`+
+  '<h3>조합별 위험 신호</h3><div class="tableWrap"><table><thead><tr><th>판정</th><th class="left">처방 조합</th><th>전체건</th><th>불능건</th><th>불능률</th><th>전체 대비</th><th class="left">권장 확인</th></tr></thead><tbody>'+ (comboRows.length?comboRows.map(r=>`<tr><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td><td class="left"><b>${esc(r.key)}</b></td><td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td>${base?(r.rate/base).toFixed(2)+'배':'-'}</td><td class="left">${r.g[0]==='높은 주의'?'시술 간격·동일부위 반복·부가처방 필요성 및 차팅을 우선 점검':r.g[0]==='관찰 필요'?'다음 달까지 추세 관찰 및 지급불능 사례 차트 대조':'표본 확대 후 판단'}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">분석할 지급불능 조합이 없습니다.</td></tr>')+'</tbody></table></div>'+
+  '<h3 style="margin-top:20px">개별 코드 포함 여부</h3><div class="tableWrap"><table><thead><tr><th>코드</th><th>포함 처방건</th><th>지급불능건</th><th>지급불능률</th><th>판정</th></tr></thead><tbody>'+codeRows.map(r=>`<tr><td><b>${r.key}</b></td><td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td></tr>`).join('')+'</tbody></table></div>';
+}
 function renderPriceEditor(){
   const all=[...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o]),...Object.entries(EXTRA_INFO).map(([c,o])=>['EXTRA',c,o])];
   document.getElementById('priceEditGrid').innerHTML=all.map(([type,c,o])=>`<div class="price-edit-item"><b>${c}</b><span title="${esc(o.name)}">${esc(o.name)}</span><input type="number" min="0" step="10" data-price-type="${type}" data-price-code="${c}" value="${o.price}"></div>`).join('');
@@ -675,32 +853,33 @@ function restoreDefaultPrices(){
   localStorage.removeItem('jinsul-la-extra-prices');renderPriceEditor();renderPriceTable();recalc();
   statusEl.textContent='기본 단가로 복원했습니다.';
 }
-
 function renderEmpty(){
   codeTable.innerHTML=doseTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
   comboList.innerHTML='<div class="empty">엑셀 업로드 후 LA × 추가처방 조합이 표시됩니다.</div>';
   ['kTotal','kSingle','kCombo','kCodes','xTotal','xMatched','xPatients'].forEach(id=>document.getElementById(id).textContent='0');
   xRatio.textContent='0%';xLaAmount.textContent=xExtraAmount.textContent='0원';codeListEl.textContent='-';
+  denialComboTable.innerHTML=denialDetailTable.innerHTML=denialMonthlyTable.innerHTML=denialUnmatchedTable.innerHTML='<tbody><tr><td class="empty">처방 및 지급불능 파일 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
+  denialFlowList.innerHTML=denialInsight.innerHTML='<div class="empty">처방 및 지급불능 파일 업로드 후 결과가 표시됩니다.</div>';
+  ['dTotal','dMatched','dPatients','dUnmatched'].forEach(id=>document.getElementById(id).textContent='0');dRatio.textContent='0%';dClaim.textContent='0원';
+  ['dAvgDoseAll','dAvgExtraAll','dAvgDoseDenied','dAvgExtraDenied','dAvgVisitsAll','dAvgVisitsDenied'].forEach(id=>document.getElementById(id).textContent='0');
 }
 function resetAll(){
-  rawRows=[];months=[];visits=[];currentBaseStats=null;currentComboVisits=[];
-  fileInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;
+  rawRows=[];months=[];visits=[];currentBaseStats=null;currentComboVisits=[];denialRows=[];denialMatches=[];
+  fileInput.value='';denialInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;
   searchInput.value='';typeFilter.value='all';minCount.value=1;matchMode.value='all';comboLaSearch.value='';
   document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);
+  denialSearch.value='';insuranceFilter.innerHTML='<option value="all">전체</option>';denialView.value='all';denialStatus.textContent='지급불능 파일 미업로드';
   statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();
 }
 function exportExcel(){
   if(!visits.length){alert('먼저 엑셀을 업로드해주세요.');return}
   const wb=XLSX.utils.book_new();
-
   const base1=[['순위','구분','LA코드 단독/조합','건수','비율(%)','총 LA 투여량','총 LA 금액'],
     ...filterBase(currentBaseStats.codeRows).map((r,i)=>[i+1,r.type,r.key,r.count,round2(r.pct),round2(r.totalDose),Math.round(r.totalAmount)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(base1),'LA조합통계');
-
   const visitData=[['차트번호','환자명','시행일','LA 조합','추가처방 조합','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
     ...currentComboVisits.map(v=>[v.chart,v.name,v.dateKey,laKey(v),extraKey(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),Math.round(laAmount(v)),Math.round(extraAmount(v)),Math.round(laAmount(v)+extraAmount(v))])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(visitData),'LA추가처방_방문별');
-
   const pm=new Map();
   currentComboVisits.forEach(v=>{
     if(!pm.has(v.patientKey))pm.set(v.patientKey,{chart:v.chart,name:v.name,count:0,dates:[],laDose:0,exDose:0,laAmt:0,exAmt:0});
@@ -709,11 +888,22 @@ function exportExcel(){
   const pd=[['차트번호','환자명','해당 조건 횟수','시행일','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
     ...[...pm.values()].map(p=>[p.chart,p.name,p.count,p.dates.sort().join(', '),round2(p.laDose),round2(p.exDose),Math.round(p.laAmt),Math.round(p.exAmt),Math.round(p.laAmt+p.exAmt)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd),'환자별상세');
-
+  const pv=periodVisits(),matchMap=new Map(denialMatches.filter(m=>m.visit&&pv.includes(m.visit)).map(m=>[m.visit,m.denial]));
+  const denialDetail=[['상태','보험','차트번호','환자명','시행일','처방조합','차단술 총투여량','부가처방 총투여량','청구액','명일련','묶음번호'],
+    ...pv.map(v=>{const d=matchMap.get(v);return[d?'지급불능':'전체',d?.insurance||'',v.chart,v.name,v.dateKey,prescriptionLabel(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),d?.claim||0,d?.serial||'',d?.bundle||'']})];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(denialDetail),'지급불능_환자별상세');
+  const unmatched=[['보험','환자명','요양개시일','청구액','명일련','묶음번호','원본파일'],...denialMatches.filter(m=>!m.visit).map(m=>[m.denial.insurance,m.denial.name,m.denial.dateKey,m.denial.claim,m.denial.serial,m.denial.bundle,m.denial.fileName])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(unmatched),'지급불능_미매칭');
+  const monthlyMap=new Map();
+  pv.forEach(v=>{if(!monthlyMap.has(v.ym))monthlyMap.set(v.ym,{visits:0,patients:new Set(),laDose:0,extraDose:0,denied:0,deniedPatients:new Set(),claim:0});const o=monthlyMap.get(v.ym),d=matchMap.get(v);o.visits++;o.patients.add(v.patientKey);o.laDose+=sumMap(v.la);o.extraDose+=sumMap(v.extra);if(d){o.denied++;o.deniedPatients.add(v.patientKey);o.claim+=d.claim}});
+  const monthly=[['월','전체 처방건','전체 환자','차단술 총투여량','환자 1명당 차단술','부가처방 총투여량','환자 1명당 부가처방','지급불능건','지급불능률(%)','지급불능 환자','지급불능 청구액'],...[...monthlyMap.entries()].sort().map(([ym,o])=>[ym,o.visits,o.patients.size,round2(o.laDose),round2(o.patients.size?o.laDose/o.patients.size:0),round2(o.extraDose),round2(o.patients.size?o.extraDose/o.patients.size:0),o.denied,round2(o.visits?o.denied/o.visits*100:0),o.deniedPatients.size,Math.round(o.claim)])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(monthly),'지급불능_월별비교');
+  const deniedKeys=new Set([...matchMap.keys()].map(v=>v.patientKey));
+  const flow=[['차트번호','환자명','시행일','처방조합','차단술 총투여량','부가처방 총투여량','심사상태','보험'],...pv.filter(v=>deniedKeys.has(v.patientKey)).sort((a,b)=>a.patientKey.localeCompare(b.patientKey)||a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchMap.get(v);return[v.chart,v.name,v.dateKey,prescriptionLabel(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),d?'지급불능':'인정/미등록',d?.insurance||'']})];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flow),'지급불능환자_처방흐름');
   const prices=[['구분','코드','명칭','단가'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price]),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prices),'단가표');
-
-  XLSX.writeFile(wb,'신경차단술_LA코드_추가처방_통합통계.xlsx');
+  XLSX.writeFile(wb,'의사랑_차단술_부가처방_지급불능_통합통계.xlsx');
 }
 function fmtInt(n){return Number(n||0).toLocaleString()}
 function fmtDose(n){return round2(n).toLocaleString(undefined,{maximumFractionDigits:2})}
