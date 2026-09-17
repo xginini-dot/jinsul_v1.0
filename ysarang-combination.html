@@ -1,11 +1,12 @@
 
+
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>의사랑 차단술·부가처방·지급불능 통합통계</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="xlsx.full.min.js"></script>
 <style>
 :root{
   --gold:#bda98b;--gold2:#d8c7aa;--gold3:#8f8069;
@@ -151,7 +152,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         <h1>의사랑 차단술·부가처방·지급불능 통합통계</h1>
         <div class="sub">
           기존 <b>LA코드 단독/조합 통계와 총투여량 통계</b>는 그대로 유지합니다.
-          추가로 동일 환자·동일 날짜 기준 <b>LA코드 조합 + KK090/N0780/MM410/HA280</b> 조합을 함께 집계합니다.
+          추가로 동일 환자·동일 날짜 기준 <b>LA코드 조합 + KK061/KK062/KK090/N0780/MM410/HA280/MM131/MM132</b> 조합을 함께 집계합니다.
           LA 총투여량과 추가 처방 총투여량은 <b>서로 별도</b>로 표시하며, 각 코드 단가를 이용해 금액도 계산합니다.
         </div>
       </div>
@@ -269,13 +270,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         </div>
       </div>
     </div>
-    <div class="price-grid">
-      <div class="price-card"><b>KK061 <strong>별도 단가 미설정</strong></b><span>신경간내주사</span></div>
-      <div class="price-card"><b>KK090 <strong>18,340원</strong></b><span>관절강내주사</span></div>
-      <div class="price-card"><b>N0780 <strong>107,170원</strong></b><span>비관혈관절수동술 · 브리즈망</span></div>
-      <div class="price-card"><b>MM410 <strong>68,660원</strong></b><span>수압팽창술</span></div>
-      <div class="price-card"><b>HA280 <strong>102,500원</strong></b><span>관절조영</span></div>
-    </div>
+    <div class="actions"><button class="btn primary" type="button" id="editExtraPricesBtn">추가처방 금액 입력</button></div>
+    <div class="price-grid" id="extraPriceGrid"></div>
+    <div class="hint" style="margin-bottom:16px">단가 미설정 코드는 횟수·투여량에 포함되며, 금액은 0원으로 계산됩니다. 아래 단가 설정에서 금액을 입력할 수 있습니다.</div>
     <div class="combo-filter">
       <div class="select-box">
         <b>추가처방 선택</b>
@@ -316,15 +313,29 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
   <!-- 단가표 -->
   <div class="card">
     <div class="price-toggle" id="priceToggle">
-      <div><h2>③ 적용 단가표</h2><div class="hint">기본 숨김 · 필요할 때 펼쳐서 단가를 직접 수정할 수 있습니다.</div></div>
-      <button class="btn gray" type="button" id="priceToggleBtn">단가표 펼치기 ▼</button>
+      <div><h2>LA · 추가처방 단가 설정</h2><div class="hint">코드별 금액(원)을 입력한 뒤 수정 단가 적용을 누르세요.</div></div>
+      <button class="btn gray" type="button" id="priceToggleBtn">단가표 접기 ▲</button>
     </div>
-    <div id="priceEditor" class="price-editor hidden">
+    <div id="priceEditor" class="price-editor">
       <div class="actions" style="margin-top:0;margin-bottom:12px">
-        <button class="btn gray" type="button" id="restorePriceBtn">기본 단가 복원</button>
+        <button class="btn gray" type="button" id="restorePriceBtn">파일 초기값 복원</button>
         <button class="btn primary" type="button" id="savePriceBtn">수정 단가 적용</button>
       </div>
-      <div class="price-edit-grid" id="priceEditGrid"></div>
+      <div class="hint" style="margin-bottom:12px">심평원 조회 또는 수동 입력을 사용할 수 있습니다. 파일 초기값은 심평원 의원급 최신 수가로 검증된 값이 아닙니다. 진료일에 해당하는 의원 단가를 확인하여 입력하세요. 입력한 단가는 조회 기간 전체에 동일하게 적용되며, 날짜별 수가 변경·가산·감산은 자동 반영하지 않습니다.</div>
+      <div class="actions"><a class="btn" href="https://www.hira.or.kr/bbsDummy.do?b=&amp;pgmid=HIRAA020002000100" target="_blank" rel="noopener noreferrer">심평원 수가파일 공지</a><a class="btn" href="https://www.data.go.kr/data/15021028/openapi.do" target="_blank" rel="noopener noreferrer">공식 수가 조회 서비스 안내</a></div>
+      <section class="select-box" style="margin:16px 0"><h3>공통 의원단가</h3><div class="hint">공통 수가표를 자동으로 불러옵니다. 인증키 입력은 필요하지 않습니다. 개인이 수정한 단가는 유지됩니다.</div><div class="actions"><button type="button" class="btn primary" id="refreshSharedFeesBtn">최신 수가표 다시 불러오기</button><button type="button" class="btn" id="useSharedPricesBtn" disabled>개인 수정 해제 · 공통 단가 사용</button></div><div id="sharedFeeStatus" class="hint" role="status" aria-live="polite">공통 수가표 확인 중…</div><div class="hint">출처: 건강보험심사평가원 수가기준정보조회서비스 · 의원단가. 환자자료는 각자의 브라우저에서 처리됩니다.</div></section>
+<details><summary style="cursor:pointer">별도 인증키로 직접 조회 (선택)</summary><section class="select-box" style="margin:16px 0">
+<h3>심평원 의원단가 불러오기</h3>
+<div class="hint">출처: 건강보험심사평가원 수가기준정보조회서비스 · 의원단가(unprc1). 기본 코드와 정확히 일치하는 자료만 조회합니다. 기준일 이후의 수가는 제외하지만 과거 수가의 전체 이력 제공은 보장되지 않습니다.</div>
+<div class="combo-filter" style="margin-top:12px">
+<div class="field"><label for="hiraKey">일반 인증키</label><input id="hiraKey" type="password" autocomplete="off" placeholder="인증키를 붙여넣으세요"></div>
+<div class="field"><label for="hiraDate">수가 확인 기준일</label><input id="hiraDate" type="date"></div>
+<div class="field"><label for="hiraScope">조회 코드</label><select id="hiraScope"><option value="ALL">LA + 부가처방 전체</option><option value="LA">LA 코드만</option><option value="EXTRA">부가처방만</option></select></div></div>
+<div class="actions"><button class="btn primary" id="hiraFetchBtn" type="button">의원단가 조회</button><button class="btn" id="hiraApplyBtn" type="button" disabled>선택 단가 적용</button></div>
+<div class="hint">인증키는 저장하지 않으며 조회 후 입력란을 비웁니다. 심평원에는 인증키와 처방 코드만 전송하며 환자자료는 전송하지 않습니다. 조회만으로 금액은 바뀌지 않습니다.</div>
+<div id="hiraStatus" class="hint" role="status" aria-live="polite" style="margin:12px 0"></div><div id="hiraPreview"></div></section></details>
+<div id="priceEditGrid"></div>
+      <div id="priceSaveStatus" class="hint" role="status" aria-live="polite"></div>
       <div class="hint" style="margin:12px 0">수정 단가는 이 브라우저에 저장되며, 적용 즉시 모든 금액 통계를 다시 계산합니다.</div>
       <div class="tableWrap"><table id="priceTable"></table></div>
     </div>
@@ -332,6 +343,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
   </div>
   <footer>© JINSUL. Internal analytics dashboard.</footer>
 </div>
+<script id="shared-fee-seed" type="application/json"></script>
 <script>
 const DEFAULT_LA_INFO={
   LA241:{name:'대소후두신경',price:31010},
@@ -365,15 +377,20 @@ const DEFAULT_LA_INFO={
 };
 const DEFAULT_EXTRA_INFO={
   KK061:{name:'신경간내주사',price:0},
+  KK062:{name:'건초내주사',price:0},
   KK090:{name:'관절강내주사',price:18340},
   N0780:{name:'비관혈관절수동술(브리즈망)',price:107170},
   MM410:{name:'수압팽창술',price:68660},
-  HA280:{name:'관절조영',price:102500}
+  HA280:{name:'관절조영',price:102500},
+  MM131:{name:'근막동통유발점주사자극치료[1일당]',price:0},
+  MM132:{name:'근막동통유발점주사자극치료[1일당]-2부위이상각각실시',price:0}
 };
 const LA_INFO=JSON.parse(JSON.stringify(DEFAULT_LA_INFO));
 const EXTRA_INFO=JSON.parse(JSON.stringify(DEFAULT_EXTRA_INFO));
+let PRICE_META={};
 try{
   const saved=JSON.parse(localStorage.getItem('jinsul-la-extra-prices')||'{}');
+  PRICE_META=saved.META&&typeof saved.META==='object'?saved.META:{};
   Object.entries(saved.LA||{}).forEach(([c,p])=>{if(LA_INFO[c])LA_INFO[c].price=Number(p)||0});
   Object.entries(saved.EXTRA||{}).forEach(([c,p])=>{if(EXTRA_INFO[c])EXTRA_INFO[c].price=Number(p)||0});
 }catch(e){}
@@ -415,6 +432,12 @@ document.querySelectorAll('.page-tab').forEach(btn=>btn.addEventListener('click'
   btn.classList.add('active');document.getElementById(btn.dataset.page).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }));
+document.getElementById('editExtraPricesBtn').addEventListener('click',()=>{
+  document.getElementById('priceEditor').classList.remove('hidden');
+  document.getElementById('priceToggleBtn').textContent='단가표 접기 ▲';
+  document.getElementById('extraPriceHeading').scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelector('#priceEditGrid input[data-price-type="EXTRA"]')?.focus({preventScroll:true});
+});
 document.getElementById('priceToggle').addEventListener('click',()=>{
   const ed=document.getElementById('priceEditor');ed.classList.toggle('hidden');
   document.getElementById('priceToggleBtn').textContent=ed.classList.contains('hidden')?'단가표 펼치기 ▼':'단가표 접기 ▲';
@@ -752,6 +775,11 @@ function comboBlock(r,i,total){
     </div>
   </div>`;
 }
+function prescriptionParts(v){
+  const label=map=>[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + ');
+  return {laLabel:label(v.la)||'없음',extraLabel:label(v.extra)||'없음'};
+}
+function prescriptionCells(parts){return `<td class="left">${esc(parts.laLabel)}</td><td class="left">${esc(parts.extraLabel)}</td>`}
 function prescriptionLabel(v){
   const la=[...v.la.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`);
   const ex=[...v.extra.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`);
@@ -782,10 +810,10 @@ function renderDenial(){
   dAvgVisitsAll.textContent=(allPatients.size?pv.length/allPatients.size:0).toFixed(2);
   dAvgVisitsDenied.textContent=(deniedPatientKeys.size?deniedPatientVisits.length/deniedPatientKeys.size:0).toFixed(2);
   const groups=new Map();
-  pv.forEach(v=>{const key=prescriptionLabel(v);if(!groups.has(key))groups.set(key,{key,total:0,denied:0,patients:new Set(),claim:0,laDose:0});const o=groups.get(key);o.total++;o.laDose+=sumMap(v.la);const d=matchByVisit.get(v);if(d){o.denied++;o.patients.add(normalizeName(v.name));o.claim+=d.claim}});
+  pv.forEach(v=>{const key=prescriptionLabel(v);if(!groups.has(key))groups.set(key,{key,...prescriptionParts(v),total:0,denied:0,patients:new Set(),claim:0,laDose:0});const o=groups.get(key);o.total++;o.laDose+=sumMap(v.la);const d=matchByVisit.get(v);if(d){o.denied++;o.patients.add(normalizeName(v.name));o.claim+=d.claim}});
   let rows=[...groups.values()].filter(r=>!q||normalizeName(r.key).includes(q));if(denialView?.value==='denied')rows=rows.filter(r=>r.denied);rows.sort((a,b)=>(b.denied/b.total)-(a.denied/a.total)||b.total-a.total);
-  denialComboTable.innerHTML='<thead><tr><th>순위</th><th class="left">처방 조합 (LA → 부가처방)</th><th>전체 처방건</th><th>지급불능건</th><th>지급불능 비율</th><th>지급불능 환자</th><th>차단술 총투여량</th><th>지급불능 청구액</th></tr></thead><tbody>'+ (rows.length?rows.map((r,i)=>{const rate=r.total?r.denied/r.total*100:0;return `<tr class="${r.denied?'denied-row':''}"><td>${i+1}</td><td class="left"><b>${esc(r.key)}</b></td><td>${fmtInt(r.total)}</td><td>${fmtInt(r.denied)}</td><td class="${denialRateClass(rate)}">${rate.toFixed(1)}%</td><td>${fmtInt(r.patients.size)}</td><td class="num">${fmtDose(r.laDose)}</td><td class="money">${fmtWon(r.claim)}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
-  denialDetailTable.innerHTML='<thead><tr><th>상태</th><th>보험</th><th>차트번호</th><th>환자명</th><th>시행일</th><th class="left">처방 조합 (LA → 부가처방)</th><th>차단술 총투여량</th><th>부가처방 총투여량</th><th>청구액</th><th>명일련</th><th>매칭기준</th></tr></thead><tbody>'+ (visible.length?visible.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)||a.name.localeCompare(b.name,'ko')).map(v=>{const d=matchByVisit.get(v);return `<tr class="${d?'denied-row':''}"><td><span class="pill ${d?'combo':''}">${d?'지급불능':'전체'}</span></td><td>${esc(d?.insurance||'-')}</td><td>${esc(v.chart||'-')}</td><td><b>${esc(v.name)}</b></td><td>${v.dateKey}</td><td class="left">${esc(prescriptionLabel(v))}</td><td class="num">${fmtDose(sumMap(v.la))}</td><td>${fmtDose(sumMap(v.extra))}</td><td class="money">${d?fmtWon(d.claim):'-'}</td><td>${esc(d?.serial||'-')}</td><td>${d?'이름+진료일':'-'}</td></tr>`}).join(''):'<tr><td colspan="11" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
+  denialComboTable.innerHTML='<thead><tr><th>순위</th><th class="left">LA코드 조합 · 투여량</th><th class="left">부가처방 조합 · 투여량</th><th>전체 처방건</th><th>지급불능건</th><th>지급불능 비율</th><th>지급불능 환자</th><th>차단술 총투여량</th><th>지급불능 청구액</th></tr></thead><tbody>'+ (rows.length?rows.map((r,i)=>{const rate=r.total?r.denied/r.total*100:0;return `<tr class="${r.denied?'denied-row':''}"><td>${i+1}</td>${prescriptionCells(r)}<td>${fmtInt(r.total)}</td><td>${fmtInt(r.denied)}</td><td class="${denialRateClass(rate)}">${rate.toFixed(1)}%</td><td>${fmtInt(r.patients.size)}</td><td class="num">${fmtDose(r.laDose)}</td><td class="money">${fmtWon(r.claim)}</td></tr>`}).join(''):'<tr><td colspan="9" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
+  denialDetailTable.innerHTML='<thead><tr><th>상태</th><th>보험</th><th>차트번호</th><th>환자명</th><th>시행일</th><th class="left">LA코드 조합 · 투여량</th><th class="left">부가처방 조합 · 투여량</th><th>차단술 총투여량</th><th>부가처방 총투여량</th><th>청구액</th><th>명일련</th><th>매칭기준</th></tr></thead><tbody>'+ (visible.length?visible.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)||a.name.localeCompare(b.name,'ko')).map(v=>{const d=matchByVisit.get(v);return `<tr class="${d?'denied-row':''}"><td><span class="pill ${d?'combo':''}">${d?'지급불능':'전체'}</span></td><td>${esc(d?.insurance||'-')}</td><td>${esc(v.chart||'-')}</td><td><b>${esc(v.name)}</b></td><td>${v.dateKey}</td>${prescriptionCells(prescriptionParts(v))}<td class="num">${fmtDose(sumMap(v.la))}</td><td>${fmtDose(sumMap(v.extra))}</td><td class="money">${d?fmtWon(d.claim):'-'}</td><td>${esc(d?.serial||'-')}</td><td>${d?'이름+진료일':'-'}</td></tr>`}).join(''):'<tr><td colspan="12" class="empty">조회 결과가 없습니다.</td></tr>')+'</tbody>';
   denialUnmatchedTable.innerHTML='<thead><tr><th>보험</th><th>환자명</th><th>요양개시일</th><th>청구액</th><th>명일련</th><th>묶음번호</th><th>원본 파일</th><th>사유</th></tr></thead><tbody>'+ (unmatched.length?unmatched.map(m=>{const d=m.denial;return `<tr><td>${esc(d.insurance)}</td><td><b>${esc(d.name)}</b></td><td>${d.dateKey}</td><td class="money">${fmtWon(d.claim)}</td><td>${esc(d.serial||'-')}</td><td>${esc(d.bundle||'-')}</td><td>${esc(d.fileName)}</td><td class="left">${esc(d.reason||'동일 이름·진료일의 처방 없음')}</td></tr>`}).join(''):'<tr><td colspan="8" class="empty">미매칭 지급불능 건이 없습니다.</td></tr>')+'</tbody>';
   renderDenialMonthly(pv,matchByVisit);
   renderDenialFlow(pv,matchByVisit,deniedPatientKeys,q);
@@ -802,13 +830,13 @@ function renderDenialFlow(pv,matchByVisit,deniedPatientKeys,q){
   pv.filter(v=>deniedPatientKeys.has(v.patientKey)).forEach(v=>{if(!pm.has(v.patientKey))pm.set(v.patientKey,{name:v.name,chart:v.chart,items:[]});pm.get(v.patientKey).items.push(v)});
   let rows=[...pm.values()].filter(p=>!q||normalizeName(`${p.name} ${p.chart} ${p.items.map(prescriptionLabel).join(' ')}`).includes(q));rows.sort((a,b)=>b.items.length-a.items.length||a.name.localeCompare(b.name,'ko'));
   flowCopyData=rows.map(p=>buildPatientFlowReport(p,matchByVisit));
-  denialFlowList.innerHTML=rows.length?rows.map((p,idx)=>{const laDose=p.items.reduce((a,v)=>a+sumMap(v.la),0),extraDose=p.items.reduce((a,v)=>a+sumMap(v.extra),0),denied=p.items.filter(v=>matchByVisit.has(v)).length;return `<div class="flow-card"><div class="flow-head"><div><b>${esc(p.name)}</b> <span class="pill">${esc(p.chart||'차트번호 없음')}</span></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="hint">기간 ${p.items.length}건 · 지급불능 ${denied}건 · 차단술 ${fmtDose(laDose)} · 부가처방 ${fmtDose(extraDose)}</div><button class="btn gray" type="button" onclick="copyPatientFlow(${idx})">이 환자 보고용 복사</button></div></div><div class="flow-line">${p.items.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchByVisit.get(v);return `<div class="flow-item ${d?'denied':''}"><div class="flow-date">${v.dateKey} · ${d?'<span class="rate-high">지급불능</span>':'인정/미등록'}</div><div class="flow-rx">${esc(prescriptionLabel(v))}</div><div class="hint">차단술 ${fmtDose(sumMap(v.la))} · 부가처방 ${fmtDose(sumMap(v.extra))}${d?' · '+esc(d.insurance):''}</div></div>`}).join('')}</div></div>`}).join(''):'<div class="empty">조회되는 지급불능 환자 흐름이 없습니다.</div>';
+  denialFlowList.innerHTML=rows.length?rows.map((p,idx)=>{const laDose=p.items.reduce((a,v)=>a+sumMap(v.la),0),extraDose=p.items.reduce((a,v)=>a+sumMap(v.extra),0),denied=p.items.filter(v=>matchByVisit.has(v)).length;return `<div class="flow-card"><div class="flow-head"><div><b>${esc(p.name)}</b> <span class="pill">${esc(p.chart||'차트번호 없음')}</span></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="hint">기간 ${p.items.length}건 · 지급불능 ${denied}건 · 차단술 ${fmtDose(laDose)} · 부가처방 ${fmtDose(extraDose)}</div><button class="btn gray" type="button" onclick="copyPatientFlow(${idx})">이 환자 보고용 복사</button></div></div><div class="flow-line">${p.items.sort((a,b)=>a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchByVisit.get(v);return `<div class="flow-item ${d?'denied':''}"><div class="flow-date">${v.dateKey} · ${d?'<span class="rate-high">지급불능</span>':'인정/미등록'}</div><div class="flow-rx"><div><span class="hint">LA코드</span> ${esc(prescriptionParts(v).laLabel)}</div><div><span class="hint">부가처방</span> ${esc(prescriptionParts(v).extraLabel)}</div></div><div class="hint">차단술 ${fmtDose(sumMap(v.la))} · 부가처방 ${fmtDose(sumMap(v.extra))}${d?' · '+esc(d.insurance):''}</div></div>`}).join('')}</div></div>`}).join(''):'<div class="empty">조회되는 지급불능 환자 흐름이 없습니다.</div>';
 }
 function buildPatientFlowReport(p,matchByVisit){
   const items=[...p.items].sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
   const laTotal=items.reduce((a,v)=>a+sumMap(v.la),0),extraTotal=items.reduce((a,v)=>a+sumMap(v.extra),0),denied=items.filter(v=>matchByVisit.has(v)).length;
   const lines=[`■ ${p.name}${p.chart?' ('+p.chart+')':''}`,`- 기간 내 처방 ${items.length}건 / 지급불능 ${denied}건`,`- 차단술 총투여량 ${fmtDose(laTotal)} / 부가처방 총투여량 ${fmtDose(extraTotal)}`,'- 처방 흐름'];
-  items.forEach((v,i)=>{const d=matchByVisit.get(v),gap=i?daysBetween(items[i-1].dateKey,v.dateKey):null;lines.push(`  ${v.dateKey}${gap===null?'':' ('+gap+'일 간격)'} | ${prescriptionLabel(v)} | 차단술 ${fmtDose(sumMap(v.la))} / 부가처방 ${fmtDose(sumMap(v.extra))} | ${d?'지급불능'+(d.insurance?' ['+d.insurance+']':''):'인정 또는 지급불능 미등록'}`)});
+  items.forEach((v,i)=>{const d=matchByVisit.get(v),gap=i?daysBetween(items[i-1].dateKey,v.dateKey):null;lines.push(`  ${v.dateKey}${gap===null?'':' ('+gap+'일 간격)'} | LA코드: ${prescriptionParts(v).laLabel} | 부가처방: ${prescriptionParts(v).extraLabel} | 차단술 ${fmtDose(sumMap(v.la))} / 부가처방 ${fmtDose(sumMap(v.extra))} | ${d?'지급불능'+(d.insurance?' ['+d.insurance+']':''):'인정 또는 지급불능 미등록'}`)});
   return lines.join('\n');
 }
 function daysBetween(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)}
@@ -820,38 +848,42 @@ function copyPatientFlow(i){if(flowCopyData[i])copyText(flowCopyData[i],'환자 
 function copyAllPatientFlows(){if(!flowCopyData.length){alert('복사할 환자 흐름이 없습니다.');return}copyText(flowCopyData.join('\n\n'),'전체 환자 흐름')}
 function renderDenialInsight(pv,matchByVisit){
   const base=pv.length?matchByVisit.size/pv.length*100:0,combo=new Map(),code=new Map();
-  pv.forEach(v=>{const denied=matchByVisit.has(v),key=prescriptionLabel(v);if(!combo.has(key))combo.set(key,{key,total:0,denied:0});const c=combo.get(key);c.total++;c.denied+=denied?1:0;[...v.la.keys(),...v.extra.keys()].forEach(k=>{if(!code.has(k))code.set(k,{key:k,total:0,denied:0});const o=code.get(k);o.total++;o.denied+=denied?1:0})});
+  pv.forEach(v=>{const denied=matchByVisit.has(v),key=prescriptionLabel(v);if(!combo.has(key))combo.set(key,{key,...prescriptionParts(v),total:0,denied:0});const c=combo.get(key);c.total++;c.denied+=denied?1:0;[...v.la.keys(),...v.extra.keys()].forEach(k=>{if(!code.has(k))code.set(k,{key:k,total:0,denied:0});const o=code.get(k);o.total++;o.denied+=denied?1:0})});
   const grade=r=>{const rate=r.total?r.denied/r.total*100:0;if((r.total>=10&&rate>=Math.max(20,base*1.5))||(r.total>=5&&r.denied>=2&&rate>=50))return['높은 주의','risk-high'];if(r.total>=5&&r.denied>=2&&rate>base)return['관찰 필요','risk-watch'];return['근거 부족','risk-low']};
   const comboRows=[...combo.values()].map(r=>({...r,rate:r.total?r.denied/r.total*100:0,g:grade(r)})).filter(r=>r.denied).sort((a,b)=>{const rank=x=>x.g[0]==='높은 주의'?2:x.g[0]==='관찰 필요'?1:0;return rank(b)-rank(a)||b.rate-a.rate||b.total-a.total});
   const codeRows=[...code.values()].map(r=>({...r,rate:r.total?r.denied/r.total*100:0,g:grade(r)})).filter(r=>r.denied).sort((a,b)=>b.rate-a.rate||b.total-a.total);
   const high=comboRows.filter(r=>r.g[0]==='높은 주의').length,watch=comboRows.filter(r=>r.g[0]==='관찰 필요').length;
   denialInsight.innerHTML=`<div class="insight-grid"><div class="insight-card"><h3>전체 기준선</h3><p>선택 기간 전체 지급불능률은 <b>${base.toFixed(1)}%</b>입니다. 각 조합은 이 기준선과 표본 수를 함께 비교합니다.</p></div><div class="insight-card"><h3>우선 점검 조합</h3><p>높은 주의 ${high}개 · 관찰 필요 ${watch}개입니다. 건수가 적고 비율만 높은 조합은 근거 부족으로 분리했습니다.</p></div><div class="insight-card"><h3>해석 원칙</h3><p>이 결과는 심사 경향을 찾는 신호이며 확정 기준은 아닙니다. 상병·부위·시술 간격·기록을 함께 확인한 뒤 변경 여부를 판단해야 합니다.</p></div></div>`+
-  '<h3>조합별 위험 신호</h3><div class="tableWrap"><table><thead><tr><th>판정</th><th class="left">처방 조합</th><th>전체건</th><th>불능건</th><th>불능률</th><th>전체 대비</th><th class="left">권장 확인</th></tr></thead><tbody>'+ (comboRows.length?comboRows.map(r=>`<tr><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td><td class="left"><b>${esc(r.key)}</b></td><td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td>${base?(r.rate/base).toFixed(2)+'배':'-'}</td><td class="left">${r.g[0]==='높은 주의'?'시술 간격·동일부위 반복·부가처방 필요성 및 차팅을 우선 점검':r.g[0]==='관찰 필요'?'다음 달까지 추세 관찰 및 지급불능 사례 차트 대조':'표본 확대 후 판단'}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">분석할 지급불능 조합이 없습니다.</td></tr>')+'</tbody></table></div>'+
+  '<h3>조합별 위험 신호</h3><div class="tableWrap"><table><thead><tr><th>판정</th><th class="left">LA코드 조합 · 투여량</th><th class="left">부가처방 조합 · 투여량</th><th>전체건</th><th>불능건</th><th>불능률</th><th>전체 대비</th><th class="left">권장 확인</th></tr></thead><tbody>'+ (comboRows.length?comboRows.map(r=>`<tr><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td>${prescriptionCells(r)}<td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td>${base?(r.rate/base).toFixed(2)+'배':'-'}</td><td class="left">${r.g[0]==='높은 주의'?'시술 간격·동일부위 반복·부가처방 필요성 및 차팅을 우선 점검':r.g[0]==='관찰 필요'?'다음 달까지 추세 관찰 및 지급불능 사례 차트 대조':'표본 확대 후 판단'}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">분석할 지급불능 조합이 없습니다.</td></tr>')+'</tbody></table></div>'+
   '<h3 style="margin-top:20px">개별 코드 포함 여부</h3><div class="tableWrap"><table><thead><tr><th>코드</th><th>포함 처방건</th><th>지급불능건</th><th>지급불능률</th><th>판정</th></tr></thead><tbody>'+codeRows.map(r=>`<tr><td><b>${r.key}</b></td><td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td></tr>`).join('')+'</tbody></table></div>';
 }
 function renderPriceEditor(){
-  const all=[...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o]),...Object.entries(EXTRA_INFO).map(([c,o])=>['EXTRA',c,o])];
-  document.getElementById('priceEditGrid').innerHTML=all.map(([type,c,o])=>`<div class="price-edit-item"><b>${c}</b><span title="${esc(o.name)}">${esc(o.name)}</span><input type="number" min="0" step="10" data-price-type="${type}" data-price-code="${c}" value="${o.price}"></div>`).join('');
+  document.getElementById('priceEditGrid').innerHTML=[['LA','LA 코드 단가',LA_INFO],['EXTRA','추가처방 단가',EXTRA_INFO]].map(([type,title,info])=>`<h3 ${type==='EXTRA'?'id="extraPriceHeading"':''}>${title}</h3><div class="price-edit-grid">${Object.entries(info).map(([c,o])=>`<div class="price-edit-item"><b>${c}</b><span title="${esc(o.name)}">${esc(o.name)}</span><input aria-label="${c} 단가 (원)" type="number" min="0" step="1" data-price-type="${type}" data-price-code="${c}" value="${o.price}"></div>`).join('')}</div>`).join('');
+}
+function renderExtraPriceCards(){
+  document.getElementById('extraPriceGrid').innerHTML=Object.entries(EXTRA_INFO).map(([c,o])=>`<div class="price-card"><b>${c} <strong>${o.price?fmtWon(o.price):'별도 단가 미설정'}</strong></b><span>${esc(o.name)}</span></div>`).join('');
 }
 function renderPriceTable(){
-  document.getElementById('priceTable').innerHTML=`<thead><tr><th>구분</th><th>코드</th><th class="left">명칭</th><th>현재 적용 단가</th></tr></thead><tbody>`+
-  Object.entries(LA_INFO).map(([c,o])=>`<tr><td>LA</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td></tr>`).join('')+
-  Object.entries(EXTRA_INFO).map(([c,o])=>`<tr><td>추가처방</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td></tr>`).join('')+`</tbody>`;
+  renderExtraPriceCards();
+  document.getElementById('priceTable').innerHTML=`<thead><tr><th>구분</th><th>코드</th><th class="left">명칭</th><th>현재 적용 단가</th><th class="left">단가 출처</th></tr></thead><tbody>`+
+  Object.entries(LA_INFO).map(([c,o])=>`<tr><td>LA</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td><td class="left">${esc(hiraSourceLabel(c))}</td></tr>`).join('')+
+  Object.entries(EXTRA_INFO).map(([c,o])=>`<tr><td>추가처방</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td><td class="left">${esc(hiraSourceLabel(c))}</td></tr>`).join('')+`</tbody>`;
 }
 function saveEditedPrices(){
-  document.querySelectorAll('#priceEditGrid input').forEach(inp=>{
-    const c=inp.dataset.priceCode,p=Math.max(0,Number(inp.value)||0);
-    if(inp.dataset.priceType==='LA'&&LA_INFO[c])LA_INFO[c].price=p;
-    if(inp.dataset.priceType==='EXTRA'&&EXTRA_INFO[c])EXTRA_INFO[c].price=p;
-  });
-  localStorage.setItem('jinsul-la-extra-prices',JSON.stringify({LA:Object.fromEntries(Object.entries(LA_INFO).map(([c,o])=>[c,o.price])),EXTRA:Object.fromEntries(Object.entries(EXTRA_INFO).map(([c,o])=>[c,o.price]))}));
-  renderPriceTable();recalc();statusEl.textContent='수정 단가를 적용하고 금액 통계를 다시 계산했습니다.';
+  const inputs=[...document.querySelectorAll('#priceEditGrid input')];
+  const invalid=inputs.find(inp=>inp.value.trim()===''||!Number.isSafeInteger(Number(inp.value))||Number(inp.value)<0);
+  if(invalid){document.getElementById('priceSaveStatus').textContent=invalid.dataset.priceCode+' 단가는 0 이상의 정수(원)로 입력해 주세요. 변경사항은 적용되지 않았습니다.';invalid.focus();return;}
+  inputs.forEach(inp=>{const info=inp.dataset.priceType==='LA'?LA_INFO:EXTRA_INFO;if(info[inp.dataset.priceCode]){if(info[inp.dataset.priceCode].price!==Number(inp.value))PRICE_META[inp.dataset.priceCode]={source:'manual'};info[inp.dataset.priceCode].price=Number(inp.value)}});
+  let message='수정 단가를 저장하고 모든 금액 통계에 적용했습니다.';
+  if(!persistPrices())message='현재 화면에 단가를 적용했습니다. 브라우저 저장이 차단되어 다시 열면 유지되지 않습니다.';
+  renderPriceTable();recalc();statusEl.textContent=message;document.getElementById('priceSaveStatus').textContent=message;
 }
 function restoreDefaultPrices(){
+  PRICE_META=Object.fromEntries([...Object.keys(LA_INFO),...Object.keys(EXTRA_INFO)].map(c=>[c,{source:'manual'}]));
   Object.entries(DEFAULT_LA_INFO).forEach(([c,o])=>LA_INFO[c].price=o.price);
   Object.entries(DEFAULT_EXTRA_INFO).forEach(([c,o])=>EXTRA_INFO[c].price=o.price);
-  localStorage.removeItem('jinsul-la-extra-prices');renderPriceEditor();renderPriceTable();recalc();
-  statusEl.textContent='기본 단가로 복원했습니다.';
+  persistPrices();renderPriceEditor();renderPriceTable();recalc();
+  statusEl.textContent='파일 초기 단가로 복원했습니다. 심평원 최신 수가로 갱신한 것은 아닙니다.';document.getElementById('priceSaveStatus').textContent=statusEl.textContent;
 }
 function renderEmpty(){
   codeTable.innerHTML=doseTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
@@ -889,8 +921,8 @@ function exportExcel(){
     ...[...pm.values()].map(p=>[p.chart,p.name,p.count,p.dates.sort().join(', '),round2(p.laDose),round2(p.exDose),Math.round(p.laAmt),Math.round(p.exAmt),Math.round(p.laAmt+p.exAmt)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd),'환자별상세');
   const pv=periodVisits(),matchMap=new Map(denialMatches.filter(m=>m.visit&&pv.includes(m.visit)).map(m=>[m.visit,m.denial]));
-  const denialDetail=[['상태','보험','차트번호','환자명','시행일','처방조합','차단술 총투여량','부가처방 총투여량','청구액','명일련','묶음번호'],
-    ...pv.map(v=>{const d=matchMap.get(v);return[d?'지급불능':'전체',d?.insurance||'',v.chart,v.name,v.dateKey,prescriptionLabel(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),d?.claim||0,d?.serial||'',d?.bundle||'']})];
+  const denialDetail=[['상태','보험','차트번호','환자명','시행일','LA코드 조합 · 투여량','부가처방 조합 · 투여량','차단술 총투여량','부가처방 총투여량','청구액','명일련','묶음번호'],
+    ...pv.map(v=>{const d=matchMap.get(v);return[d?'지급불능':'전체',d?.insurance||'',v.chart,v.name,v.dateKey,prescriptionParts(v).laLabel,prescriptionParts(v).extraLabel,round2(sumMap(v.la)),round2(sumMap(v.extra)),d?.claim||0,d?.serial||'',d?.bundle||'']})];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(denialDetail),'지급불능_환자별상세');
   const unmatched=[['보험','환자명','요양개시일','청구액','명일련','묶음번호','원본파일'],...denialMatches.filter(m=>!m.visit).map(m=>[m.denial.insurance,m.denial.name,m.denial.dateKey,m.denial.claim,m.denial.serial,m.denial.bundle,m.denial.fileName])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(unmatched),'지급불능_미매칭');
@@ -899,9 +931,9 @@ function exportExcel(){
   const monthly=[['월','전체 처방건','전체 환자','차단술 총투여량','환자 1명당 차단술','부가처방 총투여량','환자 1명당 부가처방','지급불능건','지급불능률(%)','지급불능 환자','지급불능 청구액'],...[...monthlyMap.entries()].sort().map(([ym,o])=>[ym,o.visits,o.patients.size,round2(o.laDose),round2(o.patients.size?o.laDose/o.patients.size:0),round2(o.extraDose),round2(o.patients.size?o.extraDose/o.patients.size:0),o.denied,round2(o.visits?o.denied/o.visits*100:0),o.deniedPatients.size,Math.round(o.claim)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(monthly),'지급불능_월별비교');
   const deniedKeys=new Set([...matchMap.keys()].map(v=>v.patientKey));
-  const flow=[['차트번호','환자명','시행일','처방조합','차단술 총투여량','부가처방 총투여량','심사상태','보험'],...pv.filter(v=>deniedKeys.has(v.patientKey)).sort((a,b)=>a.patientKey.localeCompare(b.patientKey)||a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchMap.get(v);return[v.chart,v.name,v.dateKey,prescriptionLabel(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),d?'지급불능':'인정/미등록',d?.insurance||'']})];
+  const flow=[['차트번호','환자명','시행일','LA코드 조합 · 투여량','부가처방 조합 · 투여량','차단술 총투여량','부가처방 총투여량','심사상태','보험'],...pv.filter(v=>deniedKeys.has(v.patientKey)).sort((a,b)=>a.patientKey.localeCompare(b.patientKey)||a.dateKey.localeCompare(b.dateKey)).map(v=>{const d=matchMap.get(v);return[v.chart,v.name,v.dateKey,prescriptionParts(v).laLabel,prescriptionParts(v).extraLabel,round2(sumMap(v.la)),round2(sumMap(v.extra)),d?'지급불능':'인정/미등록',d?.insurance||'']})];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flow),'지급불능환자_처방흐름');
-  const prices=[['구분','코드','명칭','단가'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price]),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price])];
+  const prices=[['구분','코드','명칭','단가','단가 출처','수가 확인 기준일'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||'']),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||''])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prices),'단가표');
   XLSX.writeFile(wb,'의사랑_차단술_부가처방_지급불능_통합통계.xlsx');
 }
@@ -910,6 +942,179 @@ function fmtDose(n){return round2(n).toLocaleString(undefined,{maximumFractionDi
 function fmtWon(n){return Math.round(n||0).toLocaleString()+'원'}
 function round2(n){return Math.round((Number(n)||0)*100)/100}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+// HIRA diagnosis fee API: https://www.data.go.kr/data/15021028/openapi.do
+// Only the exact base code and the clinic price (unprc1) may be applied.
+let hiraPreview=[];
+function hiraToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function hiraSourceLabel(code){const m=PRICE_META[code];return ['HIRA','HIRA_SHARED'].includes(m?.source)?`심평원 의원 · 적용시작 ${m.effective} · 조회 ${m.checked}`:m?.source==='manual'?'수동 입력':'파일 초기값 (공식 조회 전)'}
+function persistPrices(){
+  try{localStorage.setItem('jinsul-la-extra-prices',JSON.stringify({LA:Object.fromEntries(Object.entries(LA_INFO).map(([c,o])=>[c,o.price])),EXTRA:Object.fromEntries(Object.entries(EXTRA_INFO).map(([c,o])=>[c,o.price])),META:PRICE_META}));return true}catch(e){return false}
+}
+function parseHiraResponse(text){
+  const xml=new DOMParser().parseFromString(text,'application/xml');
+  if(xml.querySelector('parsererror'))throw new Error('응답 형식 오류');
+  const result=xml.querySelector('resultCode')?.textContent?.trim();
+  if(result!=='00'){
+    const code=result||xml.querySelector('returnReasonCode')?.textContent?.trim()||'';
+    const labels={'20':'인증키 또는 활용승인 확인 필요','30':'등록되지 않은 인증키','31':'인증키 유효기간 만료','22':'일일 조회 한도 초과','23':'조회 요청이 너무 많음'};
+    throw new Error(labels[code]||'API 응답 오류 (인증키·활용승인 상태 확인)');
+  }
+  const items=[...xml.querySelectorAll('item')].map(item=>{
+    const value=name=>item.querySelector(name)?.textContent?.trim()||'';
+    return {code:value('mdfeeCd'),name:value('korNm'),effective:value('adtStaDd'),price:value('unprc1'),pay:value('payTpCd')};
+  });
+  const total=Number(xml.querySelector('totalCount')?.textContent);
+  if(!Number.isSafeInteger(total)||total<0)throw new Error('조회 건수 확인 불가');
+  return {items,total};
+}
+function chooseHiraFee(items,code,asOf){
+  const exact=items.filter(x=>x.code===code);
+  if(!exact.length)return {code,status:'기본 코드 조회 결과 없음'};
+  const eligible=exact.filter(x=>/^\d{8}$/.test(x.effective)&&x.effective<=asOf).sort((a,b)=>b.effective.localeCompare(a.effective));
+  if(!eligible.length)return {code,status:'기준일에 적용 가능한 자료 없음 (과거 수가 별도 확인)'};
+  const newest=eligible.filter(x=>x.effective===eligible[0].effective);
+  if(new Set(newest.map(x=>`${x.price}|${x.name}|${x.pay}`)).size!==1)return {code,status:'동일 적용일 자료가 여러 개여서 수동 확인 필요'};
+  const item=newest[0],price=Number(item.price.replace(/,/g,''));
+  if(!item.price||!Number.isSafeInteger(price)||price<=0)return {code,name:item.name,status:'의원단가 미제공 또는 0원 · 기존 단가 유지'};
+  if(item.pay.includes('비급여'))return {code,name:item.name,status:'비급여 · 수동 단가 사용'};
+  return {...item,price,status:'조회 완료',ready:true};
+}
+async function fetchHiraFee(code,key,asOf){
+  let items=[];
+  for(let page=1;page<=20;page++){
+    const url=new URL('https://apis.data.go.kr/B551182/mdfeeCrtrInfoService/getDiagnossMdfeeList');
+    url.search=new URLSearchParams({ServiceKey:key,numOfRows:'100',pageNo:String(page),mdfeeCd:code});
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+    let response,body;
+    try{response=await fetch(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});body=await response.text()}
+    catch(e){throw new Error(e.name==='AbortError'?'조회 시간 초과':'연결 실패 · 인터넷 또는 브라우저 접근 제한 확인')}
+    finally{clearTimeout(timer)}
+    if(!response.ok)throw new Error(`조회 서버 오류 (${response.status})`);
+    const data=parseHiraResponse(body);items.push(...data.items);
+    if(page*100>=data.total)return chooseHiraFee(items,code,asOf);
+    if(!data.items.length)throw new Error('조회 결과 일부 누락 · 적용하지 않음');
+  }
+  throw new Error('조회 결과가 너무 많아 수동 확인 필요');
+}
+function renderHiraPreview(){
+  document.getElementById('hiraPreview').innerHTML=hiraPreview.length?'<div class="tableWrap"><table><thead><tr><th>적용</th><th>코드</th><th class="left">공식 명칭</th><th>현재 단가</th><th>의원단가</th><th>적용시작일</th><th class="left">조회 상태</th></tr></thead><tbody>'+hiraPreview.map(r=>`<tr><td>${r.ready?`<input type="checkbox" data-hira-code="${esc(r.code)}" aria-label="${esc(r.code)} 단가 적용" checked>`:'—'}</td><td>${esc(r.code)}</td><td class="left">${esc(r.name||'—')}</td><td>${fmtWon((LA_INFO[r.code]||EXTRA_INFO[r.code]).price)}</td><td>${r.ready?fmtWon(r.price):'—'}</td><td>${esc(r.effective||'—')}</td><td class="left">${esc(r.status)}</td></tr>`).join('')+'</tbody></table></div>':'';
+}
+async function loadHiraPrices(){
+  const keyInput=document.getElementById('hiraKey'),state=document.getElementById('hiraStatus');
+  let key=keyInput.value.trim();
+  try{if(key.includes('%'))key=decodeURIComponent(key)}catch(e){state.textContent='인증키 형식을 확인해 주세요.';return}
+  const date=document.getElementById('hiraDate').value;
+  if(!key){state.textContent='공공데이터포털 일반 인증키를 입력해 주세요.';return}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>hiraToday()){state.textContent='오늘 또는 이전의 기준일을 선택해 주세요.';return}
+  const ids=['hiraFetchBtn','hiraApplyBtn','hiraDate','hiraScope','savePriceBtn','restorePriceBtn'];
+  ids.forEach(id=>document.getElementById(id).disabled=true);
+  document.querySelectorAll('#priceEditGrid input').forEach(x=>x.disabled=true);
+  hiraPreview=[];renderHiraPreview();
+  const scope=document.getElementById('hiraScope').value;
+  const codes=[...(scope!=='EXTRA'?Object.keys(LA_INFO):[]),...(scope!=='LA'?Object.keys(EXTRA_INFO):[])];
+  try{
+    for(const code of codes){
+      state.textContent=`심평원 의원단가 조회 중 ${hiraPreview.length+1}/${codes.length} · ${code}`;
+      let row;
+      try{row=await fetchHiraFee(code,key,date.replaceAll('-',''))}catch(e){row={code,status:e.message}}
+      hiraPreview.push({...row,checked:hiraToday(),asOf:date});
+      renderHiraPreview();
+      // Stop repeated calls if authentication, connectivity, or quota fails.
+      if(/인증키|활용승인|한도|연결 실패|너무 많음/.test(row.status))break;
+    }
+    const ready=hiraPreview.filter(r=>r.ready).length;
+    state.textContent=`조회 완료: ${ready}개 적용 가능 / ${hiraPreview.length}개 확인 (요청 ${codes.length}개). 아직 금액은 변경되지 않았습니다. 결과를 확인하고 선택 단가 적용을 누르세요.`;
+  }finally{
+    keyInput.value='';key='';
+    ids.forEach(id=>document.getElementById(id).disabled=false);
+    document.querySelectorAll('#priceEditGrid input').forEach(x=>x.disabled=false);
+    document.getElementById('hiraApplyBtn').disabled=!hiraPreview.some(r=>r.ready);
+  }
+}
+function applyHiraPrices(){
+  const selected=new Set([...document.querySelectorAll('#hiraPreview input:checked')].map(x=>x.dataset.hiraCode));
+  const rows=hiraPreview.filter(r=>r.ready&&selected.has(r.code));
+  if(!rows.length){document.getElementById('hiraStatus').textContent='적용할 코드를 선택해 주세요.';return}
+  rows.forEach(r=>{
+    (LA_INFO[r.code]||EXTRA_INFO[r.code]).price=r.price;
+    PRICE_META[r.code]={source:'manual',effective:r.effective,checked:r.checked,asOf:r.asOf,name:r.name};
+  });
+  const saved=persistPrices();renderPriceEditor();renderPriceTable();recalc();
+  document.getElementById('hiraStatus').textContent=`${rows.length}개 의원단가를 적용했습니다. ${saved?'이 브라우저에 단가와 출처를 저장했습니다.':'브라우저 저장이 차단되어 현재 화면에만 적용됩니다.'} 조회 실패·미선택 코드는 기존 값을 유지합니다.`;
+  renderHiraPreview();document.getElementById('hiraApplyBtn').disabled=true;
+}
+['hiraDate','hiraScope'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{hiraPreview=[];renderHiraPreview();document.getElementById('hiraApplyBtn').disabled=true;document.getElementById('hiraStatus').textContent='조회 조건이 변경되었습니다. 의원단가를 다시 조회해 주세요.'}));
+document.getElementById('hiraDate').value=hiraToday();
+document.getElementById('hiraDate').max=hiraToday();
+document.getElementById('hiraFetchBtn').addEventListener('click',loadHiraPrices);
+document.getElementById('hiraApplyBtn').addEventListener('click',applyHiraPrices);
+
+// SHARED_FEES_START
+let sharedFees=null;
+function validateSharedFees(data){
+  const expected=[...Object.keys(LA_INFO),...Object.keys(EXTRA_INFO)].sort();
+  if(data?.schemaVersion!==1||data.source!=='HIRA'||data.institution!=='의원'||!Array.isArray(data.fees)||!Number.isFinite(Date.parse(data.updatedAt)))throw Error('수가표 형식 확인 필요');
+  if(Date.parse(data.updatedAt)>Date.now()+86400000)throw Error('수가표 조회일 확인 필요');
+  const actual=data.fees.map(r=>r.code).sort();
+  if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error('수가표에 코드가 누락되거나 중복됨');
+  for(const row of data.fees){
+    if(!Number.isSafeInteger(row.price)||row.price<=0||!/^\d{8}$/.test(row.effective)||row.effective>hiraToday().replaceAll('-','')||typeof row.name!=='string')throw Error('수가표 단가·적용일 확인 필요');
+  }
+  return data;
+}
+function applySharedFees(data,resetManual=false){
+  validateSharedFees(data);
+  if(sharedFees&&Date.parse(data.updatedAt)<Date.parse(sharedFees.updatedAt))return;
+  sharedFees=data;
+  const drafts=new Map();
+  if(!resetManual)document.querySelectorAll('#priceEditGrid input').forEach(inp=>{
+    const code=inp.dataset.priceCode,current=(LA_INFO[code]||EXTRA_INFO[code])?.price;
+    if(inp.value.trim()===''||Number(inp.value)!==current)drafts.set(code,inp.value);
+  });
+  let manual=0;
+  for(const row of data.fees){
+    if(!resetManual&&(PRICE_META[row.code]?.source==='manual'||drafts.has(row.code))){manual++;continue}
+    (LA_INFO[row.code]||EXTRA_INFO[row.code]).price=row.price;
+    PRICE_META[row.code]={source:'HIRA_SHARED',effective:row.effective,checked:data.updatedAt.slice(0,10),asOf:data.updatedAt.slice(0,10),name:row.name};
+  }
+  let stored=true;
+  try{localStorage.setItem('jinsul-shared-fees-v1',JSON.stringify(data))}catch(e){stored=false}
+  if(!persistPrices())stored=false;
+  renderPriceEditor();
+  document.querySelectorAll('#priceEditGrid input').forEach(inp=>{if(drafts.has(inp.dataset.priceCode))inp.value=drafts.get(inp.dataset.priceCode)});
+  renderPriceTable();recalc();
+  const stale=Date.now()-Date.parse(data.updatedAt)>3*86400000;
+  document.getElementById('sharedFeeStatus').textContent=`공통 수가표 ${data.fees.length}종 · 마지막 정상 조회 ${data.updatedAt.slice(0,10)} · 개인 수정 ${manual}종 유지.${stale?' 갱신이 3일 이상 지연되었습니다. 기준일을 확인해 주세요.':''}${stored?'':' 브라우저 저장이 차단되어 현재 화면에만 적용됩니다.'}`;
+  document.getElementById('useSharedPricesBtn').disabled=false;
+}
+async function loadSharedFees(){
+  const state=document.getElementById('sharedFeeStatus'),button=document.getElementById('refreshSharedFeesBtn');
+  button.disabled=true;
+  try{
+    if(location.protocol==='file:'){
+      state.textContent+=(sharedFees?' 파일에 포함된 수가표 사용 중입니다. 자동 갱신은 배포된 웹 주소에서 지원됩니다.':' 배포된 웹 주소에서 공통 수가표를 불러올 수 있습니다.');return;
+    }
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+    let response;
+    try{response=await fetch(new URL('hira-prices.json',location.href),{cache:'no-store',credentials:'omit',signal:controller.signal});if(!response.ok)throw Error();const data=await response.json();applySharedFees(data)}finally{clearTimeout(timer)}
+  }catch(e){state.textContent=(sharedFees?`최근 수가표 연결 실패 · 마지막 정상 조회 ${sharedFees.updatedAt.slice(0,10)}의 수가표와 개인 수정 단가를 유지합니다.`:'공통 수가표 연결 실패 · 현재 단가를 유지합니다. 잠시 후 다시 불러오세요.');}
+  finally{button.disabled=false}
+}
+// Protect older manually saved prices that predate the provenance field.
+for(const [code,info] of [...Object.entries(LA_INFO),...Object.entries(EXTRA_INFO)]){
+  const original=DEFAULT_LA_INFO[code]||DEFAULT_EXTRA_INFO[code];
+  if(!PRICE_META[code]&&info.price!==original.price)PRICE_META[code]={source:'manual'};
+}
+const feeCandidates=[];
+try{const seed=document.getElementById('shared-fee-seed').textContent;if(seed.trim())feeCandidates.push(validateSharedFees(JSON.parse(seed)))}catch(e){}
+try{const cache=localStorage.getItem('jinsul-shared-fees-v1');if(cache)feeCandidates.push(validateSharedFees(JSON.parse(cache)))}catch(e){}
+feeCandidates.sort((a,b)=>Date.parse(b.updatedAt)-Date.parse(a.updatedAt));
+if(feeCandidates.length)applySharedFees(feeCandidates[0]);
+document.getElementById('refreshSharedFeesBtn').addEventListener('click',loadSharedFees);
+document.getElementById('useSharedPricesBtn').addEventListener('click',()=>{if(sharedFees)applySharedFees(sharedFees,true)});
+loadSharedFees();
+// SHARED_FEES_END
+
 </script>
 </body>
 </html>
