@@ -10,6 +10,29 @@
 4. Actions → **Update clinic fees and publish** → Run workflow를 실행합니다.
 5. 실행 완료 후 https://xginini-dot.github.io/jinsul_v1.0/ysarang-combination.html 에서 공통 의원단가 표시를 확인합니다.
 
+## GitHub와 Cloudflare 동시 반영
+
+Cloudflare의 `jinsul-portal` 프로젝트는 같은 GitHub 저장소의 `main` 브랜치를 연결해 둡니다. 통계 HTML이나 `hira-prices.json`이 `main`에 커밋되면 GitHub Pages와 Cloudflare가 각각 새 배포를 만듭니다. GitHub Pages의 배포 파일이 Cloudflare로 전달되는 방식이 아니라, 두 서비스가 같은 GitHub 커밋을 각각 배포하는 구조입니다.
+
+Cloudflare Access로 사이트를 보호하는 경우, 페이지가 같은 주소의 JSON 파일을 읽을 때 로그인 세션을 포함해야 합니다. `hira-prices.json` 요청의 `credentials` 값은 `same-origin`을 유지합니다. `omit`으로 바꾸면 HTML은 열리더라도 가격 파일만 Cloudflare 로그인 화면으로 이동하여 공통 단가 연결 실패가 발생합니다. 이 동작은 `hira_shared.test.cjs`에서 자동 검사합니다.
+
+새 통계를 추가할 때는 다음 순서로 확인합니다.
+
+1. HTML과 필요한 공개 데이터 파일을 GitHub 저장소 `main`에 커밋합니다.
+2. GitHub Actions의 **Update clinic fees and publish** 실행이 성공했는지 확인합니다.
+3. Cloudflare → Workers & Pages → `jinsul-portal` → Deployments에서 같은 커밋의 배포 성공 여부를 확인합니다.
+4. GitHub Pages와 Cloudflare 주소를 각각 새로고침해 화면과 마지막 정상 조회일을 확인합니다.
+
+Cloudflare에 반영되지 않았을 때는 Deployments의 최신 커밋명이 GitHub의 최신 커밋명과 같은지 먼저 확인합니다. 다르면 GitHub 연결 저장소·Production branch(`main`)·자동 배포 상태를 확인하고 최신 배포를 다시 실행합니다. 커밋은 같지만 화면이 이전 버전이면 강력 새로고침 후 다시 확인합니다.
+
+### 수동 갱신
+
+1. GitHub → Actions → **Update clinic fees and publish**로 이동합니다.
+2. **Run workflow**를 누르고 `main`에서 실행합니다.
+3. 초록색 성공 표시와 새 `Update official clinic fee table` 커밋을 확인합니다.
+4. Cloudflare Deployments에서 같은 커밋이 배포될 때까지 기다린 뒤 사이트를 새로고침합니다.
+5. 기존 브라우저의 수동 단가가 유지되면 화면 아래에서 **개인 수정 해제 · 공통 단가 사용**을 한 번 누릅니다.
+
 이후 매일 한국시간 06:17에 조회를 예약합니다. GitHub 사정에 따라 시작 시간이 늦어질 수 있습니다. 공개 저장소의 예약 작업은 장기간 저장소 활동이 없으면 비활성화될 수 있으므로 Actions 상태와 화면의 마지막 정상 조회일을 확인하세요.
 
 ## 갱신 규칙
