@@ -1096,7 +1096,7 @@ async function loadSharedFees(){
     }
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
     let response;
-    try{response=await fetch(new URL('hira-prices.json',location.href),{cache:'no-store',credentials:'omit',signal:controller.signal});if(!response.ok)throw Error();const data=await response.json();applySharedFees(data)}finally{clearTimeout(timer)}
+    try{response=await fetch(new URL('hira-prices.json',location.href),{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!response.ok)throw Error();const data=await response.json();applySharedFees(data)}finally{clearTimeout(timer)}
   }catch(e){state.textContent=(sharedFees?`최근 수가표 연결 실패 · 마지막 정상 조회 ${sharedFees.updatedAt.slice(0,10)}의 수가표와 개인 수정 단가를 유지합니다.`:'공통 수가표 연결 실패 · 현재 단가를 유지합니다. 잠시 후 다시 불러오세요.');}
   finally{button.disabled=false}
 }
