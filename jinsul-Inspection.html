@@ -5,7 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>JINSUL | 수납 검수 시스템</title>
-<script src="./xlsx.full.min.js"></script>
+<script src="./xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';"></script>
 <style>
 :root{
 --navy:#111827;--deep:#0b1220;--gold:#b9a58a;--gold2:#d7c8ae;
@@ -74,7 +74,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <div class="brand-row">
 <div class="brand-copy">
 <div class="brand-mark">
-<div class="logo-box"><img class="logo" src="https://xginini-dot.github.io/jinsul_v1.0/%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0.png" alt="JINSUL Logo" loading="eager"></div>
+<div class="logo-box"><img class="logo" src="./진설로고.png" alt="JINSUL Logo" loading="eager"></div>
 <div class="company"><div class="en">JINSUL</div><div class="ko">경험과 가치를 현실화 하는 컨설팅</div></div>
 </div>
 <h1>수납·예약코드 통합 검수</h1>
@@ -138,7 +138,7 @@ html[data-theme="dark"] .hero{background:transparent}.optional{background:#eee8d
 <br>
 <div class="toolbar">
 <input class="control search" id="searchInput" placeholder="차트번호 또는 환자명 검색" oninput="applyFilter()">
-<input type="hidden" id="resultFilter" value="all"><div class="filter-tabs" id="resultFilterTabs"><button type="button" class="filter-tab active" data-filter="all" onclick="setResultFilter('all',this)">전체</button><button type="button" class="filter-tab" data-filter="error" onclick="setResultFilter('error',this)">오류만</button><button type="button" class="filter-tab" data-filter="정상" onclick="setResultFilter('정상',this)">정상</button><button type="button" class="filter-tab" data-filter="총액오류" onclick="setResultFilter('총액오류',this)">총액 오류</button><button type="button" class="filter-tab" data-filter="수단오류" onclick="setResultFilter('수단오류',this)">수단 오류</button><button type="button" class="filter-tab" data-filter="수납 미처리" onclick="setResultFilter('수납 미처리',this)">수납 미처리</button><button type="button" class="filter-tab" data-filter="수납대장 미기재" onclick="setResultFilter('수납대장 미기재',this)">대장 미기재</button><button type="button" class="filter-tab" data-filter="미수대기" onclick="setResultFilter('미수대기',this)">미수 대기</button></div>
+<input type="hidden" id="resultFilter" value="all"><div class="filter-tabs" id="resultFilterTabs"><button type="button" class="filter-tab active" data-filter="all" onclick="setResultFilter('all',this)">전체</button><button type="button" class="filter-tab" data-filter="error" onclick="setResultFilter('error',this)">오류만</button><button type="button" class="filter-tab" data-filter="정상" onclick="setResultFilter('정상',this)">정상</button><button type="button" class="filter-tab" data-filter="총액오류" onclick="setResultFilter('총액오류',this)">총액 오류</button><button type="button" class="filter-tab" data-filter="수단오류" onclick="setResultFilter('수단오류',this)">수단 오류</button><button type="button" class="filter-tab" data-filter="수납 미처리" onclick="setResultFilter('수납 미처리',this)">수납 미처리</button><button type="button" class="filter-tab" data-filter="수납대장 미기재" onclick="setResultFilter('수납대장 미기재',this)">대장 미기재</button><button type="button" class="filter-tab" data-filter="미수납환자" onclick="setResultFilter('미수납환자',this)">미수납 환자</button><button type="button" class="filter-tab" data-filter="미수대기" onclick="setResultFilter('미수대기',this)">미수 대기</button></div>
 <select class="control" id="tolerance" onchange="runCheck()"><option value="0">수단오차 0원</option><option value="50" selected>수단오차 50원</option><option value="100">수단오차 100원</option><option value="500">수단오차 500원</option></select>
 <button class="toolbar-btn" onclick="resetAll()">초기화</button>
 <button class="toolbar-btn primary" onclick="exportResult()">결과 엑셀 저장</button>
@@ -645,11 +645,14 @@ if(ledgerAcceptedRows===0){
   alert('수납대장 헤더는 찾았지만 실제 환자 수납행을 읽지 못했습니다.\n\n이 버전에서는 다른 표를 잘못 선택하지 않도록 데이터 행까지 검증합니다. 해당 날짜 시트를 다시 선택하거나 파일 구조를 확인해주세요.');
   return;
 }
-selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.total+=r.total;if(!e.name)e.name=r.name});
+selectedB.forEach(r=>{const id=r.id;if(!id)return;allIds.add(id);if(!aggB.has(id))aggB.set(id,{name:r.name,cash:0,card:0,total:0,rawTotal:0});const e=aggB.get(id);e.cash+=r.cash;e.card+=r.card;e.rawTotal+=r.total;if(!e.name)e.name=r.name});
+// 동일 차트번호의 분할결제는 환자 단위로 합산한다. 현금/카드가 있으면 그 합계를 프로그램 총액으로 우선 사용한다.
+aggB.forEach(e=>{const paid=e.cash+e.card;e.total=paid!==0?paid:e.rawTotal});
 let totals={aCash:0,aCard:0,aTotal:0,bCash:0,bCard:0,bTotal:0};resultRows=[];
 [...allIds].sort((a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true})).forEach(id=>{
-  const a=aggA.get(id),b=aggB.get(id),misuOnly=a&&a.methods.size===1&&a.methods.has(3);let result='정상',isError=false;
+  const a=aggA.get(id),b=aggB.get(id),misuOnly=a&&a.methods.size===1&&a.methods.has(3),unpaidOnly=!a&&b&&Math.abs(b.total)<0.0001&&Math.abs(b.cash)<0.0001&&Math.abs(b.card)<0.0001;let result='정상',isError=false;
   if(a&&!b){result=misuOnly?'미수대기':'수납 미처리';isError=!misuOnly}
+  else if(unpaidOnly){result='미수납환자';isError=false}
   else if(!a&&b){result='수납대장 미기재';isError=true}
   else if(a&&b){
     const dTotal=a.total-b.total,dCash=a.cash-b.cash,dCard=a.card-b.card;
@@ -665,9 +668,9 @@ updateSummary(totals);renderRows();const keepView=currentAuditView;if(bookingRec
 const bDateCount=new Set(selectedB.map(r=>r.dateKey).filter(Boolean)).size;
 document.getElementById('selectedDay').textContent=(selectedSheet.dateKey||selectedSheet.day+'일')+` 검수 · 프로그램 ${selectedB.length.toLocaleString()}건${bDateCount?` / ${bDateCount}일`:''}`;
 }
-function updateSummary(t){const all=resultRows.length,err=resultRows.filter(r=>r.isError).length,misu=resultRows.filter(r=>r.result==='미수대기').length,ok=resultRows.filter(r=>r.result==='정상').length;document.getElementById('kpiAll').textContent=all;document.getElementById('kpiOk').textContent=ok;document.getElementById('kpiErr').textContent=err;document.getElementById('kpiTotalErr').textContent=resultRows.filter(r=>r.result==='총액오류').length;document.getElementById('kpiMethodErr').textContent=resultRows.filter(r=>r.result==='수단오류').length;document.getElementById('kpiMisu').textContent=misu;document.getElementById('rateOk').textContent=(all?ok/all*100:0).toFixed(1)+'%';document.getElementById('rateErr').textContent=(all?err/all*100:0).toFixed(1)+'%';[['sumCashA',t.aCash],['sumCashB',t.bCash],['sumCardA',t.aCard],['sumCardB',t.bCard],['sumTotalA',t.aTotal],['sumTotalB',t.bTotal]].forEach(([id,v])=>document.getElementById(id).textContent=won(v));setDiff('diffCash',t.aCash-t.bCash);setDiff('diffCard',t.aCard-t.bCard);setDiff('diffTotal',t.aTotal-t.bTotal)}
+function updateSummary(t){const all=resultRows.length,err=resultRows.filter(r=>r.isError).length,misu=resultRows.filter(r=>['미수대기','미수납환자'].includes(r.result)).length,ok=resultRows.filter(r=>r.result==='정상').length;document.getElementById('kpiAll').textContent=all;document.getElementById('kpiOk').textContent=ok;document.getElementById('kpiErr').textContent=err;document.getElementById('kpiTotalErr').textContent=resultRows.filter(r=>r.result==='총액오류').length;document.getElementById('kpiMethodErr').textContent=resultRows.filter(r=>r.result==='수단오류').length;document.getElementById('kpiMisu').textContent=misu;document.getElementById('rateOk').textContent=(all?ok/all*100:0).toFixed(1)+'%';document.getElementById('rateErr').textContent=(all?err/all*100:0).toFixed(1)+'%';[['sumCashA',t.aCash],['sumCashB',t.bCash],['sumCardA',t.aCard],['sumCardB',t.bCard],['sumTotalA',t.aTotal],['sumTotalB',t.bTotal]].forEach(([id,v])=>document.getElementById(id).textContent=won(v));setDiff('diffCash',t.aCash-t.bCash);setDiff('diffCard',t.aCard-t.bCard);setDiff('diffTotal',t.aTotal-t.bTotal)}
 function setDiff(id,v){const el=document.getElementById(id);el.textContent=won(v);el.className=v===0?'diff-zero':'diff-bad'}
-function renderRows(){const body=document.getElementById('resultBody');const q=norm(document.getElementById('searchInput').value).toLowerCase(),filter=document.getElementById('resultFilter').value;const html=[];for(const r of resultRows){if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;if(filter==='error'&&!r.isError)continue;if(!['all','error'].includes(filter)&&r.result!==filter)continue;const rowClass=r.isError?'row-err':r.result==='미수대기'?'row-misu':'';const cls=r.result==='정상'?'r-ok':r.result==='미수대기'?'r-wait':'r-err';const methods=r.methods.length?r.methods.map(m=>`<span class="badge m${m}">${esc(methodNames[m]||m)}</span>`).join(' '):'<span class="badge">기록없음</span>';html.push(`<tr class="${rowClass}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td class="${r.aCash!==r.bCash?'diff-text':''}">${r.aCash.toLocaleString()}</td><td>${r.bCash.toLocaleString()}</td><td class="${r.aCard!==r.bCard?'diff-text':''}">${r.aCard.toLocaleString()}</td><td>${r.bCard.toLocaleString()}</td><td class="${r.aTotal!==r.bTotal?'diff-text':''}">${r.aTotal.toLocaleString()}</td><td>${r.bTotal.toLocaleString()}</td><td><span class="result-badge ${cls}">${esc(r.result)}</span></td><td>${methods}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('emptyResult').classList.toggle('hidden',html.length>0)}
+function renderRows(){const body=document.getElementById('resultBody');const q=norm(document.getElementById('searchInput').value).toLowerCase(),filter=document.getElementById('resultFilter').value;const html=[];for(const r of resultRows){if(q&&!norm(r.id).toLowerCase().includes(q)&&!norm(r.name).toLowerCase().includes(q))continue;if(filter==='error'&&!r.isError)continue;if(!['all','error'].includes(filter)&&r.result!==filter)continue;const rowClass=r.isError?'row-err':['미수대기','미수납환자'].includes(r.result)?'row-misu':'';const cls=r.result==='정상'?'r-ok':['미수대기','미수납환자'].includes(r.result)?'r-wait':'r-err';const methods=r.methods.length?r.methods.map(m=>`<span class="badge m${m}">${esc(methodNames[m]||m)}</span>`).join(' '):'<span class="badge">기록없음</span>';html.push(`<tr class="${rowClass}"><td>${esc(r.id)}</td><td class="name-cell">${esc(r.name)}</td><td class="${r.aCash!==r.bCash?'diff-text':''}">${r.aCash.toLocaleString()}</td><td>${r.bCash.toLocaleString()}</td><td class="${r.aCard!==r.bCard?'diff-text':''}">${r.aCard.toLocaleString()}</td><td>${r.bCard.toLocaleString()}</td><td class="${r.aTotal!==r.bTotal?'diff-text':''}">${r.aTotal.toLocaleString()}</td><td>${r.bTotal.toLocaleString()}</td><td><span class="result-badge ${cls}">${esc(r.result)}</span></td><td>${methods}</td></tr>`)}body.innerHTML=html.join('');document.getElementById('emptyResult').classList.toggle('hidden',html.length>0)}
 function applyFilter(){renderRows()}
 function activateFilterButton(groupId,btn){document.querySelectorAll(`#${groupId} .filter-tab`).forEach(b=>b.classList.toggle('active',b===btn))}
 function setResultFilter(value,btn){document.getElementById('resultFilter').value=value;activateFilterButton('resultFilterTabs',btn);renderRows()}
