@@ -7,7 +7,7 @@
 <meta charset="utf-8"/>
 <title>JINSUL MAP v3.2.0</title>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=587d3b22c3896f92f134d03253e685bd&amp;libraries=services,drawing,clusterer&amp;autoload=false"></script>
+<script id="kakaoMapsSdk" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=587d3b22c3896f92f134d03253e685bd&amp;libraries=services,drawing,clusterer&amp;autoload=false"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.0.0/encoding.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -71,6 +71,7 @@
 
     .mapArea{flex:1;position:relative;}
     #map{width:100%;height:100%;}
+    #mapLoadError{display:none;position:absolute;z-index:1200;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));padding:18px;border:1px solid #f5c2c7;border-radius:12px;background:#fff;color:#343a40;box-shadow:0 10px 30px #0002;line-height:1.6;font-size:13px;white-space:pre-line;}
 
     .info-overlay {
       background: #fff; border: 2px solid #333; border-radius: 6px;
@@ -938,6 +939,7 @@
 </div>
 <div class="mapArea">
 <div id="map"></div>
+<div id="mapLoadError" role="alert"></div>
 <div id="mapLegend">
 <div class="legend-item"><div class="dot" style="background:#ff0000"></div>신환(1회)</div>
 <div class="legend-item"><div class="dot" style="background:#00c853"></div>재진전환</div>
@@ -1620,11 +1622,25 @@ function getTimeHTML(distance) {
   return '<ul class="info"><li><span class="label">총거리</span><span class="number">' + distance + '</span>m</li><li><span class="label">도보</span>' + walkHour + walkMin + '</li><li><span class="label">자전거</span>' + bikeHour + bikeMin + '</li></ul>';
 }
 
+let kakaoInitStarted = false;
+function showKakaoError(detail){
+  const box = document.getElementById('mapLoadError');
+  if(!box || map) return;
+  const origin = location.protocol === 'file:' ? 'file:// (로컬 파일)' : location.origin;
+  box.textContent = '카카오 지도를 불러오지 못했습니다.\n접속 주소: ' + origin + '\n' + detail + '\n카카오 개발자 콘솔에서 이 JavaScript 키의 카카오맵 사용 설정과 웹 플랫폼 사이트 도메인을 확인해 주세요. 로컬 파일은 등록 가능한 웹 주소(http://localhost 등)에서 실행해 주세요.';
+  box.style.display = 'block';
+}
+document.getElementById('kakaoMapsSdk').addEventListener('error', () => showKakaoError('지도 SDK 요청이 차단되었거나 실패했습니다.'));
+setTimeout(() => { if(!map) showKakaoError('SDK 로딩 또는 지도 초기화가 완료되지 않았습니다. 개발자 도구 콘솔의 Kakao 오류도 확인해 주세요.'); }, 12000);
 function initKakao(){
-  if(!window.kakao || !kakao.maps) { setTimeout(initKakao, 100); return; }
+  if(!window.kakao || !kakao.maps) { setTimeout(initKakao, 150); return; }
+  if(kakaoInitStarted) return;
+  kakaoInitStarted = true;
   kakao.maps.load(() => {
+    try {
     if(!$('map')) return; 
     map = new kakao.maps.Map($('map'), { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7 });
+    document.getElementById('mapLoadError').style.display = 'none';
     const zoomControl = new kakao.maps.ZoomControl();
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHTBOTTOM);
     geocoder = new kakao.maps.services.Geocoder();
@@ -1652,6 +1668,10 @@ function initKakao(){
     setupMapListeners(); setupToolbar();
     setScanReady(true);
     toast("시스템 준비 완료 (v3.2.0)");
+    } catch (error) {
+      console.error('JINSUL MAP 초기화 오류:', error);
+      showKakaoError('지도 초기화 오류: ' + (error && error.message ? error.message : String(error)));
+    }
   });
 }
 initKakao();
