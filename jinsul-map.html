@@ -2521,6 +2521,7 @@ function parsePatients(rows){
     const numId = parseInt(pid.replace(/[^0-9]/g, "")) || 0;
     if(!mapData.has(pid)) { mapData.set(pid, { id: pid, numId: numId, name: r[idx.name]||"미상", addr: r[idx.addr]||"", age: null, visits: [] }); }
     const p = mapData.get(pid);
+    if(!String(p.addr||'').trim() && String(r[idx.addr]||'').trim()) p.addr = r[idx.addr];
     if(p.age === null){ p.age = calcAgeFromRow(idx.age >= 0 ? r[idx.age] : null, idx.rrn >= 0 ? r[idx.rrn] : null); }
     let isNewVisit = false;
     // [의사랑 규칙]
@@ -2574,23 +2575,78 @@ if(has90){
   $('statTotalUsers').innerText = patients.length.toLocaleString();
   $('statTotalVisits').innerText = totalV.toLocaleString();
   clusterer.clear();
-  patients.forEach((p, i) => {
-    setTimeout(() => {
-      geocoder.addressSearch(p.addr, (res, status) => {
-        if(status === kakao.maps.services.Status.OK){
-          const latlng = new kakao.maps.LatLng(res[0].y, res[0].x); p.latlng = latlng;
-          p.dong = res[0].address?.region_3depth_name || "미상";
-          const color = REP_COLOR[p.type];
-          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"><circle cx="7" cy="7" r="6" fill="${color}" stroke="white" stroke-width="1"/></svg>`;
-          p.marker = new kakao.maps.Marker({ position: latlng, image: new kakao.maps.MarkerImage("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg), new kakao.maps.Size(14,14)) });
-          const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:5px;font-size:12px;"><b>${p.id} ${p.name}</b><br><span style="color:${color}">● ${p.type}</span><br>총 ${p.total}회</div>`, removable: true });
-          kakao.maps.event.addListener(p.marker, 'click', () => iw.open(map, p.marker));
-          if(toggleState[p.filterKey || "all"]) clusterer.addMarker(p.marker);
-        }
-        if(i === patients.length - 1) { applyFilter(); $('btnFit').click(); toast("로딩 완료"); }
-      });
-    }, i * 30);
+  loadPatientLocations(patients);
+}
+
+function cleanPatientAddress(value){
+  const s = String(value || '').trim().replace(/\s+/g,' ');
+  // 상세 주소(건물명, 동·호수)는 지오코딩 실패의 주요 원인입니다.
+  const road = s.match(/^(.+?(?:대로|로|길)\s+\d+(?:-\d+)?)(?=\s|$)/);
+  if(road) return road[1];
+  const lot = s.match(/^(.+?(?:동|리|읍|면)\s+(?:산\s*)?\d+(?:-\d+)?)(?=\s|$)/);
+  return lot ? lot[1] : s.replace(/\s*\([^)]*\).*$/,'').trim();
+}
+function explicitPatientDong(value){
+  const s = String(value || '');
+  // 도로명 주소의 읍·면만으로 리를 추정하지 않습니다. 명시된 지번 동·리만 사용합니다.
+  const match = s.match(/(?:^|\s)([가-힣0-9]+(?:동|리))\s+(?:산\s*)?\d+(?:-\d+)?(?:\s|$)/);
+  return match ? match[1] : '';
+}
+function addressSearchPatient(query){
+  return new Promise(resolve => geocoder.addressSearch(query, (rows,status) =>
+    resolve(status === kakao.maps.services.Status.OK && rows && rows[0] ? rows[0] : null)));
+}
+function legalDongFromCoordinates(row){
+  return new Promise(resolve => geocoder.coord2RegionCode(Number(row.x),Number(row.y), (codes,status) => {
+    const legal = status === kakao.maps.services.Status.OK && codes && codes.find(x=>x.region_type === 'B');
+    resolve(legal && legal.region_3depth_name || '');
+  }));
+}
+let patientLocationRun = 0;
+async function loadPatientLocations(list){
+  const run = ++patientLocationRun;
+  const groups = new Map();
+  list.forEach(p=>{
+    p.dong = explicitPatientDong(p.addr) || '미상';
+    const key = cleanPatientAddress(p.addr);
+    if(!key) return;
+    if(!groups.has(key)) groups.set(key,[]);
+    groups.get(key).push(p);
   });
+  const tasks = Array.from(groups);
+  let cursor = 0, done = 0;
+  async function worker(){
+    while(cursor < tasks.length && run === patientLocationRun){
+      const [query, members] = tasks[cursor++];
+      try{
+        let row = await addressSearchPatient(query);
+        if(!row && query !== String(members[0].addr).trim()) row = await addressSearchPatient(String(members[0].addr).trim());
+        if(row){
+          const dong = row.address?.region_3depth_name || await legalDongFromCoordinates(row) || explicitPatientDong(members[0].addr) || '미상';
+          if(run !== patientLocationRun) return;
+          members.forEach(p=>{
+            p.dong = dong;
+            p.latlng = new kakao.maps.LatLng(row.y,row.x);
+            const color = REP_COLOR[p.type];
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"><circle cx="7" cy="7" r="6" fill="${color}" stroke="white" stroke-width="1"/></svg>`;
+            p.marker = new kakao.maps.Marker({ position:p.latlng, image:new kakao.maps.MarkerImage("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg),new kakao.maps.Size(14,14)) });
+            const iw = new kakao.maps.InfoWindow({ content:`<div style="padding:5px;font-size:12px;"><b>${p.id} ${p.name}</b><br><span style="color:${color}">● ${p.type}</span><br>총 ${p.total}회</div>`, removable:true });
+            kakao.maps.event.addListener(p.marker,'click',()=>iw.open(map,p.marker));
+            if(toggleState[p.filterKey || 'all']) clusterer.addMarker(p.marker);
+          });
+        }
+      }catch(error){ console.warn('주소 분석 실패:',query,error); }
+      done++;
+      if(done % 30 === 0) toast(`주소 분석 중 ${done}/${tasks.length}`);
+      await new Promise(resolve=>setTimeout(resolve,120));
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(4,tasks.length)},worker));
+  if(run !== patientLocationRun) return;
+  applyFilter();
+  if(list.some(p=>p.latlng)) $('btnFit').click();
+  const unknown = list.filter(p=>p.dong === '미상').length;
+  toast(`주소 분석 완료 · 미상 ${unknown}명 / ${list.length}명`);
 }
 
 function applyFilter(){
