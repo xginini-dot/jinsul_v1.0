@@ -2517,7 +2517,7 @@ function parsePatients(rows){
   const idx = { id: h.findIndex(s => /차트|번호|ID/.test(s)), addr: h.findIndex(s => /주소/.test(s)), name: h.findIndex(s => /이름|성명|수진자|환자/.test(s)), new: h.findIndex(s => /신규|신환/.test(s)), type: h.findIndex(s => /구분|분류/.test(s)), age: h.findIndex(s => /나이|연령/.test(s)), rrn: h.findIndex(s => /주민|주민번호/.test(s)) };
   const mapData = new Map(); let totalV = 0; let newIds = [];
   for(let i=headIdx+1; i<rows.length; i++){
-    const r = rows[i]; if(!r || !r[idx.id]) continue; const pid = String(r[idx.id]); totalV++;
+    const r = rows[i]; if(!r || !r[idx.id]) continue; const pid = String(r[idx.id]).trim().replace(/\.0$/, ''); if(!pid) continue; totalV++;
     const numId = parseInt(pid.replace(/[^0-9]/g, "")) || 0;
     if(!mapData.has(pid)) { mapData.set(pid, { id: pid, numId: numId, name: r[idx.name]||"미상", addr: r[idx.addr]||"", age: null, visits: [] }); }
     const p = mapData.get(pid);
@@ -2589,7 +2589,7 @@ function cleanPatientAddress(value){
 function explicitPatientDong(value){
   const s = String(value || '');
   // 도로명 주소의 읍·면만으로 리를 추정하지 않습니다. 명시된 지번 동·리만 사용합니다.
-  const match = s.match(/(?:^|\s)([가-힣0-9]+(?:동|리))\s+(?:산\s*)?\d+(?:-\d+)?(?:\s|$)/);
+  const match = s.match(/(?:^|\s)([가-힣]+(?:동|리))\s+(?:산\s*)?\d+(?:-\d+)?(?:\s|$)/);
   return match ? match[1] : '';
 }
 function addressSearchPatient(query){
