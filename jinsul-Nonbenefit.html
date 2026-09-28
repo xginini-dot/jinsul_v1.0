@@ -1221,6 +1221,21 @@ margin-top:0;
 .doctorPeriodBars{height:225px;display:flex;align-items:flex-end;justify-content:center;gap:10px}
 .doctorPeriodBars .col{min-width:58px}
 .doctorPeriodLabel{text-align:center;font-weight:800;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;margin-top:7px;white-space:nowrap}
+
+/* 진료실별 기간 카드형 구분 */
+#doctorChart{display:block;height:auto;max-height:none;overflow:visible;padding:18px}
+.doctorPeriodGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;width:100%}
+.doctorChartCard{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:15px 14px 10px;min-width:0}
+.doctorChartHead{display:flex;justify-content:space-between;gap:10px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.doctorChartHead b{font-size:13px;color:var(--text)}
+.doctorChartCard .doctorPeriodBars{height:190px;border:0;padding-top:8px;margin:0}
+#doctorTable{display:grid;gap:16px;background:transparent;border:0;overflow:visible}
+.doctorPeriodCard{border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.doctorPeriodHead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:var(--soft);border-bottom:1px solid var(--line)}
+.doctorPeriodHead strong{font-size:15px}.doctorPeriodHead span{font-size:12px;color:var(--muted);font-weight:700}
+.doctorInnerTable{border:0;border-radius:0;margin:0}.doctorInnerTable table{margin:0}.doctorInnerTable th{background:transparent}.periodTotal td{font-weight:900;background:var(--soft)}
+@media(max-width:760px){.doctorPeriodGrid{grid-template-columns:1fr}.doctorPeriodHead{align-items:flex-start;flex-direction:column}.doctorInnerTable{overflow-x:auto}}
+
 </style>
 </head>
 <body>
@@ -2027,8 +2042,10 @@ function renderDoctorStats(){
   // 월/주/일 선택 시 기간별 × 주치의로 분리 집계
   const g={};source.forEach(x=>{const period=x[key],d=x.주치의||'미상',id=period+'||'+d;if(!g[id])g[id]={기간:period,주치의:d,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0};const z=g[id];z.신환+=x.신환;z.재진+=x.재진;z.총진료건수+=x.총진료건수;z.총투여량+=x.총투여량;z.매출+=x.매출});
   const rows=Object.values(g).map(x=>({...x,신환비율:x.총진료건수?x.신환/x.총진료건수*100:0,건당평균매출:x.총진료건수?x.매출/x.총진료건수:0})).sort((x,y)=>String(x.기간).localeCompare(String(y.기간))||String(x.주치의).localeCompare(String(y.주치의)));
-  makeTable('doctorTable',rows,['기간','주치의','신환','재진','총진료건수','신환비율','총투여량','매출','건당평균매출'],{신환비율:fmtP,매출:fmtW,건당평균매출:fmtW});
-  if(chart){const periods=[...new Set(rows.map(r=>r.기간))],max=Math.max(...rows.map(r=>r.매출),1);chart.innerHTML=periods.length?periods.map(period=>{const rr=rows.filter(r=>r.기간===period);return `<div class="doctorPeriodGroup"><div class="doctorPeriodBars">${rr.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join('')}</div><div class="doctorPeriodLabel">${period}</div></div>`}).join(''):'<div class="empty" style="width:100%">선택한 기간의 데이터가 없습니다.</div>'}
+  const periods=[...new Set(rows.map(r=>r.기간))];
+  const table=document.getElementById('doctorTable');
+  if(table){table.innerHTML=periods.length?periods.map(period=>{const rr=rows.filter(r=>r.기간===period),tot=rr.reduce((a,x)=>({신환:a.신환+x.신환,재진:a.재진+x.재진,총진료건수:a.총진료건수+x.총진료건수,총투여량:a.총투여량+x.총투여량,매출:a.매출+x.매출}),{신환:0,재진:0,총진료건수:0,총투여량:0,매출:0});const rate=tot.총진료건수?tot.신환/tot.총진료건수*100:0,avg=tot.총진료건수?tot.매출/tot.총진료건수:0;return `<section class="doctorPeriodCard"><div class="doctorPeriodHead"><strong>${period}</strong><span>총 ${tot.총진료건수.toLocaleString()}건 · 매출 ${fmtW(tot.매출)}</span></div><div class="tablewrap doctorInnerTable"><table><thead><tr><th>주치의</th><th>신환</th><th>재진</th><th>총진료건수</th><th>신환비율</th><th>총투여량</th><th>매출</th><th>건당평균매출</th></tr></thead><tbody>${rr.map(x=>`<tr><td><b>${x.주치의}</b></td><td>${x.신환.toLocaleString()}</td><td>${x.재진.toLocaleString()}</td><td>${x.총진료건수.toLocaleString()}</td><td>${fmtP(x.신환비율)}</td><td>${x.총투여량.toLocaleString()}</td><td>${fmtW(x.매출)}</td><td>${fmtW(x.건당평균매출)}</td></tr>`).join('')}<tr class="periodTotal"><td>기간 합계</td><td>${tot.신환.toLocaleString()}</td><td>${tot.재진.toLocaleString()}</td><td>${tot.총진료건수.toLocaleString()}</td><td>${fmtP(rate)}</td><td>${tot.총투여량.toLocaleString()}</td><td>${fmtW(tot.매출)}</td><td>${fmtW(avg)}</td></tr></tbody></table></div></section>`}).join(''):'<div class="empty">선택한 기간의 데이터가 없습니다.</div>'}
+  if(chart){const max=Math.max(...rows.map(r=>r.매출),1);chart.innerHTML=periods.length?periods.map(period=>{const rr=rows.filter(r=>r.기간===period);return `<div class="doctorPeriodGroup"><div class="doctorPeriodBars">${rr.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join('')}</div><div class="doctorPeriodLabel">${period}</div></div>`}).join(''):'<div class="empty" style="width:100%">선택한 기간의 데이터가 없습니다.</div>'}
 }
 function distributionCSVRows(type){return type==='count'?aggregateTreatmentRows(DIST_UNIT):aggregateIntervalRows(INTERVAL_UNIT)}
 function downloadDistributionCSV(type){const data=distributionCSVRows(type);if(!data.length)return;const cols=Object.keys(data[0]);const csv=[cols.join(','),...data.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))].join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`noncovered_${type}_${type==='count'?DIST_UNIT:INTERVAL_UNIT}.csv`;a.click()}
