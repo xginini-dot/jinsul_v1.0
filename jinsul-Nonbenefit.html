@@ -1213,6 +1213,14 @@ margin-top:0;
 }
 }
 
+
+/* 진료실별 기간 구분 그래프 */
+#doctorChart{align-items:flex-end;overflow-x:auto;gap:18px;padding:22px 16px 12px}
+.doctorPeriodGroup{min-width:150px;display:flex;flex-direction:column;justify-content:flex-end;align-self:stretch;border-right:1px solid var(--line);padding:0 16px 0 0}
+.doctorPeriodGroup:last-child{border-right:0}
+.doctorPeriodBars{height:225px;display:flex;align-items:flex-end;justify-content:center;gap:10px}
+.doctorPeriodBars .col{min-width:58px}
+.doctorPeriodLabel{text-align:center;font-weight:800;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;margin-top:7px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2004,8 +2012,24 @@ let DOCTOR_UNIT='all';
 function doctorPeriodKey(){return DOCTOR_UNIT==='month'?'월':DOCTOR_UNIT==='week'?'주':DOCTOR_UNIT==='day'?'일':null}
 function setDoctorUnit(unit,btn){DOCTOR_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');initDoctorControls();renderDoctorStats()}
 function initDoctorControls(){const a=document.getElementById('doctorPeriodStart'),b=document.getElementById('doctorPeriodEnd'),sep=document.getElementById('doctorRangeSep');if(!a||!b)return;const key=doctorPeriodKey();if(!key){a.innerHTML='<option value="__ALL__">전체 기간</option>';b.innerHTML='<option value="__ALL__">전체 기간</option>';a.disabled=b.disabled=true;b.style.display='none';if(sep)sep.style.display='none';return}const vals=[...new Set(STORE.doctor.map(x=>x[key]).filter(Boolean))].sort();a.disabled=b.disabled=false;b.style.display='';if(sep)sep.style.display='inline';a.innerHTML=vals.map(v=>`<option value="${v}">${v}</option>`).join('');b.innerHTML=vals.map(v=>`<option value="${v}">${v}</option>`).join('');if(vals.length){a.value=vals[0];b.value=vals[vals.length-1]}}
-function renderDoctorStats(){const key=doctorPeriodKey(),a=document.getElementById('doctorPeriodStart'),b=document.getElementById('doctorPeriodEnd'),hint=document.getElementById('doctorPeriodHint');let source=STORE.doctor.slice(),start='',end='';if(key&&a&&b){start=a.value;end=b.value;if(start>end){const t=start;start=end;end=t}source=source.filter(x=>String(x[key])>=start&&String(x[key])<=end)}if(hint)hint.textContent=!key?'전체 기간 · 비트 진료실/주치의 기준':`${key} 범위 · ${start}${start!==end?' ~ '+end:''}`;const g={};source.forEach(x=>{const d=x.주치의||'미상';if(!g[d])g[d]={주치의:d,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0};const z=g[d];z.신환+=x.신환;z.재진+=x.재진;z.총진료건수+=x.총진료건수;z.총투여량+=x.총투여량;z.매출+=x.매출});const rows=Object.values(g).map(x=>({...x,신환비율:x.총진료건수?x.신환/x.총진료건수*100:0,건당평균매출:x.총진료건수?x.매출/x.총진료건수:0})).sort((a,b)=>b.매출-a.매출);makeTable('doctorTable',rows,['주치의','신환','재진','총진료건수','신환비율','총투여량','매출','건당평균매출'],{신환비율:fmtP,매출:fmtW,건당평균매출:fmtW});const max=Math.max(...rows.map(x=>x.매출),1),chart=document.getElementById('doctorChart');if(chart)chart.innerHTML=rows.length?rows.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join(''):'<div class="empty" style="width:100%">선택한 기간의 데이터가 없습니다.</div>'}
-
+function renderDoctorStats(){
+  const key=doctorPeriodKey(),a=document.getElementById('doctorPeriodStart'),b=document.getElementById('doctorPeriodEnd'),hint=document.getElementById('doctorPeriodHint');
+  let source=STORE.doctor.slice(),start='',end='';
+  if(key&&a&&b){start=a.value;end=b.value;if(start>end){const t=start;start=end;end=t}source=source.filter(x=>String(x[key])>=start&&String(x[key])<=end)}
+  if(hint)hint.textContent=!key?'전체 기간 · 비트 진료실/주치의 기준':`${key} 범위 · ${start}${start!==end?' ~ '+end:''} · 기간별 구분 표시`;
+  const chart=document.getElementById('doctorChart');
+  if(!key){
+    const g={};source.forEach(x=>{const d=x.주치의||'미상';if(!g[d])g[d]={주치의:d,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0};const z=g[d];z.신환+=x.신환;z.재진+=x.재진;z.총진료건수+=x.총진료건수;z.총투여량+=x.총투여량;z.매출+=x.매출});
+    const rows=Object.values(g).map(x=>({...x,신환비율:x.총진료건수?x.신환/x.총진료건수*100:0,건당평균매출:x.총진료건수?x.매출/x.총진료건수:0})).sort((a,b)=>b.매출-a.매출);
+    makeTable('doctorTable',rows,['주치의','신환','재진','총진료건수','신환비율','총투여량','매출','건당평균매출'],{신환비율:fmtP,매출:fmtW,건당평균매출:fmtW});
+    const max=Math.max(...rows.map(x=>x.매출),1);if(chart)chart.innerHTML=rows.length?rows.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join(''):'<div class="empty" style="width:100%">데이터가 없습니다.</div>';return;
+  }
+  // 월/주/일 선택 시 기간별 × 주치의로 분리 집계
+  const g={};source.forEach(x=>{const period=x[key],d=x.주치의||'미상',id=period+'||'+d;if(!g[id])g[id]={기간:period,주치의:d,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0};const z=g[id];z.신환+=x.신환;z.재진+=x.재진;z.총진료건수+=x.총진료건수;z.총투여량+=x.총투여량;z.매출+=x.매출});
+  const rows=Object.values(g).map(x=>({...x,신환비율:x.총진료건수?x.신환/x.총진료건수*100:0,건당평균매출:x.총진료건수?x.매출/x.총진료건수:0})).sort((x,y)=>String(x.기간).localeCompare(String(y.기간))||String(x.주치의).localeCompare(String(y.주치의)));
+  makeTable('doctorTable',rows,['기간','주치의','신환','재진','총진료건수','신환비율','총투여량','매출','건당평균매출'],{신환비율:fmtP,매출:fmtW,건당평균매출:fmtW});
+  if(chart){const periods=[...new Set(rows.map(r=>r.기간))],max=Math.max(...rows.map(r=>r.매출),1);chart.innerHTML=periods.length?periods.map(period=>{const rr=rows.filter(r=>r.기간===period);return `<div class="doctorPeriodGroup"><div class="doctorPeriodBars">${rr.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join('')}</div><div class="doctorPeriodLabel">${period}</div></div>`}).join(''):'<div class="empty" style="width:100%">선택한 기간의 데이터가 없습니다.</div>'}
+}
 function distributionCSVRows(type){return type==='count'?aggregateTreatmentRows(DIST_UNIT):aggregateIntervalRows(INTERVAL_UNIT)}
 function downloadDistributionCSV(type){const data=distributionCSVRows(type);if(!data.length)return;const cols=Object.keys(data[0]);const csv=[cols.join(','),...data.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))].join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`noncovered_${type}_${type==='count'?DIST_UNIT:INTERVAL_UNIT}.csv`;a.click()}
 
