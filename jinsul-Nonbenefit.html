@@ -1236,6 +1236,43 @@ margin-top:0;
 .doctorInnerTable{border:0;border-radius:0;margin:0}.doctorInnerTable table{margin:0}.doctorInnerTable th{background:transparent}.periodTotal td{font-weight:900;background:var(--soft)}
 @media(max-width:760px){.doctorPeriodGrid{grid-template-columns:1fr}.doctorPeriodHead{align-items:flex-start;flex-direction:column}.doctorInnerTable{overflow-x:auto}}
 
+
+/* 주치의 기간 그래프: 기존 가로 나열 + 가로 스크롤 방식 */
+#doctorChart{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  align-items:flex-end !important;
+  gap:18px !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:auto !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  padding:22px 16px 12px !important;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+}
+#doctorChart .doctorPeriodGroup{
+  flex:0 0 auto !important;
+  min-width:170px !important;
+  width:auto !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-end !important;
+  align-self:stretch !important;
+}
+#doctorChart .doctorPeriodBars{
+  height:225px !important;
+  display:flex !important;
+  align-items:flex-end !important;
+  justify-content:center !important;
+  gap:10px !important;
+}
+#doctorChart .doctorPeriodBars .col{flex:0 0 auto;min-width:58px !important}
+#doctorChart::-webkit-scrollbar{height:10px}
+#doctorChart::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+#doctorChart::-webkit-scrollbar-track{background:transparent}
+
 </style>
 </head>
 <body>
