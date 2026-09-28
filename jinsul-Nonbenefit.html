@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -356,13 +358,19 @@ font-weight: 750
 width: 176px;
 max-width: 100%;
 height: 48px;
+padding: 0;
+border: 0;
+background: transparent;
 color: transparent;
 font-size: 0;
-cursor: pointer
+cursor: pointer;
+overflow: hidden;
+border-radius: 15px;
+box-sizing: border-box;
 }
 
 .filebox input[type=file]::file-selector-button {
-width: 176px;
+width: 100%;
 height: 48px;
 border: 0;
 border-radius: 15px;
@@ -1275,12 +1283,16 @@ margin-top:0;
 <div class="inputHelp">* 60일 이후 재방문 시 신환으로 간주</div>
 </div>
 <div class="field">
-<label>총투여량 1당 단가</label>
-<div class="inputWrap">
+<label>매출 계산 기준</label>
+<select id="priceMode" onchange="togglePriceMode()">
+<option value="manual" selected>직접 단가 설정</option>
+<option value="excel">엑셀 단가/금액 사용</option>
+</select>
+<div class="inputWrap" id="manualPriceWrap" style="margin-top:10px">
 <input id="unitPrice" type="number" value="80000" step="1000"/>
 <span class="inputUnit">원</span>
 </div>
-<div class="inputHelp">* 매출 = 총투여량 × 단가</div>
+<div class="inputHelp" id="priceModeHelp">* 직접 설정: 매출 = 총투여량 × 설정 단가</div>
 </div>
 <div class="field">
 <label>주 시작 요일</label>
@@ -1314,6 +1326,7 @@ margin-top:0;
 <button class="tab active" onclick="showTab('monthly',this)">월별 요약</button>
 <button class="tab" onclick="showTab('weekly',this)">주별 요약</button>
 <button class="tab" onclick="showTab('daily',this)">일별 요약</button>
+<button class="tab" onclick="showTab('doctor',this)">진료실별(주치의)</button>
 <button class="tab" onclick="showTab('dist',this)">신환 치료횟수 분포</button>
 <button class="tab" onclick="showTab('intervalDist',this)">평균 치료간격 분포</button>
 <button class="tab" onclick="showTab('episodes',this)">신환 상세</button>
@@ -1364,6 +1377,13 @@ margin-top:0;
 </div>
 </div>
 </section>
+<section id="doctor" class="section">
+<div class="card">
+<div class="tools"><div><h2>진료실별(주치의) 신환 · 재진 · 매출</h2><p class="small">비트 원본의 진료실/주치의 컬럼을 자동 인식하여 담당별 신환·재진·총진료건수·매출을 집계합니다. 기간을 선택해 월·주·일 단위로 비교할 수 있습니다.</p></div><button class="ghost" onclick="downloadCSV('doctor')">CSV 다운로드</button></div>
+<div class="periodControls"><div class="periodToggle"><button class="periodBtn active" onclick="setDoctorUnit('all',this)">전체</button><button class="periodBtn" onclick="setDoctorUnit('month',this)">월</button><button class="periodBtn" onclick="setDoctorUnit('week',this)">주</button><button class="periodBtn" onclick="setDoctorUnit('day',this)">일</button></div><select id="doctorPeriodStart" class="periodSelect" onchange="renderDoctorStats()"><option value="__ALL__">시작 기간</option></select><span id="doctorRangeSep" class="periodHint" style="display:none">~</span><select id="doctorPeriodEnd" class="periodSelect" onchange="renderDoctorStats()"><option value="__ALL__">종료 기간</option></select><div id="doctorPeriodHint" class="periodHint">전체 기간 · 비트 진료실/주치의 기준</div></div>
+<div id="doctorChart" class="chart"></div>
+<div class="scroll"><table id="doctorTable"></table></div>
+</div></section>
 <section id="dist" class="section">
 <div class="card">
 <div class="tools">
@@ -1453,7 +1473,8 @@ daily: [],
 dist: [],
 intervalDist: [],
 episodes: [],
-raw: []
+raw: [],
+doctor: []
 };
 const fmtN = n => (Number(n) || 0).toLocaleString('ko-KR');
 const fmtW = n => fmtN(Math.round(Number(n) || 0)) + '원';
@@ -1545,6 +1566,14 @@ if (h.includes('처방일자') || h.includes('처방코드') || h.includes('초�
 return '비트';
 return '의사랑';
 }
+function togglePriceMode(){
+const mode=document.getElementById('priceMode')?.value||'manual';
+const wrap=document.getElementById('manualPriceWrap');
+const help=document.getElementById('priceModeHelp');
+if(wrap) wrap.style.display=mode==='manual'?'block':'none';
+if(help) help.textContent=mode==='manual'?'* 직접 설정: 매출 = 총투여량 × 설정 단가':'* 엑셀의 금액/매출/수납액을 우선 사용하며, 없으면 단가/수가 × 총투여량으로 계산';
+}
+
 async function runFile() {
 const f = document.getElementById('file').files[0];
 if (!f) {
@@ -1598,10 +1627,13 @@ const ni = idx(headers, ['수진자명', '성명', '환자명']);
 const ri = idx(headers, ['주민등록번호', '주민번호', '주민등록']);
 const di = idx(headers, ['내원일', '내원일자', '진료일', '진료일자', '조회일', '처방일자', '처방일']);
 const ti = idx(headers, ['총투여량', '총투여', '투여량합계', '투여량']);
-const amtI = idx(headers, ['금액', '매출', '수납액']);
+const amtI = idx(headers, ['금액', '매출', '수납액', '진료비', '총금액']);
+const excelUnitI = idx(headers, ['단가', '수가', '처방단가']);
+const doctorI = idx(headers, ['주치의', '진료의', '담당의', '의사명', '진료실', '진료실명', '진료실번호']);
 if (di < 0 || ti < 0 || (ci < 0 && ri < 0 && ni < 0))
 throw new Error('필수 컬럼을 찾지 못했습니다. 차트번호/성명/주민번호, 날짜, 총투여량 컬럼명을 확인해주세요.');
 const unit = Number(document.getElementById('unitPrice').value) || 80000;
+const priceMode = document.getElementById('priceMode')?.value || 'manual';
 const gap = Number(document.getElementById('gapDays').value) || 60;
 const weekStart = Number(document.getElementById('weekStart')?.value || 0);
 const byDay = new Map();
@@ -1634,12 +1666,15 @@ name,
 rrn,
 date,
 totalDose: 0,
-amount: 0
+amount: 0,
+doctorDose: {}
 });
 const day = byDay.get(k);
 day.totalDose += dose;
-if (amtI >= 0)
-day.amount += num(r[amtI]);
+if (amtI >= 0) day.amount += num(r[amtI]);
+else if (excelUnitI >= 0) day.amount += dose * num(r[excelUnitI]);
+const doctor = doctorI >= 0 ? String(r[doctorI] || '').trim() : '';
+if (doctor) day.doctorDose[doctor] = (day.doctorDose[doctor] || 0) + dose;
 }
 const visits = [...byDay.values()].sort( (a, b) => a.key.localeCompare(b.key) || a.date - b.date);
 const patientMap = new Map();
@@ -1683,13 +1718,15 @@ raw.push({
 수진자명: v.name,
 구분: v.date.getTime() === current.startDate.getTime() ? '신환' : '재진',
 총투여량: v.totalDose,
+엑셀금액: v.amount || 0,
+주치의: Object.keys(v.doctorDose || {}).sort((a,b)=>(v.doctorDose[b]||0)-(v.doctorDose[a]||0))[0] || '미상',
 에피소드시작일: ymd(current.startDate)
 });
 }
 }
 episodes.forEach(e => {
 e.visitCount = e.visits.length;
-e.sales = e.dose * unit;
+e.sales = priceMode === 'excel' ? e.amount : e.dose * unit;
 e.lastDate = e.visits[e.visits.length - 1].date;
 e.avgInterval = avgIntervalDays(e.visits);
 }
@@ -1714,7 +1751,7 @@ raw.forEach(r => {
 const m = mget(r.월);
 m.총치료건수++;
 m.총투여량 += Number(r.총투여량) || 0;
-m.매출 += Number(r.총투여량 || 0) * unit;
+m.매출 += priceMode === 'excel' ? Number(r.엑셀금액 || 0) : Number(r.총투여량 || 0) * unit;
 if (r.구분 === '재진')
 m.재진++;
 }
@@ -1788,7 +1825,7 @@ raw.forEach(r => {
 const w = wget(r.주);
 w.총치료건수++;
 w.총투여량 += Number(r.총투여량) || 0;
-w.매출 += Number(r.총투여량 || 0) * unit;
+w.매출 += priceMode === 'excel' ? Number(r.엑셀금액 || 0) : Number(r.총투여량 || 0) * unit;
 if (r.구분 === '재진')
 w.재진++;
 }
@@ -1841,7 +1878,7 @@ raw.forEach(r => {
 const d = dget(r.일);
 d.총치료건수++;
 d.총투여량 += Number(r.총투여량) || 0;
-d.매출 += Number(r.총투여량 || 0) * unit;
+d.매출 += priceMode === 'excel' ? Number(r.엑셀금액 || 0) : Number(r.총투여량 || 0) * unit;
 if (r.구분 === '재진') d.재진++;
 });
 episodes.forEach(e => {
@@ -1868,9 +1905,18 @@ return {
 건당평균매출: d.총치료건수 ? d.매출 / d.총치료건수 : 0
 };
 });
+const doctorGroups = new Map();
+raw.forEach(r=>{
+  const doc=r.주치의||'미상';
+  const key=doc+'|'+r.월+'|'+r.주+'|'+r.일;
+  if(!doctorGroups.has(key)) doctorGroups.set(key,{주치의:doc,월:r.월,주:r.주,일:r.일,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0});
+  const x=doctorGroups.get(key); x.총진료건수++; x.총투여량+=Number(r.총투여량)||0; x.매출+=priceMode==='excel'?Number(r.엑셀금액||0):(Number(r.총투여량)||0)*unit; if(r.구분==='신환')x.신환++; else x.재진++;
+});
+const doctor=[...doctorGroups.values()];
 STORE.monthly = monthly;
 STORE.weekly = weekly;
 STORE.daily = daily;
+STORE.doctor = doctor;
 STORE.dist = dist;
 STORE.intervalDist = intervalDist;
 STORE.episodes = episodes.map(e => ({
@@ -1887,7 +1933,7 @@ STORE.episodes = episodes.map(e => ({
 }));
 STORE.raw = raw.sort( (a, b) => a.내원일.localeCompare(b.내원일) || String(a.차트번호).localeCompare(String(b.차트번호)));
 render();
-setStatus(`계산 완료: ${fmtN(raw.length)}건 치료, ${fmtN(episodes.length)}건 신환 에피소드 · ${source} 형식 자동 인식 · 환자 식별: 주민번호 우선${sheetName ? ` · 시트: ${sheetName}` : ''}`);
+setStatus(`계산 완료: ${fmtN(raw.length)}건 치료, ${fmtN(episodes.length)}건 신환 에피소드 · ${source} 형식 자동 인식 · 매출기준: ${priceMode==='excel'?'엑셀 단가/금액':'직접 단가 '+fmtW(unit)} · 환자 식별: 주민번호 우선${sheetName ? ` · 시트: ${sheetName}` : ''}`);
 } catch (e) {
 console.error(e);
 setStatus(e.message, true);
@@ -1922,6 +1968,8 @@ makeTable('dailyTable', STORE.daily, ['일', '신환', '재진', '총치료건�
 신환평균치료횟수: v => Number(v || 0).toFixed(2),
 신환평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일'
 });
+initDoctorControls();
+renderDoctorStats();
 initDistributionControls();
 renderTreatmentDistribution();
 renderIntervalDistribution();
@@ -1929,7 +1977,7 @@ makeTable('episodeTable', STORE.episodes, ['신환월', '신환주', '차트번�
 평균치료간격: v => v == null ? '-' : Number(v || 0).toFixed(1) + '일',
 예상매출: fmtW
 });
-makeTable('rawTable', STORE.raw, ['월', '주', '내원일', '차트번호', '수진자명', '구분', '총투여량', '에피소드시작일'], {});
+makeTable('rawTable', STORE.raw, ['월', '주', '내원일', '차트번호', '수진자명', '주치의', '구분', '총투여량', '에피소드시작일'], {});
 renderChart();
 }
 function makeTable(id, data, cols, formatters, labels={}) {
@@ -1942,48 +1990,22 @@ let INTERVAL_UNIT='month';
 function unitKey(unit){return unit==='day'?'신환일':unit==='week'?'신환주':'신환월'}
 function unitLabel(unit){return unit==='day'?'일':unit==='week'?'주':'월'}
 function periodValues(unit){const key=unitKey(unit);return [...new Set(STORE.episodes.map(e=>e[key]).filter(Boolean))].sort()}
-function syncPeriodSelect(id,unit){
-  const el=document.getElementById(id); if(!el)return;
-  const values=periodValues(unit); const prev=el.value;
-  el.innerHTML='<option value="__ALL__">전체 기간</option>'+values.map(v=>`<option value="${v}">${v}</option>`).join('');
-  el.value=values.includes(prev)?prev:'__ALL__';
-}
+function syncPeriodSelect(id,unit){const el=document.getElementById(id);if(!el)return;const values=periodValues(unit),prev=el.value;el.innerHTML='<option value="__ALL__">전체 기간</option>'+values.map(v=>`<option value="${v}">${v}</option>`).join('');el.value=values.includes(prev)?prev:'__ALL__'}
 function initDistributionControls(){syncPeriodSelect('distPeriodSelect',DIST_UNIT);syncPeriodSelect('intervalPeriodSelect',INTERVAL_UNIT)}
 function setDistUnit(unit,btn){DIST_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncPeriodSelect('distPeriodSelect',unit);renderTreatmentDistribution()}
 function setIntervalUnit(unit,btn){INTERVAL_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncPeriodSelect('intervalPeriodSelect',unit);renderIntervalDistribution()}
 function filterEpisodesByPeriod(unit,selected,eligibleOnly=false){const key=unitKey(unit);return STORE.episodes.filter(e=>(selected==='__ALL__'||e[key]===selected)&&(!eligibleOnly||(e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격)))))}
-function aggregateTreatmentRows(unit){
-  const key=unitKey(unit), label=unitLabel(unit); const groups={};
-  STORE.episodes.forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});
-  return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,신환:list.length};for(let i=1;i<=7;i++){const c=list.filter(e=>Number(e.치료횟수)===i).length;row[i+'회']=c;row[i+'회비율']=list.length?c/list.length*100:0}const c8=list.filter(e=>Number(e.치료횟수)>=8).length;row['8회이상']=c8;row['8회이상비율']=list.length?c8/list.length*100:0;return row})
-}
-function renderTreatmentDistribution(){
-  const sel=document.getElementById('distPeriodSelect'); if(!sel)return; const selected=sel.value||'__ALL__';
-  const list=filterEpisodesByPeriod(DIST_UNIT,selected,false); const total=list.length;
-  const bins=[];for(let i=1;i<=7;i++)bins.push({label:i+'회',count:list.filter(e=>Number(e.치료횟수)===i).length});bins.push({label:'8회 이상',count:list.filter(e=>Number(e.치료횟수)>=8).length});bins.forEach(x=>x.rate=total?x.count/total*100:0);
-  const max=Math.max(...bins.map(x=>x.count),1); const bars=document.getElementById('treatmentCountBars');
-  if(bars)bars.innerHTML=bins.map(x=>`<div class="simpleBarRow"><div class="simpleBarLabel">${x.label}</div><div class="simpleBarTrack"><div class="simpleBarFill" style="width:${x.count?Math.max(2,x.count/max*100):0}%"></div></div><div class="simpleBarValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');
-  const title=document.getElementById('distChartTitle');if(title)title.textContent=`${selected==='__ALL__'?'전체 기간':selected} · 치료횟수 분포`;
-  const rows=aggregateTreatmentRows(DIST_UNIT), label=unitLabel(DIST_UNIT);let countCols=[label,'신환'];for(let i=1;i<=7;i++)countCols.push(i+'회');countCols.push('8회이상');let rateCols=[label,'신환'];for(let i=1;i<=7;i++)rateCols.push(i+'회비율');rateCols.push('8회이상비율');const pct={};rateCols.filter(c=>c.includes('비율')).forEach(c=>pct[c]=fmtP);const labels={};for(let i=1;i<=7;i++)labels[i+'회비율']=i+'회 비율';labels['8회이상비율']='8회 이상 비율';makeTable('distCountTable',rows,countCols,{});makeTable('distRateTable',rows,rateCols,pct,labels);
-  const summary=document.getElementById('distCountSummary');if(summary)summary.textContent=`${unitLabel(DIST_UNIT)} 단위 · ${fmtN(rows.length)}개 구간`;
-}
-function aggregateIntervalRows(unit){
-  const key=unitKey(unit),label=unitLabel(unit);const groups={};STORE.episodes.filter(e=>e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격))).forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});
-  const bins=[{key:'1일 이내',test:v=>v<=1},{key:'2~3일',test:v=>v>1&&v<=3},{key:'4~7일',test:v=>v>3&&v<=7},{key:'8~14일',test:v=>v>7&&v<=14},{key:'15일 이상',test:v=>v>14}];
-  return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,산출대상:list.length};bins.forEach(b=>{const c=list.filter(e=>b.test(Number(e.평균치료간격))).length;row[b.key]=c;row[b.key+' 비율']=list.length?c/list.length*100:0});return row})
-}
-function renderIntervalDistribution(){
-  const sel=document.getElementById('intervalPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__';
-  const eligible=filterEpisodesByPeriod(INTERVAL_UNIT,selected,true);
-  const bins=[{label:'1일 이내',test:v=>v<=1},{label:'2~3일',test:v=>v>1&&v<=3},{label:'4~7일',test:v=>v>3&&v<=7},{label:'8~14일',test:v=>v>7&&v<=14},{label:'15일 이상',test:v=>v>14}];
-  const total=eligible.length;const counts=bins.map(b=>{const count=eligible.filter(e=>b.test(Number(e.평균치료간격))).length;return{label:b.label,count,rate:total?count/total*100:0}});const maxRate=Math.max(...counts.map(x=>x.rate),1);
-  const bars=document.getElementById('intervalBars');if(bars)bars.innerHTML=counts.map(x=>`<div class="intervalRow"><div class="intervalLabel">${x.label}</div><div class="intervalTrack"><div class="intervalFill" style="width:${x.rate?Math.max(1.5,x.rate/maxRate*100):0}%"></div></div><div class="intervalValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');
-  const avg=total?eligible.reduce((s,e)=>s+Number(e.평균치료간격),0)/total:0;const sorted=eligible.map(e=>Number(e.평균치료간격)).sort((a,b)=>a-b);const median=!sorted.length?0:sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;const within7=counts.slice(0,3).reduce((s,x)=>s+x.count,0);const stats=document.getElementById('intervalStats');if(stats)stats.innerHTML=`<div class="intervalStat"><div class="label">분포 산출 대상</div><div class="value">${fmtN(total)}명</div></div><div class="intervalStat"><div class="label">전체 평균 간격</div><div class="value">${avg.toFixed(1)}일</div></div><div class="intervalStat"><div class="label">중앙값</div><div class="value">${median.toFixed(1)}일</div></div><div class="intervalStat"><div class="label">7일 이내 비율</div><div class="value">${fmtP(total?within7/total*100:0)}</div></div>`;
-  const exact=[];for(let d=1;d<=14;d++)exact.push({label:d+'일',count:eligible.filter(e=>Math.round(Number(e.평균치료간격))===d).length});exact.push({label:'15일+',count:eligible.filter(e=>Math.round(Number(e.평균치료간격))>=15).length});exact.forEach(x=>x.rate=total?x.count/total*100:0);const maxExact=Math.max(...exact.map(x=>x.count),1);const eb=document.getElementById('intervalExactBars');if(eb)eb.innerHTML=exact.map(x=>`<div class="exactCol"><div class="v">${fmtN(x.count)}명</div><div class="b" style="height:${x.count?Math.max(3,x.count/maxExact*170):2}px"></div><div class="l">${x.label}</div></div>`).join('');
-  const et=document.getElementById('intervalExactTitle');if(et)et.textContent=`${selected==='__ALL__'?'전체 기간':selected} · 평균 치료간격 일수별 상세`;
-  const rows=aggregateIntervalRows(INTERVAL_UNIT),label=unitLabel(INTERVAL_UNIT);const cols=[label,'산출대상','1일 이내','2~3일','4~7일','8~14일','15일 이상'];makeTable('intervalDistTable',rows,cols,{});
-  const tt=document.getElementById('intervalTableTitle');if(tt)tt.textContent=`${label}별 평균 치료간격 분포`;const sm=document.getElementById('intervalTableSummary');if(sm)sm.textContent=`${label} 단위 · ${fmtN(rows.length)}개 구간`;
-}
+function aggregateTreatmentRows(unit){const key=unitKey(unit),label=unitLabel(unit),groups={};STORE.episodes.forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,신환:list.length};for(let i=1;i<=7;i++){const c=list.filter(e=>Number(e.치료횟수)===i).length;row[i+'회']=c;row[i+'회비율']=list.length?c/list.length*100:0}const c8=list.filter(e=>Number(e.치료횟수)>=8).length;row['8회이상']=c8;row['8회이상비율']=list.length?c8/list.length*100:0;return row})}
+function renderTreatmentDistribution(){const sel=document.getElementById('distPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',list=filterEpisodesByPeriod(DIST_UNIT,selected,false),total=list.length,bins=[];for(let i=1;i<=7;i++)bins.push({label:i+'회',count:list.filter(e=>Number(e.치료횟수)===i).length});bins.push({label:'8회 이상',count:list.filter(e=>Number(e.치료횟수)>=8).length});bins.forEach(x=>x.rate=total?x.count/total*100:0);const max=Math.max(...bins.map(x=>x.count),1),bars=document.getElementById('treatmentCountBars');if(bars)bars.innerHTML=bins.map(x=>`<div class="simpleBarRow"><div class="simpleBarLabel">${x.label}</div><div class="simpleBarTrack"><div class="simpleBarFill" style="width:${x.count?Math.max(2,x.count/max*100):0}%"></div></div><div class="simpleBarValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');const title=document.getElementById('distChartTitle');if(title)title.textContent=`${selected==='__ALL__'?'전체 기간':selected} · 치료횟수 분포`;const rows=aggregateTreatmentRows(DIST_UNIT),label=unitLabel(DIST_UNIT);let countCols=[label,'신환'];for(let i=1;i<=7;i++)countCols.push(i+'회');countCols.push('8회이상');let rateCols=[label,'신환'];for(let i=1;i<=7;i++)rateCols.push(i+'회비율');rateCols.push('8회이상비율');const pct={};rateCols.filter(c=>c.includes('비율')).forEach(c=>pct[c]=fmtP);makeTable('distCountTable',rows,countCols,{});makeTable('distRateTable',rows,rateCols,pct)}
+function aggregateIntervalRows(unit){const key=unitKey(unit),label=unitLabel(unit),groups={};STORE.episodes.filter(e=>e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격))).forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});const bins=[{key:'1일 이내',test:v=>v<=1},{key:'2~3일',test:v=>v>1&&v<=3},{key:'4~7일',test:v=>v>3&&v<=7},{key:'8~14일',test:v=>v>7&&v<=14},{key:'15일 이상',test:v=>v>14}];return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,산출대상:list.length};bins.forEach(b=>{const c=list.filter(e=>b.test(Number(e.평균치료간격))).length;row[b.key]=c});return row})}
+function renderIntervalDistribution(){const sel=document.getElementById('intervalPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',eligible=filterEpisodesByPeriod(INTERVAL_UNIT,selected,true),bins=[{label:'1일 이내',test:v=>v<=1},{label:'2~3일',test:v=>v>1&&v<=3},{label:'4~7일',test:v=>v>3&&v<=7},{label:'8~14일',test:v=>v>7&&v<=14},{label:'15일 이상',test:v=>v>14}],total=eligible.length,counts=bins.map(b=>{const count=eligible.filter(e=>b.test(Number(e.평균치료간격))).length;return{label:b.label,count,rate:total?count/total*100:0}}),maxRate=Math.max(...counts.map(x=>x.rate),1);const bars=document.getElementById('intervalBars');if(bars)bars.innerHTML=counts.map(x=>`<div class="intervalRow"><div class="intervalLabel">${x.label}</div><div class="intervalTrack"><div class="intervalFill" style="width:${x.rate?Math.max(1.5,x.rate/maxRate*100):0}%"></div></div><div class="intervalValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');const avg=total?eligible.reduce((s,e)=>s+Number(e.평균치료간격),0)/total:0,stats=document.getElementById('intervalStats');if(stats)stats.innerHTML=`<div class="intervalStat"><div class="label">분포 산출 대상</div><div class="value">${fmtN(total)}명</div></div><div class="intervalStat"><div class="label">전체 평균 간격</div><div class="value">${avg.toFixed(1)}일</div></div>`;const rows=aggregateIntervalRows(INTERVAL_UNIT),label=unitLabel(INTERVAL_UNIT);makeTable('intervalDistTable',rows,[label,'산출대상','1일 이내','2~3일','4~7일','8~14일','15일 이상'],{})}
+
+let DOCTOR_UNIT='all';
+function doctorPeriodKey(){return DOCTOR_UNIT==='month'?'월':DOCTOR_UNIT==='week'?'주':DOCTOR_UNIT==='day'?'일':null}
+function setDoctorUnit(unit,btn){DOCTOR_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');initDoctorControls();renderDoctorStats()}
+function initDoctorControls(){const a=document.getElementById('doctorPeriodStart'),b=document.getElementById('doctorPeriodEnd'),sep=document.getElementById('doctorRangeSep');if(!a||!b)return;const key=doctorPeriodKey();if(!key){a.innerHTML='<option value="__ALL__">전체 기간</option>';b.innerHTML='<option value="__ALL__">전체 기간</option>';a.disabled=b.disabled=true;b.style.display='none';if(sep)sep.style.display='none';return}const vals=[...new Set(STORE.doctor.map(x=>x[key]).filter(Boolean))].sort();a.disabled=b.disabled=false;b.style.display='';if(sep)sep.style.display='inline';a.innerHTML=vals.map(v=>`<option value="${v}">${v}</option>`).join('');b.innerHTML=vals.map(v=>`<option value="${v}">${v}</option>`).join('');if(vals.length){a.value=vals[0];b.value=vals[vals.length-1]}}
+function renderDoctorStats(){const key=doctorPeriodKey(),a=document.getElementById('doctorPeriodStart'),b=document.getElementById('doctorPeriodEnd'),hint=document.getElementById('doctorPeriodHint');let source=STORE.doctor.slice(),start='',end='';if(key&&a&&b){start=a.value;end=b.value;if(start>end){const t=start;start=end;end=t}source=source.filter(x=>String(x[key])>=start&&String(x[key])<=end)}if(hint)hint.textContent=!key?'전체 기간 · 비트 진료실/주치의 기준':`${key} 범위 · ${start}${start!==end?' ~ '+end:''}`;const g={};source.forEach(x=>{const d=x.주치의||'미상';if(!g[d])g[d]={주치의:d,신환:0,재진:0,총진료건수:0,총투여량:0,매출:0};const z=g[d];z.신환+=x.신환;z.재진+=x.재진;z.총진료건수+=x.총진료건수;z.총투여량+=x.총투여량;z.매출+=x.매출});const rows=Object.values(g).map(x=>({...x,신환비율:x.총진료건수?x.신환/x.총진료건수*100:0,건당평균매출:x.총진료건수?x.매출/x.총진료건수:0})).sort((a,b)=>b.매출-a.매출);makeTable('doctorTable',rows,['주치의','신환','재진','총진료건수','신환비율','총투여량','매출','건당평균매출'],{신환비율:fmtP,매출:fmtW,건당평균매출:fmtW});const max=Math.max(...rows.map(x=>x.매출),1),chart=document.getElementById('doctorChart');if(chart)chart.innerHTML=rows.length?rows.map(x=>`<div class="col"><div class="colval">${Math.round(x.매출/10000).toLocaleString()}만</div><div class="colbar" style="height:${Math.max(4,x.매출/max*180)}px"></div><div class="collabel">${x.주치의}</div></div>`).join(''):'<div class="empty" style="width:100%">선택한 기간의 데이터가 없습니다.</div>'}
+
 function distributionCSVRows(type){return type==='count'?aggregateTreatmentRows(DIST_UNIT):aggregateIntervalRows(INTERVAL_UNIT)}
 function downloadDistributionCSV(type){const data=distributionCSVRows(type);if(!data.length)return;const cols=Object.keys(data[0]);const csv=[cols.join(','),...data.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))].join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`noncovered_${type}_${type==='count'?DIST_UNIT:INTERVAL_UNIT}.csv`;a.click()}
 
@@ -2026,9 +2048,11 @@ daily: [],
 dist: [],
 intervalDist: [],
 episodes: [],
-raw: []
+raw: [],
+doctor: []
 };
 document.getElementById('file').value = '';
+togglePriceMode();
 document.getElementById('result').style.display = 'none';
 document.getElementById('empty').style.display = 'block';
 setStatus('파일을 선택한 뒤 통계 계산을 눌러주세요.');
@@ -2037,7 +2061,7 @@ setStatus('파일을 선택한 뒤 통계 계산을 눌러주세요.');
 
 <script>
 (function(){
-const saved = localStorage.getItem('jinsul-theme') || 'dark';
+const saved = localStorage.getItem('jinsul-theme') || 'light';
 document.body.setAttribute('data-theme', saved);
 const btn = document.getElementById('themeToggleBtn');
 if(btn) btn.textContent = saved === 'dark' ? '라이트 모드' : '다크 모드';
