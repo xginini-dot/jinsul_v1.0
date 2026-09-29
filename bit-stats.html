@@ -2,6 +2,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1359,6 +1361,33 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 @media(max-width:760px){.ov-combo-svg{min-width:680px}.ov-combo-svg-wrap{overflow-x:auto}.ov-combo-legend{justify-content:flex-start}}
 
 </style>
+<style>
+#carmOutput table,#carmDistOutput table{min-width:max-content;border-collapse:separate;border-spacing:0}
+#carmOutput th,#carmOutput td,#carmDistOutput th,#carmDistOutput td{white-space:nowrap;text-align:center;padding:11px 13px}
+#carmOutput thead th,#carmDistOutput thead th{border-bottom:1px solid rgba(160,142,114,.4)}
+#carmOutput .group-label,#carmDistOutput .group-label{background:#c9bba3!important;color:#27211b!important}
+#carmOutput .group-first{background:#cdddf0!important;color:#263f5b!important}
+#carmOutput .group-return{background:#ddd3ed!important;color:#43335d!important}
+#carmOutput .group-total,#carmDistOutput .group-total{background:#cfe3dc!important;color:#29493e!important}
+#carmOutput .group-injection,#carmDistOutput .group-injection{background:#e9d4c7!important;color:#69432e!important}
+#carmOutput .group-performance{background:#cfe1e7!important;color:#294957!important}
+#carmOutput .group-distribution{background:#e6ddca!important;color:#51452d!important}
+#carmOutput tbody tr.summary-total-row td{font-weight:900;background:rgba(190,169,139,.15)}
+#carmOutput tbody td:first-child{position:sticky;left:0;background:var(--bg2,#fff);font-weight:800;z-index:1}
+#carmOutput tbody tr.summary-total-row td:first-child{background:#e9e1d5;color:#312a22}
+#carmMatchNote{line-height:1.5}
+#carmGapOutput table{width:100%;min-width:640px;border-collapse:collapse}
+#carmGapOutput th,#carmGapOutput td{text-align:center;padding:9px;border-bottom:1px solid rgba(160,142,114,.2)}
+.carm-gap-charts{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:14px;margin-top:18px}
+.carm-gap-chart{border:1px solid rgba(160,142,114,.25);border-radius:16px;padding:15px;background:rgba(190,169,139,.06)}
+.carm-gap-chart h3{margin:0 0 12px;font-size:16px}
+.carm-gap-row{display:grid;grid-template-columns:56px 1fr 70px;gap:8px;align-items:center;margin:6px 0;font-size:12px}
+.carm-gap-track{height:14px;background:rgba(160,142,114,.17);border-radius:999px;overflow:hidden}
+.carm-gap-fill{height:100%;border-radius:999px;background:#6387b7}
+.carm-gap-chart.other .carm-gap-fill{background:#a987ba}
+.carm-gap-chart.inj .carm-gap-fill{background:#78a899}
+@media(max-width:900px){.carm-gap-charts{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
@@ -1408,6 +1437,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
             </label>
           </div>
 
+          <div class="upload-card"><div class="upload-title">씨암 처방 파일 (선택)</div><div class="upload-desc">처방코드·차트번호·처방일자 및 진료실 구획이 있는 Excel 파일. 파일명은 무관합니다.</div><label class="upload-drop" for="carmFileInput"><input type="file" id="carmFileInput" accept=".xls,.xlsx,.csv"><span class="upload-btn">파일 선택</span><span class="file-name" id="carmFileName">선택된 파일 없음</span></label></div>
           <div class="upload-card">
             <div class="upload-title">내원경로 파일</div>
             <div class="upload-desc">통계 → 인원통계 → 내원경로통계 → 집계 → 파일로 내려받기<br>1회자 휴대폰 매칭용</div>
@@ -1514,6 +1544,8 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       <div id="summaryOutput"></div>
     </div>
 
+    <div class="card table-card" id="carmCard" style="display:none;margin-top:18px"><div class="section-head"><div><h2>💉 진료실별 씨암 · 기타주사</h2><p>초진 · 재진 · 전체 현황과 치료 간격을 진료실별로 확인합니다.</p></div><div class="table-actions no-print"><button class="secondary mini-btn" id="carmDistBtn" type="button">초진환자 횟수 분포</button><button class="secondary mini-btn" id="carmGapBtn" type="button">주사간격 분포</button><button class="secondary mini-btn" type="button" onclick="copyTable('carmOutput')">표 복사</button><button class="secondary mini-btn" type="button" onclick="downloadTableXlsx('carmOutput','씨암_기타주사_진료실별.xlsx')">엑셀 다운로드</button><button class="secondary mini-btn" type="button" onclick="toggleTableFullscreen('carmCard')">전체화면</button></div></div><p id="carmMatchNote" style="font-size:12px;color:var(--muted)"></p><div id="carmOutput" style="overflow:auto"></div><div class="section-head" style="margin-top:24px"><div><h3>📅 진료실별 근무일수</h3><p>진료실에 내원 기록이 있는 날짜를 하루 근무로 계산합니다.</p></div><div class="table-actions no-print"><label for="carmPredictionMode">기록 기준</label><select id="carmPredictionMode"><option value="first">신환(초진) 기록이 있는 날</option><option value="all">신환 + 재진 기록이 있는 날</option></select><button class="secondary mini-btn" type="button" onclick="copyTable('carmPredictionOutput')">표 복사</button><button class="secondary mini-btn" type="button" onclick="downloadTableXlsx('carmPredictionOutput','진료실별_근무일수.xlsx')">엑셀 다운로드</button></div></div><p id="carmPredictionNote" style="font-size:12px;color:var(--muted)"></p><div id="carmPredictionOutput" style="overflow:auto"></div></div>
+
     <div class="card table-card daily-collapsed" id="dailyCard">
       <div class="section-head">
         <div>
@@ -1611,6 +1643,8 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 
   <div id="loadingOverlay"><div class="loader-card"><div class="spinner"></div><strong>통계 계산 중입니다</strong><p style="color:#b8b8b8;margin:8px 0 0;font-size:13px">대용량 파일을 최적화하여 분석하고 있습니다. 잠시만 기다려주세요.</p></div></div>
 
+  <div id="carmModal" class="modal-backdrop" role="dialog" aria-modal="true"><div class="modal" style="max-width:1100px"><div class="modal-header"><div class="modal-title">초진환자 씨암 · 기타 · 총주사 횟수 분포</div><div class="modal-actions"><label>마지막 구간 <select id="carmMaxCount"><option value="5">5회 이상</option><option value="8">8회 이상</option></select></label><button class="secondary" id="carmModalClose">닫기</button></div></div><div class="modal-body"><p id="carmDistNote" style="font-size:12px;color:var(--muted)"></p><div id="carmDistOutput" style="overflow:auto"></div></div></div></div>
+  <div id="carmGapModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="주사간격 분포"><div class="modal" style="max-width:1200px"><div class="modal-header"><div><div class="modal-title">씨암 · 기타 · 전체 주사간격 분포</div><div class="pill">같은 환자의 연속 주사 날짜 사이 간격</div></div><div class="modal-actions"><label>진료실 <select id="carmGapRoom"><option value="전체">전체</option></select></label><button class="secondary" id="carmGapClose" type="button">닫기</button></div></div><div class="modal-body"><p id="carmGapNote" style="font-size:12px;color:var(--muted)"></p><div id="carmGapOutput"></div><div id="carmGapCharts" class="carm-gap-charts"></div></div></div></div>
   <div id="oneshotModal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-header">
@@ -2340,6 +2374,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     });
 
     renderSummaryTable(result);
+    renderCarmAnalysis(workingDf,col);
     renderDailyStats(buildDailyStats(workingDf,col,startDate,endDate));
     renderAgeTable(result);
     renderKPIAndChart(result);
@@ -3449,7 +3484,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
   };
   (function initJinsulTheme(){
     const saved=localStorage.getItem('jinsulTheme');
-    if(saved==='light') document.body.classList.add('light-mode');
+    if(saved!=='dark') document.body.classList.add('light-mode');
     updateThemeButton();
     document.getElementById('themeToggleBtn')?.addEventListener('click', toggleJinsulTheme);
     document.getElementById('jinsulBackBtn')?.addEventListener('click', window.goBackPage);
@@ -3526,6 +3561,140 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
       setLoading(false);
     }
   });
+
+
+  function carmRoom(v){const m=String(v??'').replace(/\s/g,'').match(/(\d+)진료실/);return m?`${+m[1]}진료실`:String(v??'').trim()}
+  function carmId(v){return String(v??'').trim().replace(/\.0$/,'')}
+  function carmKey(id,date,room){return [id,date,room].join('|')}
+  function parseCarmRows(sheets){
+    const out=new Map();let candidates=0,invalid=0;
+    sheets.forEach(sheet=>{
+      const hi=sheet.findIndex(row=>row.some(v=>normHeader(v)==='처방코드')&&row.some(v=>normHeader(v)==='차트번호')&&row.some(v=>normHeader(v)==='처방일자'));
+      if(hi<0)throw Error('처방코드·차트번호·처방일자 열을 찾지 못했습니다.');
+      const h=sheet[hi].map(normHeader), ix=(...names)=>h.findIndex(x=>names.includes(x));
+      const ci=ix('처방코드'),ni=ix('처방명칭','처방명'),ii=ix('차트번호'),di=ix('처방일자','처방일'),ri=ix('진료실','과목');let room='';
+      sheet.slice(hi+1).forEach(row=>{
+        if(String(row[ci]??'').includes('과 목')){room=carmRoom(row[ni]||row[ri]);return}
+        const code=String(row[ci]??'').trim(),name=ni>=0?String(row[ni]??'').trim():'';
+        if(!code||/소\s*계|총\s*계/.test(code)||!/c[\s-]*arm|씨암/i.test(code+' '+name))return;
+        candidates++;const id=carmId(row[ii]),date=normalizeVisitDate(row[di]),r=carmRoom(ri>=0&&row[ri]?row[ri]:room);
+        if(!id||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!r){invalid++;return}out.set(carmKey(id,date,r),{id,date,room:r});
+      });
+    });
+    if(!candidates)throw Error('씨암 처방 행을 찾지 못했습니다.');return {visits:out,candidates,invalid};
+  }
+  function renderCarmAnalysis(rows,col){
+    const card=document.getElementById('carmCard');if(!state.carmData||!col?.['내원일']||!col?.['마취']){card.style.display='none';return}
+    const visits=new Map();rows.forEach(r=>{
+      const id=carmId(r[col['차트']]),date=normalizeVisitDate(r[col['내원일']]),room=carmRoom(r[col['과']]);if(!id||!date||!room)return;
+      const key=carmKey(id,date,room),type=isFirstVisitType(r[col['초재']])?'초진':'재진';
+      if(!visits.has(key))visits.set(key,{id,date,room,type,inj:false,name:String(col['이름']?r[col['이름']]??'':'').trim()});const v=visits.get(key);v.inj ||= String(r[col['마취']]??'').includes('●');if(type==='초진')v.type='초진';if(!v.name&&col['이름'])v.name=String(r[col['이름']]??'').trim();
+    });
+    const start=document.getElementById('startDateInput').value,end=document.getElementById('endDateInput').value;
+    const source=[...state.carmData.visits.entries()].filter(([,v])=>isDateInRange(v.date,start,end));let matched=0,unmarked=0;
+    source.forEach(([key])=>{const v=visits.get(key);if(v){matched++;if(!v.inj)unmarked++}});
+    visits.forEach((v,key)=>{v.carm=v.inj&&state.carmData.visits.has(key);v.other=v.inj&&!v.carm});
+    const data=[...visits.values()],rooms=[...new Set(data.map(v=>v.room))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+    const pct=(n,d)=>d?`${(100*n/d).toFixed(1)}%`:'-',count=(vs,f)=>vs.filter(v=>v[f]).length;
+    const avg=(vs,field)=>{const by=new Map();vs.filter(v=>v[field]).forEach(v=>{if(!by.has(v.id))by.set(v.id,[]);by.get(v.id).push(v.date)});
+      const counts=[...by.values()].map(a=>a.length),gaps=[...by.values()].flatMap(a=>{const d=[...new Set(a)].sort();return d.slice(1).map((x,i)=>(Date.parse(x)-Date.parse(d[i]))/86400000)});
+      return {frequency:counts.length?(counts.reduce((a,b)=>a+b,0)/counts.length).toFixed(2):'-',gap:gaps.length?(gaps.reduce((a,b)=>a+b,0)/gaps.length).toFixed(1):'-'};
+    };
+    const headings=['진료실','초진환자','씨암건수','씨암처방률','기타건수','기타처방률','재진내원','씨암건수','씨암처방률','기타건수','기타처방률','고유환자','씨암건수','씨암처방률','기타건수','기타처방률','씨암(일)','기타(일)','전체(일)','씨암(회)','기타(회)','전체(회)','씨암 비중'];
+    const body=[...rooms,'전체'].map(room=>{const vs=room==='전체'?data:data.filter(v=>v.room===room),first=vs.filter(v=>v.type==='초진'),ret=vs.filter(v=>v.type==='재진'),cn=count(vs,'carm'),on=count(vs,'other');
+      const vals=[room,first.length,count(first,'carm'),pct(count(first,'carm'),first.length),count(first,'other'),pct(count(first,'other'),first.length),ret.length,count(ret,'carm'),pct(count(ret,'carm'),ret.length),count(ret,'other'),pct(count(ret,'other'),ret.length),new Set(vs.map(v=>v.id)).size,cn,pct(cn,vs.length),on,pct(on,vs.length),avg(vs,'carm').gap,avg(vs,'other').gap,avg(vs,'inj').gap,avg(vs,'carm').frequency,avg(vs,'other').frequency,avg(vs,'inj').frequency,pct(cn,cn+on)];
+      return `<tr class="${room==='전체'?'summary-total-row':''}">${vals.map(x=>`<td>${escapeHtml(x)}</td>`).join('')}</tr>`}).join('');
+    const groups=[['초진 현황',5,'group-first'],['재진 현황',5,'group-return'],['전체 환자 현황',5,'group-total'],['평균 주사간격',3,'group-injection'],['평균 주사횟수',3,'group-performance'],['구성',1,'group-distribution']];
+    const groupHead=`<tr class="summary-group-row"><th class="group-label" rowspan="2">진료실</th>${groups.map(([label,n,cls])=>`<th colspan="${n}" class="${cls}">${label}</th>`).join('')}</tr>`;
+    const columnHead=`<tr class="summary-column-row">${headings.slice(1).map(x=>`<th>${x}</th>`).join('')}</tr>`;
+    document.getElementById('carmOutput').innerHTML=`<table><thead>${groupHead}${columnHead}</thead><tbody>${body}</tbody></table>`;
+    document.getElementById('carmMatchNote').textContent=`씨암 원본 ${state.carmData.candidates}행 · 고유 ${state.carmData.visits.size}건 · 기간 내 ${source.length}건 중 외래 매칭 ${matched}건 · 마취료 표시 없음 ${unmarked}건 · 미매칭 ${source.length-matched}건 · 필수값 누락 ${state.carmData.invalid}건. 씨암/기타는 마취료 표시가 있는 내원 기준, 기타=전체주사−씨암. 처방률 분모는 각 내원구분 건수, 평균횟수는 해당 주사 환자수, 간격은 환자별 연속 주사 날짜 차이입니다.`;
+    state.carmVisits=data;card.style.display='block';renderCarmPrediction();if(document.getElementById('carmModal').style.display==='flex')renderCarmDistribution();if(document.getElementById('carmGapModal').style.display==='flex')renderCarmGap();
+  }
+  function renderCarmPrediction(){
+    const mode=document.getElementById('carmPredictionMode').value,data=state.carmVisits||[];
+    const byRoom=new Map();data.forEach(v=>{
+      if(!byRoom.has(v.room))byRoom.set(v.room,{first:new Set(),all:new Set()});
+      const room=byRoom.get(v.room);room.all.add(v.date);
+      if(v.type==='초진')room.first.add(v.date);
+    });
+    const rooms=[...byRoom.keys()].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+    const firstAll=new Set(),all=new Set();
+    const columns=['진료실','근무일수','초진 기록일수','초진+재진 기록일수','근무 날짜'];
+    const body=rooms.map(room=>{
+      const r=byRoom.get(room);r.first.forEach(d=>firstAll.add(d));r.all.forEach(d=>all.add(d));
+      const dates=[...(mode==='first'?r.first:r.all)].sort();
+      return [room,`${dates.length}일 근무`,r.first.size,r.all.size,dates.join(', ')||'-'];
+    });
+    const allDates=[...(mode==='first'?firstAll:all)].sort();
+    body.push(['전체(중복 날짜 1일)',`${allDates.length}일 근무`,firstAll.size,all.size,allDates.join(', ')||'-']);
+    document.getElementById('carmPredictionOutput').innerHTML=rooms.length?`<table><thead><tr>${columns.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${body.map((row,i)=>`<tr class="${i===body.length-1?'summary-total-row':''}">${row.map(x=>`<td>${escapeHtml(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<p style="padding:14px;color:var(--muted)">선택 기간에 내원 기록이 없습니다.</p>';
+    document.getElementById('carmPredictionNote').textContent=`${mode==='first'?'초진(신환·90일초진) 기록이 있는 날짜만':'초진 또는 재진 기록이 있는 모든 날짜를'} 진료실별로 한 번씩 셉니다. 전체 행은 병원 전체의 고유 날짜 수로, 진료실별 근무일수의 합계와 다를 수 있습니다. 기록이 없는 실제 근무일은 확인할 수 없어 포함하지 않습니다.`;
+  }
+  function renderCarmDistribution(){
+    const max=+document.getElementById('carmMaxCount').value,data=state.carmVisits||[];
+    // 초진 기록이 있는 환자를 기준으로, 첫 초진일 이후의 모든 주사 내원을 추적합니다.
+    const firstDates=new Map();data.filter(v=>v.type==='초진').forEach(v=>{
+      if(!firstDates.has(v.id)||v.date<firstDates.get(v.id))firstDates.set(v.id,v.date);
+    });
+    const cohort=data.filter(v=>firstDates.has(v.id)&&v.date>=firstDates.get(v.id));
+    const rows=[['carm','씨암'],['other','기타주사'],['inj','총주사']].map(([field,label])=>{
+      const by=new Map();cohort.filter(v=>v[field]).forEach(v=>by.set(v.id,(by.get(v.id)||0)+1));
+      const counts=[...by.values()],denom=counts.length;
+      const buckets=Array.from({length:max},(_,i)=>counts.filter(n=>i===max-1?n>=max:n===i+1).length);
+      const pct=n=>denom?`${(n/denom*100).toFixed(1)}%`:'-';
+      return {label,denom,buckets,rates:buckets.map(pct)};
+    });
+    const labels=Array.from({length:max},(_,i)=>i===max-1?`${max}회 이상`:`${i+1}회`);
+    const head=`<tr class="summary-group-row"><th rowspan="2" class="group-label">종류</th><th rowspan="2" class="group-total">주사환자</th>${labels.map(x=>`<th colspan="2" class="group-injection">${x}</th>`).join('')}</tr><tr class="summary-column-row">${labels.map(()=>'<th>환자수</th><th>비율</th>').join('')}</tr>`;
+    const body=rows.map(r=>`<tr><td>${r.label}</td><td>${r.denom}</td>${r.buckets.map((n,i)=>`<td>${n}</td><td>${r.rates[i]}</td>`).join('')}</tr>`).join('');
+    document.getElementById('carmDistOutput').innerHTML=`<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+    document.getElementById('carmDistNote').textContent=`선택 기간 내 초진 환자 ${firstDates.size}명 기준 · 첫 초진일 이후 재진에서 시행한 주사도 각 환자의 씨암/기타/총주사 횟수에 포함합니다. 비율의 분모는 종류별 주사 경험 환자 수이며 구간별 비율의 합은 100%입니다.`;
+  }
+  function renderCarmGap(){
+    const data=state.carmVisits||[],select=document.getElementById('carmGapRoom');
+    const rooms=[...new Set(data.map(v=>v.room))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+    const current=select.value;
+    select.innerHTML='<option value="전체">전체</option>'+rooms.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+    select.value=rooms.includes(current)?current:'전체';
+    const chosen=select.value,visits=chosen==='전체'?data:data.filter(v=>v.room===chosen);
+    const types=[['carm','씨암','carm'],['other','기타주사','other'],['inj','전체주사','inj']];
+    const stats=types.map(([field,label,cls])=>{
+      const by=new Map();visits.filter(v=>v[field]).forEach(v=>{
+        if(!by.has(v.id))by.set(v.id,new Set());by.get(v.id).add(v.date);
+      });
+      const gaps=[...by.values()].flatMap(set=>{
+        const dates=[...set].sort();return dates.slice(1).map((d,i)=>Math.round((Date.parse(d)-Date.parse(dates[i]))/86400000)).filter(n=>Number.isFinite(n)&&n>=1);
+      });
+      const buckets=Array.from({length:14},(_,i)=>gaps.filter(n=>i===13?n>=14:n===i+1).length);
+      const total=gaps.length,percent=buckets.map(n=>total?`${(n/total*100).toFixed(1)}%`:'-');
+      return {label,cls,buckets,percent,total};
+    });
+    const labels=Array.from({length:14},(_,i)=>i===13?'14일 이상':`${i+1}일`);
+    const head='<tr><th>간격</th>'+stats.map(s=>`<th colspan="2">${s.label}</th>`).join('')+'</tr><tr><th></th>'+stats.map(()=>'<th>건수</th><th>비율</th>').join('')+'</tr>';
+    const body=labels.map((label,i)=>`<tr><td>${label}</td>${stats.map(s=>`<td>${s.buckets[i]}</td><td>${s.percent[i]}</td>`).join('')}</tr>`).join('');
+    const foot=`<tr><th>총 간격</th>${stats.map(s=>`<th>${s.total}</th><th>${s.total?'100%':'-'}</th>`).join('')}</tr>`;
+    document.getElementById('carmGapOutput').innerHTML=`<table><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+    document.getElementById('carmGapCharts').innerHTML=stats.map(s=>{
+      const max=Math.max(1,...s.buckets);
+      return `<section class="carm-gap-chart ${s.cls}"><h3>${s.label} · ${s.total}간격</h3>${labels.map((label,i)=>`<div class="carm-gap-row"><span>${label}</span><div class="carm-gap-track"><div class="carm-gap-fill" style="width:${s.buckets[i]/max*100}%"></div></div><span>${s.buckets[i]}건 · ${s.percent[i]}</span></div>`).join('')}</section>`;
+    }).join('');
+    document.getElementById('carmGapNote').textContent=`${chosen} · 선택 기간의 차트번호별 주사 날짜를 정렬해 인접한 두 날짜의 차이를 1건씩 계산합니다. 비율 분모는 종류별 전체 간격 건수입니다. 14일 이상은 한 구간에 합산하며 같은 날짜의 중복 처방은 한 번으로 셉니다.`;
+  }
+  document.getElementById('carmFileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;
+    try{setLoading(true);await nextPaint();let sheets=[];if(/\.csv$/i.test(file.name))sheets=[smartCSVtoRows(await file.text())];else{const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});sheets=wb.SheetNames.map(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}))}
+      state.carmData=parseCarmRows(sheets);document.getElementById('carmFileName').textContent=file.name;document.getElementById('warning').innerText='';if(state.rawData)rerunWithCurrentOptions();
+    }catch(err){console.error(err);document.getElementById('warning').innerText='❗ 씨암 파일을 읽지 못했습니다: '+err.message}finally{setLoading(false)}
+  });
+  document.getElementById('carmDistBtn').addEventListener('click',()=>{renderCarmDistribution();document.getElementById('carmModal').style.display='flex'});
+  document.getElementById('carmMaxCount').addEventListener('change',renderCarmDistribution);
+  document.getElementById('carmPredictionMode').addEventListener('change',renderCarmPrediction);
+  document.getElementById('carmGapBtn').addEventListener('click',()=>{renderCarmGap();document.getElementById('carmGapModal').style.display='flex'});
+  document.getElementById('carmGapRoom').addEventListener('change',renderCarmGap);
+  document.getElementById('carmGapClose').addEventListener('click',()=>document.getElementById('carmGapModal').style.display='none');
+  document.getElementById('carmGapModal').addEventListener('click',e=>{if(e.target.id==='carmGapModal')e.currentTarget.style.display='none'});
+  document.getElementById('carmModalClose').addEventListener('click',()=>document.getElementById('carmModal').style.display='none');
+  document.getElementById('carmModal').addEventListener('click',e=>{if(e.target.id==='carmModal')e.currentTarget.style.display='none'});
 
   /* ================= 기간 선택 이벤트 ================= */
   document.getElementById('applyDateBtn').addEventListener('click', rerunWithCurrentOptions);
