@@ -7,6 +7,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -2695,7 +2697,12 @@ body.jinsul-analysis-open{
 .dr-gap-track{height:13px;border-radius:99px;background:#eee8df;overflow:hidden}.dr-gap-bar{height:100%;background:#658cb8}.dr-gap-panel:nth-child(2) .dr-gap-bar{background:#a78aba}.dr-gap-panel:nth-child(3) .dr-gap-bar{background:#71a495}
 @media(max-width:900px){.dr-gap-charts{grid-template-columns:1fr}}
 </style>
-</head>
+<style>
+#uploadCard .date-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+#uploadCard .date-actions{margin-top:14px;gap:10px}
+#uploadCard .date-actions button{min-height:44px}
+@media(max-width:700px){#uploadCard .date-grid{grid-template-columns:1fr!important}#uploadCard .date-actions{justify-content:stretch}#uploadCard .date-actions button{flex:1 1 130px}}
+</style></head>
     <body>
         <div class="jinsul-floating-actions no-print" aria-label="화면 이동 및 테마 전환">
             <button type="button" class="jinsul-float-btn" onclick="goBack()" title="이전 페이지로 이동">← 뒤로가기</button>
@@ -2752,9 +2759,6 @@ body.jinsul-analysis-open{
                             </div>
                         </div>
                         <div class="field-box upload-field"><label class="field-title">씨암 처방 파일 (선택)</label><label>차트번호·내원일이 있는 의사랑 씨암 추출 파일입니다. 파일명은 변경되어도 됩니다.</label><div class="upload-box"><input type="file" id="carmFiles" class="file-hidden" multiple accept=".xlsx,.xls"/><label for="carmFiles" class="upload-zone"><span class="upload-icon">💉</span><span class="upload-main">씨암 파일을 업로드하세요</span><span class="upload-sub">XLSX / XLS · 다중 선택 가능</span><span class="upload-button">📁 파일 선택</span><span class="upload-name" id="carmFilesName">선택된 파일 없음</span></label></div></div>
-                        <div class="right">
-                            <button id="runBtn" class="primary">⚡ 통계 계산</button>
-                        </div>
                     </div>
                     <div class="date-grid">
                         <div class="field-box">
@@ -2765,9 +2769,11 @@ body.jinsul-analysis-open{
                             <label>조회 종료일</label>
                             <input type="date" id="endDate"/>
                         </div>
-                        <div class="right">
-                            <button id="clearDateBtn" type="button" class="ghost">기간 초기화</button>
-                        </div>
+                    </div>
+                    <div class="right date-actions">
+                        <button id="runBtn" type="button" class="primary">⚡ 통계 계산</button>
+                        <button id="applyDateBtn" type="button" class="ghost">기간 적용</button>
+                        <button id="clearDateBtn" type="button" class="ghost">전체 기간</button>
                     </div>
                     <p class="hint">📅 기간을 선택하면 해당 기간 안의 초진일·주사일·내원일만 기준으로 계산됩니다. 비워두면 전체 기간으로 계산됩니다.</p>
                     <div id="fileDiagnostic" class="conversion-note" style="margin-top:12px"><strong>파일 인식 상태</strong><br>외래 완료환자 파일과 주사 파일을 선택한 뒤 통계 계산을 눌러주세요.</div>
@@ -4066,7 +4072,13 @@ body.jinsul-analysis-open{
                 XLSX.writeFile(wb, filename);
             }
 
+            function validateSelectedPeriod(){
+                const {startDate,endDate}=getSelectedDateRange();
+                if(startDate&&endDate&&startDate>endDate){alert('조회 시작일이 종료일보다 늦습니다. 기간을 확인해주세요.');return false}
+                return true;
+            }
             async function processFiles() {
+                if(!validateSelectedPeriod())return;
                 const outpatientFiles = $('#outpatientFiles').files;
                 const injectionFiles = $('#injectionFiles').files;
                 const carmFiles = $('#carmFiles').files;
@@ -4074,6 +4086,7 @@ body.jinsul-analysis-open{
                 if (!injectionFiles.length) { alert('주사 파일을 1개 이상 업로드해주세요.'); return; }
                 showLoading(true);
                 $('#runBtn').disabled = true;
+                $('#applyDateBtn').disabled = true;
                 $('#runBtn').textContent = '계산 중…';
                 try {
                     const outpatient = await loadFiles(outpatientFiles, '외래 완료환자');
@@ -4087,6 +4100,7 @@ body.jinsul-analysis-open{
                     alert(`파일 처리 중 오류가 발생했습니다.\n${e?.message || e}`);
                 } finally {
                     $('#runBtn').disabled = false;
+                    $('#applyDateBtn').disabled = false;
                     $('#runBtn').textContent = '⚡ 통계 계산';
                     showLoading(false);
                 }
@@ -4464,15 +4478,32 @@ body.jinsul-analysis-open{
             }
 
             // 이벤트
-            $('#runBtn').addEventListener('click', processFiles);
-            $('#carmFiles').addEventListener('change',e=>{$('#carmFilesName').textContent=[...e.target.files].map(f=>f.name).join(', ')||'선택된 파일 없음'});
-            $('#clearDateBtn').addEventListener('click', () => {
-                $('#startDate').value = '';
-                $('#endDate').value = '';
+            async function applyCurrentPeriod(){
+                if(!validateSelectedPeriod())return;
+                if(!window.__latestFileMap){await processFiles();return}
+                const btn=$('#applyDateBtn');btn.disabled=true;btn.textContent='기간 계산 중…';showLoading(true);
+                try{
+                    await yieldToBrowser();
+                    runAnalysis(window.__latestFileMap,true);
+                }catch(e){console.error(e);alert(`기간 적용 중 오류가 발생했습니다.\n${e?.message||e}`)}
+                finally{btn.disabled=false;btn.textContent='기간 적용';showLoading(false)}
             }
-            );
+            $('#runBtn').addEventListener('click', processFiles);
+            $('#applyDateBtn').addEventListener('click',applyCurrentPeriod);
+            // 파일을 바꾸면 이전 자료가 남지 않도록 다음 기간 적용 시 새 파일을 읽습니다.
+            [['outpatientFiles','outpatientFilesName'],['injectionFiles','injectionFilesName'],['carmFiles','carmFilesName']].forEach(([inputId,nameId])=>{
+                $('#'+inputId).addEventListener('change',()=>{
+                    window.__latestFileMap=null;
+                    if(inputId==='carmFiles')$('#'+nameId).textContent=[...$('#'+inputId).files].map(f=>f.name).join(', ')||'선택된 파일 없음';
+                });
+            });
+            $('#clearDateBtn').addEventListener('click',()=>{
+                $('#startDate').value='';$('#endDate').value='';
+                if(window.__latestFileMap)applyCurrentPeriod();
+            });
 
             $('#clearBtn').addEventListener('click', () => {
+                window.__latestFileMap = null;
                 $('#outpatientFiles').value = '';
                 $('#injectionFiles').value = '';
                 $('#carmFiles').value = '';
