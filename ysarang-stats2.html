@@ -5678,7 +5678,7 @@ body.jinsul-analysis-open{
     {section:'5번 시트 · 주사치료',rows:[
       ['carm','C-ARM 건수 (arthro 제외)','auto'],['blind','sono & blind block 건수','auto'],['firstInjected','초진환자 주사수','auto'],['firstFollowReserved','초진 주사 경과 예약수','manual'],['firstTreatReserved','초진 주사 치료 예약수','manual'],['returnInjected','재진환자 주사수','auto'],['returnFollowReserved','재진 주사 경과 예약수','manual'],['returnTreatReserved','재진 주사 치료 예약수','manual'],['followAttendance','총 주사 경과 내원율','manual','percent'],['treatAttendance','총 주사 치료 내원율','manual','percent']]},
     {section:'6번 시트 · 진료실별',room:true,rows:[
-      ['workdays','실 진료일수','auto'],['firstCount','초진수 (신환+90초진)','auto'],['roomReturn','재진 환자수','auto'],['roomCarm','C-ARM 건수 (arthro 제외)','auto'],['roomBlind','Arthro & blind block 건수','manual'],['roomFirstInjected','초진환자 주사수','auto'],['manualTotal','도수 총 건수','manual'],['shockTotal','충격파 총 건수','manual'],['shockNewRoom','충격파 신환 건수','manual']]}];
+      ['workdays','실 진료일수','auto'],['firstCount','초진수 (신환+90초진)','auto'],['roomReturn','재진 환자수','auto'],['roomCarm','C-ARM 건수 (arthro 제외)','auto'],['roomBlind','Arthro & blind block 건수','auto'],['roomFirstInjected','초진환자 주사수','auto'],['manualTotal','도수 총 건수','manual'],['shockTotal','충격파 총 건수','manual'],['shockNewRoom','충격파 신환 건수','manual']]}];
   const numeric=x=>{if(x===null||x===undefined||String(x).trim()==='')return null;const n=Number(String(x).replace(/[,₩%\s]/g,''));return Number.isFinite(n)?n:null};
   const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const iso=d=>d.toISOString().slice(0,10);
