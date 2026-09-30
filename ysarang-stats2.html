@@ -5728,10 +5728,46 @@ values.blind = values.carm == null
         values[`firstAge${i}`]=es.filter(e=>ageBand(e.age)===i).length;
         values[`returnAge${i}`]=returns.filter(r=>ageBand(r.age)===i).length;
       }
-      const roomValues={};rooms.forEach(room=>{
-        const rv=rs.filter(r=>r.room===room),re=es.filter(e=>e.room===room);
-        roomValues[room]={workdays:new Set(rv.map(r=>r.date)).size,firstCount:re.length,roomReturn:new Set(rv.filter(r=>r.isRevisit&&!r.isInitial).map(r=>`${r.id}|${r.date}`)).size,roomCarm:ctx.fileMap.carm?.length?[...carmRoom].filter(([pair,r])=>r===room&&inWeek(pair.split('|').at(-1))).length:null,roomFirstInjected:re.filter(e=>ctx.injectionDates.get(e.id)?.has(e.date)).length};
-      });
+      const roomValues = {};
+
+rooms.forEach(room => {
+  const rv = rs.filter(r => r.room === room);
+  const re = es.filter(e => e.room === room);
+
+  // 같은 환자의 같은 날짜 재진은 1건으로 계산
+  const roomReturns = [
+    ...new Map(
+      rv.filter(r => r.isRevisit && !r.isInitial)
+        .map(r => [`${r.id}|${r.date}`, r])
+    ).values()
+  ];
+
+  const roomFirstInjected = re.filter(e =>
+    ctx.injectionDates.get(e.id)?.has(e.date)
+  ).length;
+
+  const roomReturnInjected = roomReturns.filter(r =>
+    ctx.injectionDates.get(r.id)?.has(r.date)
+  ).length;
+
+  const roomCarm = ctx.fileMap.carm?.length
+    ? [...carmRoom].filter(([pair, r]) =>
+        r === room && inWeek(pair.split('|').at(-1))
+      ).length
+    : null;
+
+  roomValues[room] = {
+    workdays: new Set(rv.map(r => r.date)).size,
+    firstCount: re.length,
+    roomReturn: roomReturns.length,
+    roomCarm,
+    roomFirstInjected,
+    roomReturnInjected,
+    roomBlind: roomCarm == null
+      ? null
+      : roomFirstInjected + roomReturnInjected - roomCarm
+  };
+});
       return {values,roomValues};
     }
     return {weeks,rooms,results:weeks.map(calculate),ctx};
