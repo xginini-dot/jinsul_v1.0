@@ -2857,7 +2857,7 @@ body.jinsul-analysis-open{
                     <span class="toolbar no-print">
                         <button type="button" id="toggleVisitDistributionBtn" onclick="toggleVisitDistribution()" aria-pressed="false">1~8회 상세보기</button>
                         <button type="button" onclick="copyTable('#output')">📋 복사</button>
-                        <button type="button" onclick="openFullTable('#output', '요약 통계')">전체화면</button>
+                        <button type="button" id="weeklyOpenBtn">📅 주간통계 데이터</button><button type="button" onclick="openFullTable('#output', '요약 통계')">전체화면</button>
                     </span>
                 </h3>
                 <div id="output"></div>
@@ -4143,7 +4143,7 @@ body.jinsul-analysis-open{
                         const recordKey = `${id}_${date}_${room}`;
                         if (!outpatientRecordSeen.has(recordKey)) {
                             outpatientRecordSeen.add(recordKey);
-                            outpatientRecords.push({ id, date, room, type, isInitial, isRevisit });
+                            outpatientRecords.push({ id, date, room, type, age, isInitial, isRevisit });
                         }
                         (visitDates.get(key) || visitDates.set(key, new Set()).get(key)).add(date);
                         standardizedVisits.push([id, rrn, date]);
@@ -4291,6 +4291,8 @@ body.jinsul-analysis-open{
                 if (!merged.length) {
                     $('#drCarmCard').style.display = 'none';
                     window.__drVisits = [];
+                    window.__weeklyContext = null;
+                    $('#weeklyOpenBtn').disabled = true;
                     $('#summary').style.display = 'none';
                     $('#output').innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0">초진·신환 데이터가 인식되지 않았습니다. 외래 파일의 초/재진구분 열과 파일명 날짜를 확인해주세요.</p>';
                     const diagnostic = document.getElementById('fileDiagnostic');
@@ -4326,6 +4328,7 @@ body.jinsul-analysis-open{
                 }
                 $('#output').innerHTML = renderSummaryTable(stats);
                 renderDoctorCarm(fileMap, outpatientRecords, injectionDates, startDate, endDate);
+                window.weeklyPrepare({fileMap, outpatientRecords, injectionDates, allInitialEvents, startDate, endDate});
                 $('#dailyOutput').innerHTML = renderDailyTable(dailyStats);
 
                 const conversion = computeFirstInjectionConversion(merged, standardizedInjections, standardizedVisits, startDate, endDate);
@@ -4494,6 +4497,8 @@ body.jinsul-analysis-open{
             [['outpatientFiles','outpatientFilesName'],['injectionFiles','injectionFilesName'],['carmFiles','carmFilesName']].forEach(([inputId,nameId])=>{
                 $('#'+inputId).addEventListener('change',()=>{
                     window.__latestFileMap=null;
+                    window.__weeklyContext=null;
+                    $('#weeklyOpenBtn').disabled=true;
                     if(inputId==='carmFiles')$('#'+nameId).textContent=[...$('#'+inputId).files].map(f=>f.name).join(', ')||'선택된 파일 없음';
                 });
             });
@@ -4504,6 +4509,8 @@ body.jinsul-analysis-open{
 
             $('#clearBtn').addEventListener('click', () => {
                 window.__latestFileMap = null;
+                window.__weeklyContext = null;
+                $('#weeklyOpenBtn').disabled = true;
                 $('#outpatientFiles').value = '';
                 $('#injectionFiles').value = '';
                 $('#carmFiles').value = '';
@@ -5642,5 +5649,146 @@ body.jinsul-analysis-open{
 })();
 </script>
 
+<div id="weeklyModal" class="dr-overlay" role="dialog" aria-modal="true" aria-label="주간통계 데이터"><div class="dr-modal weekly-modal"><div class="dr-modal-head"><div><h2>📅 주간통계 데이터</h2><p class="hint">일요일~토요일 4주와 최근 4주 합계 · 자동 값은 자료 기준, 흰색 칸은 직접 입력</p></div><div class="weekly-actions"><label>기준 주 <input type="date" id="weeklyAnchor"></label><button type="button" id="weeklyExport">엑셀 다운로드</button><button type="button" id="weeklyClose">닫기</button></div></div><p class="hint" id="weeklyNote"></p><div id="weeklyOutput"></div></div></div>
+<style>
+.weekly-modal{width:min(1540px,99vw);max-height:96vh}.weekly-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#weeklyOutput{overflow:auto;max-height:73vh}.weekly-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;color:#263144;font-size:13px}
+.weekly-table th,.weekly-table td{border-bottom:1px solid #e7dfd4;padding:7px 9px;text-align:right;white-space:nowrap}
+.weekly-table thead th{position:sticky;top:0;background:#e9e1d5;z-index:2}.weekly-table td:first-child,.weekly-table th:first-child{position:sticky;left:0;text-align:left;background:#fff;z-index:1;min-width:210px}
+.weekly-table .weekly-section th{background:#ede8df!important;text-align:left;font-weight:900;color:#3c3024}.weekly-table .weekly-section th:first-child{z-index:3}
+.weekly-table .weekly-total td{background:#f3eee7;font-weight:800}.weekly-table .weekly-total td:first-child{background:#f3eee7}
+.weekly-table input{width:100%;min-width:85px;max-width:135px;text-align:right;padding:8px;border:1px solid #d8c7b2;border-radius:8px;background:#fff;color:#263144;font:inherit}
+.weekly-table .weekly-auto{background:#f2f6f9}.weekly-table .weekly-manual{background:#fff}.weekly-table .weekly-derived{background:#eef3eb}
+.weekly-table .weekly-missing{color:#8d8174;font-size:12px}.weekly-table .weekly-room th{background:#e2ebee!important;text-align:left}
+#weeklyOpenBtn:disabled{opacity:.55;cursor:not-allowed}
+</style>
+<script>
+(function(){
+  const $w=id=>document.getElementById(id);
+  const defs=[
+    {section:'비교 월 · 진료일수',rows:[['clinicDays','진료일수','auto']]},
+    {section:'1번 시트 · 매출 및 환자수',rows:[
+      ['totalRevenue','총 진료비','manual','won'],['newPatients','신환수','auto'],['ninetyPatients','90초진수','auto'],['returnVisits','재진수','auto'],['physicalVisits','물리치료 내원수','manual']]},
+    {section:'2번 시트 · 초진 연령별 환자수',rows:[...['1~19','20~29','30~39','40~49','50~59','60~69','70+'].map((a,i)=>[`firstAge${i}`,`초진 ${a}세`,'auto'])]},
+    {section:'2번 시트 · 재진 연령별 환자수',rows:[...['1~19','20~29','30~39','40~49','50~59','60~69','70+'].map((a,i)=>[`returnAge${i}`,`재진 ${a}세`,'auto'])]},
+    {section:'3번 시트 · 도수치료',rows:[
+      ['manualRevenue','도수 매출','manual','won'],['manualNew','도수 신환수','manual'],['manualNewReserved','도수 신환 예약수','manual'],['manualReturn','도수 재진수','manual'],['manualReturnReserved','도수 재진 예약수','manual'],['manualConsult','도수 상담수','manual'],['manualConsultRegistered','도수 상담 등록수','manual'],['manualVisitRate','도수 예약 내원율','derived','percent','manualReturn','manualReturnReserved']]},
+    {section:'4번 시트 · 충격파치료',rows:[
+      ['shockRevenue','충격파 매출','manual','won'],['shockNew','충격파 신환수','manual'],['shockNewReserved','충격파 신환 예약수','manual'],['shockReturn','충격파 재진수','manual'],['shockReturnReserved','충격파 재진 예약수','manual'],['shockConsult','충격파 상담수','manual'],['shockConsultRegistered','충격파 상담 등록수','manual'],['shockVisitRate','충격파 예약 내원율','derived','percent','shockReturn','shockReturnReserved']]},
+    {section:'5번 시트 · 주사치료',rows:[
+      ['carm','C-ARM 건수 (arthro 제외)','auto'],['blind','sono & blind block 건수','manual'],['firstInjected','초진환자 주사수','auto'],['firstFollowReserved','초진 주사 경과 예약수','manual'],['firstTreatReserved','초진 주사 치료 예약수','manual'],['returnInjected','재진환자 주사수','auto'],['returnFollowReserved','재진 주사 경과 예약수','manual'],['returnTreatReserved','재진 주사 치료 예약수','manual'],['followAttendance','총 주사 경과 내원율','manual','percent'],['treatAttendance','총 주사 치료 내원율','manual','percent']]},
+    {section:'6번 시트 · 진료실별',room:true,rows:[
+      ['workdays','실 진료일수','auto'],['firstCount','초진수 (신환+90초진)','auto'],['roomReturn','재진 환자수','auto'],['roomCarm','C-ARM 건수 (arthro 제외)','auto'],['roomBlind','Arthro & blind block 건수','manual'],['roomFirstInjected','초진환자 주사수','auto'],['manualTotal','도수 총 건수','manual'],['shockTotal','충격파 총 건수','manual'],['shockNewRoom','충격파 신환 건수','manual']]}];
+  const numeric=x=>{if(x===null||x===undefined||String(x).trim()==='')return null;const n=Number(String(x).replace(/[,₩%\s]/g,''));return Number.isFinite(n)?n:null};
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const iso=d=>d.toISOString().slice(0,10);
+  const weekStart=date=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-d.getUTCDay());return iso(d)};
+  const plus=(date,days)=>iso(new Date(Date.parse(date+'T12:00:00Z')+days*86400000));
+  const key=(row,week,room='')=>`${row}|${week}|${room}`;
+  let edits={};try{edits=JSON.parse(localStorage.getItem('jinsul-weekly-manual-v1')||'{}')}catch(e){}
+  function persist(){try{localStorage.setItem('jinsul-weekly-manual-v1',JSON.stringify(edits))}catch(e){}}
+  function ageBand(n){n=Number(n);if(!Number.isFinite(n)||n<1)return -1;return n>=70?6:Math.max(0,Math.floor(n/10)-1)}
+  function weeklyPrepare(ctx){
+    const range=[...ctx.outpatientRecords.map(r=>r.date),...ctx.allInitialEvents.map(e=>e.date)].filter(Boolean).sort();
+    window.__weeklyContext=ctx;
+    const anchor=ctx.endDate||range.at(-1)||'';
+    if(anchor)$w('weeklyAnchor').value=anchor;
+    $w('weeklyOpenBtn').disabled=false;
+    if($w('weeklyModal').classList.contains('show'))renderWeekly();
+  }
+  window.weeklyPrepare=weeklyPrepare;
+  function buildWeekly(){
+    const ctx=window.__weeklyContext;if(!ctx)return null;
+    const anchor=$w('weeklyAnchor').value||ctx.endDate;
+    if(!anchor)return null;
+    const last=weekStart(anchor),weeks=[3,2,1,0].map(n=>plus(last,-7*n));
+    const rooms=[...new Set(ctx.outpatientRecords.map(r=>r.room).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+    const initial=ctx.allInitialEvents.filter(e=>e.finalClass==='초진'||e.finalClass==='90초진');
+    const firstKeys=new Set(initial.map(e=>`${e.id}|${e.date}`));
+    const visitMap=new Map();ctx.outpatientRecords.forEach(r=>{
+      const k=`${r.id}|${r.date}|${r.room}`;
+      if(!visitMap.has(k))visitMap.set(k,{...r});
+      else{const prev=visitMap.get(k);prev.isInitial||=r.isInitial;prev.isRevisit||=r.isRevisit}
+    });
+    const visits=[...visitMap.values()];
+    const carm=ctx.fileMap.carm?.length?drParseCarm(ctx.fileMap.carm,ctx.startDate,ctx.endDate).source:new Set();
+    const pairRooms=new Map();visits.forEach(v=>{const p=`${v.id}|${v.date}`;if(!pairRooms.has(p))pairRooms.set(p,new Set());pairRooms.get(p).add(v.room)});
+    const carmRoom=new Map();carm.forEach(pair=>{const rs=pairRooms.get(pair);if(rs?.size===1)carmRoom.set(pair,[...rs][0])});
+    function calculate(week){
+      const end=plus(week,6),inWeek=d=>d>=week&&d<=end;
+      const es=initial.filter(e=>inWeek(e.date));
+      const rs=visits.filter(r=>inWeek(r.date));
+      const uniqueReturns=new Map();rs.filter(r=>r.isRevisit&&!r.isInitial&&!firstKeys.has(`${r.id}|${r.date}`)).forEach(r=>uniqueReturns.set(`${r.id}|${r.date}`,r));
+      const returns=[...uniqueReturns.values()];
+      const values={clinicDays:new Set(rs.map(r=>r.date)).size,newPatients:es.filter(e=>e.finalClass==='초진').length,ninetyPatients:es.filter(e=>e.finalClass==='90초진').length,returnVisits:returns.length,firstInjected:es.filter(e=>ctx.injectionDates.get(e.id)?.has(e.date)).length,returnInjected:returns.filter(r=>ctx.injectionDates.get(r.id)?.has(r.date)).length,carm:ctx.fileMap.carm?.length?[...carm].filter(p=>inWeek(p.split('|').at(-1))).length:null};
+      for(let i=0;i<7;i++){
+        values[`firstAge${i}`]=es.filter(e=>ageBand(e.age)===i).length;
+        values[`returnAge${i}`]=returns.filter(r=>ageBand(r.age)===i).length;
+      }
+      const roomValues={};rooms.forEach(room=>{
+        const rv=rs.filter(r=>r.room===room),re=es.filter(e=>e.room===room);
+        roomValues[room]={workdays:new Set(rv.map(r=>r.date)).size,firstCount:re.length,roomReturn:new Set(rv.filter(r=>r.isRevisit&&!r.isInitial).map(r=>`${r.id}|${r.date}`)).size,roomCarm:ctx.fileMap.carm?.length?[...carmRoom].filter(([pair,r])=>r===room&&inWeek(pair.split('|').at(-1))).length:null,roomFirstInjected:re.filter(e=>ctx.injectionDates.get(e.id)?.has(e.date)).length};
+      });
+      return {values,roomValues};
+    }
+    return {weeks,rooms,results:weeks.map(calculate),ctx};
+  }
+  function rowValue(row,week,room,data){
+    const [id,,kind,fmt,numerator,denominator]=row;
+    if(kind==='auto')return room?data.roomValues[room]?.[id]:data.values[id];
+    if(kind==='manual'){const x=edits[key(id,week,room)];return x===''||x===undefined?null:numeric(x)}
+    if(kind==='derived'){const n=numeric(edits[key(numerator,week,room)]),d=numeric(edits[key(denominator,week,room)]);return d>0&&n!==null?n/d*100:null}
+    return null;
+  }
+  function format(v,fmt){if(v===null||v===undefined)return '—';return fmt==='percent'?`${Math.round(v)}%`:fmt==='won'?Math.round(v).toLocaleString('ko-KR'):Number(v).toLocaleString('ko-KR')}
+  function renderWeekly(){
+    const model=buildWeekly();if(!model){$w('weeklyOutput').innerHTML='<p class="hint">먼저 통계를 계산해주세요.</p>';return}
+    window.__weeklyModel=model;
+    const {weeks,rooms,results,ctx}=model;
+    const allRows=[];
+    defs.forEach(section=>{
+      if(section.room){rooms.forEach(room=>{allRows.push({section:`${section.section} · ${room}`});section.rows.forEach(row=>allRows.push({row,room}))})}
+      else{allRows.push({section:section.section});section.rows.forEach(row=>allRows.push({row}))}
+    });
+    const head=`<thead><tr><th>항목</th><th>최근 4주</th>${weeks.map(w=>`<th>${esc(w.slice(5))} ~ ${esc(plus(w,6).slice(5))}</th>`).join('')}</tr></thead>`;
+    const body=allRows.map(item=>{
+      if(item.section)return `<tr class="weekly-section"><th colspan="6">${esc(item.section)}</th></tr>`;
+      const {row,room=''}=item,[id,label,kind,fmt]=row;
+      const values=weeks.map((w,i)=>rowValue(row,w,room,results[i]));
+      const sum=values.some(x=>x!==null&&x!==undefined)?values.reduce((a,b)=>a+(b??0),0):null;
+      const cells=weeks.map((w,i)=>kind==='manual'?`<td class="weekly-manual"><input type="number" min="0" step="${fmt==='percent'?'0.1':'1'}" inputmode="decimal" data-weekly-row="${esc(id)}" data-weekly-week="${w}" data-weekly-room="${esc(room)}" value="${esc(edits[key(id,w,room)]??'')}" aria-label="${esc(room+' '+label+' '+w)}"></td>`:`<td class="${kind==='auto'?'weekly-auto':'weekly-derived'}">${format(values[i],fmt)}</td>`).join('');
+      const total=kind==='derived'?(()=>{const n=weeks.reduce((s,w)=>s+(numeric(edits[key(row[4],w,room)])||0),0),d=weeks.reduce((s,w)=>s+(numeric(edits[key(row[5],w,room)])||0),0);return d?format(n/d*100,'percent'):'—'})():format(fmt==='percent'&&kind==='manual'&&sum!==null?sum/values.filter(v=>v!==null).length:sum,fmt);
+      return `<tr><td>${esc(label)}</td><td class="weekly-total">${total}</td>${cells}</tr>`;
+    }).join('');
+    $w('weeklyOutput').innerHTML=`<table class="weekly-table">${head}<tbody>${body}</tbody></table>`;
+    $w('weeklyNote').textContent=`조회기간 ${ctx.startDate||'전체 시작'} ~ ${ctx.endDate||'전체 종료'}에 포함된 파일 기록으로 계산합니다. 주간 범위가 조회기간 밖이면 해당 주의 자동 값은 부분 집계입니다. C-ARM은 업로드 파일에서 arthro가 이미 제외된 것으로 간주합니다. 최근 4주의 입력 비율은 입력된 주의 평균입니다. 빈 직접 입력칸은 합계에 넣지 않으며, 입력값은 이 브라우저에 저장됩니다.`;
+  }
+  function exportWeekly(){
+    const model=window.__weeklyModel||buildWeekly();if(!model)return;
+    const {weeks,rooms,results}=model;
+    const aoa=[['구분','항목','최근 4주',...weeks.map(w=>`${w} ~ ${plus(w,6)}`)]];
+    defs.forEach(section=>{
+      const scopes=section.room?rooms:[''];
+      scopes.forEach(room=>section.rows.forEach(row=>{
+        const vals=weeks.map((w,i)=>rowValue(row,w,room,results[i]));
+        const sum=row[2]==='derived'?(()=>{const n=weeks.reduce((s,w)=>s+(numeric(edits[key(row[4],w,room)])||0),0),d=weeks.reduce((s,w)=>s+(numeric(edits[key(row[5],w,room)])||0),0);return d?n/d*100:null})():vals.some(v=>v!==null)?vals.reduce((a,b)=>a+(b||0),0)/(row[2]==='manual'&&row[3]==='percent'?vals.filter(v=>v!==null).length:1):null;
+        aoa.push([section.section+(room?` · ${room}`:''),row[1],sum??'',...vals.map(v=>v??'')]);
+      }))
+    });
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'주간통계');XLSX.writeFile(wb,`의사랑_주간통계_${weeks[0]}_${plus(weeks[3],6)}.xlsx`);
+  }
+  $w('weeklyOpenBtn').disabled=true;
+  $w('weeklyOpenBtn').addEventListener('click',()=>{renderWeekly();$w('weeklyModal').classList.add('show')});
+  $w('weeklyClose').addEventListener('click',()=>$w('weeklyModal').classList.remove('show'));
+  $w('weeklyModal').addEventListener('click',e=>{if(e.target.id==='weeklyModal')e.currentTarget.classList.remove('show')});
+  $w('weeklyAnchor').addEventListener('change',renderWeekly);
+  $w('weeklyOutput').addEventListener('input',e=>{
+    const input=e.target.closest('[data-weekly-row]');if(!input)return;
+    edits[key(input.dataset.weeklyRow,input.dataset.weeklyWeek,input.dataset.weeklyRoom)]=input.value;persist();
+  });
+  $w('weeklyOutput').addEventListener('change',e=>{if(e.target.closest('[data-weekly-row]'))renderWeekly()});
+  $w('weeklyExport').addEventListener('click',exportWeekly);
+})();
+</script>
 </body>
 </html>
