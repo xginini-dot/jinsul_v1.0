@@ -5721,7 +5721,7 @@ body.jinsul-analysis-open{
       const uniqueReturns=new Map();rs.filter(r=>r.isRevisit&&!r.isInitial&&!firstKeys.has(`${r.id}|${r.date}`)).forEach(r=>uniqueReturns.set(`${r.id}|${r.date}`,r));
       const returns=[...uniqueReturns.values()];
       const values={clinicDays:new Set(rs.map(r=>r.date)).size,newPatients:es.filter(e=>e.finalClass==='초진').length,ninetyPatients:es.filter(e=>e.finalClass==='90초진').length,returnVisits:returns.length,firstInjected:es.filter(e=>ctx.injectionDates.get(e.id)?.has(e.date)).length,returnInjected:returns.filter(r=>ctx.injectionDates.get(r.id)?.has(r.date)).length,carm:ctx.fileMap.carm?.length?[...carm].filter(p=>inWeek(p.split('|').at(-1))).length:null};
-      values.blind = values.carm == null
+values.blind = values.carm == null
   ? null
   : values.firstInjected + values.returnInjected - values.carm;
         for(let i=0;i<7;i++){
