@@ -14,3 +14,9 @@
 /* Reserve navigation space without page transition animations. */
 .jinsul-loading{font:12px/1.5 Paperlogy,sans-serif;color:var(--j-muted,#596779)}
 @media print{#jinsul-shell[data-jinsul-pending]{display:none!important}}
+
+/* Quiet interaction feedback: no page animations or moving controls. */
+@media(hover:hover){:where(button,a.button,input,select,textarea){transition:background-color 100ms ease,border-color 100ms ease,color 100ms ease}}
+:where(button,a,input,select,textarea):focus-visible{outline:2px solid var(--j-brand,var(--accent,#75664e));outline-offset:3px}
+@media(prefers-reduced-motion:reduce){:where(button,a.button,input,select,textarea){transition:none!important}}
+.card[hidden]{display:none!important}.card{transition:border-color 100ms ease;background:var(--panel)}.card:hover{transform:none;box-shadow:none;border-color:var(--accent)}.card .star{width:36px;height:36px;border-radius:8px}.card .star[aria-pressed=true]{background:var(--soft);color:var(--accent)}.card :where(p,h2){overflow-wrap:anywhere}.sidebar nav button{min-height:42px}.card a{min-height:38px;display:inline-flex;align-items:center}.content{max-width:1800px}.hero h1{letter-spacing:-.025em}body{scrollbar-gutter:stable}

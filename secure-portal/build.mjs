@@ -14,6 +14,7 @@ const assetNames=(await readdir(path.join(root,'public'))).filter(name=>/\.(?:js
 const assetHash=createHash('sha256');
 for(const name of assetNames)assetHash.update(name).update(await readFile(path.join(root,'public',name)));
 assetHash.update(await readFile(path.join(source,'xlsx.full.min.js')));
+for(const name of (await readdir(path.join(root,'public/fonts'))).filter(n=>n.endsWith('.woff2')).sort())assetHash.update(await readFile(path.join(root,'public/fonts',name)));
 const assetVersion=assetHash.digest('hex').slice(0,16);
 const reusableAssets=new Set([...assetNames,'xlsx.full.min.js']);
 function versionAssets(html){
@@ -43,6 +44,7 @@ for (const app of apps) {
 for (const name of ['xlsx.full.min.js','진설로고.png','hira-prices.json','hira-codes.json']) await copyFile(path.join(source,name),path.join(dist,name));
 for(const name of await readdir(path.join(root,'public'))){
  if(name.endsWith('.html'))await writeFile(path.join(dist,name),versionAssets(await readFile(path.join(root,'public',name),'utf8')));
+ if(name.endsWith('.css')){const css=await readFile(path.join(root,'public',name),'utf8');await writeFile(path.join(dist,name),css.replace('/fonts.css','/fonts.css?v='+assetVersion).replace(/\.woff2(?=['"])/g,'.woff2?v='+assetVersion));}
  if(name.endsWith('.js')){const script=await readFile(path.join(root,'public',name),'utf8');await writeFile(path.join(dist,name),script.replace(/(['"])\.\/portal\.js\1/g,(_,quote)=>quote+'./portal.js?v='+assetVersion+quote));}
 }
 await writeFile(path.join(dist,'catalog.json'),JSON.stringify(apps));

@@ -175,3 +175,10 @@ html:root[data-theme] body[data-jinsul-ui] :where(.summary,.miniCharts>p,.card>p
 /* Reserve navigation space without page transition animations. */
 .jinsul-loading{font:12px/1.5 Paperlogy,sans-serif;color:var(--j-muted,#596779)}
 @media print{#jinsul-shell[data-jinsul-pending]{display:none!important}}
+
+/* Quiet interaction feedback: no page animations or moving controls. */
+@media(hover:hover){:where(button,a.button,input,select,textarea){transition:background-color 100ms ease,border-color 100ms ease,color 100ms ease}}
+:where(button,a,input,select,textarea):focus-visible{outline:2px solid var(--j-brand,var(--accent,#75664e));outline-offset:3px}
+@media(prefers-reduced-motion:reduce){:where(button,a.button,input,select,textarea){transition:none!important}}
+html:root[data-theme] body[data-jinsul-ui] :where(button,input,select,textarea){box-shadow:none!important}
+html:root[data-theme] body[data-jinsul-ui] button:hover{transform:none!important}

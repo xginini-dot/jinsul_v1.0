@@ -146,7 +146,7 @@ export async function handle(request,env) {
  if(!['GET','HEAD','POST'].includes(request.method))return json({error:'허용되지 않은 요청입니다.'},405);
  if(request.method==='POST'&&request.headers.get('Origin')!==url.origin)return json({error:'요청 출처를 확인할 수 없습니다.'},403);
  const publicPaths=['/login.html','/setup.html','/setup.js','/portal.css','/fonts.css','/login.js','/진설로고.png'];
- const fontPath=/^\/fonts\/(Paperlogy-[1-9][A-Za-z]+\.ttf|OFL-license\.txt)$/.test(path);
+ const fontPath=/^\/fonts\/(Paperlogy-[1-9][A-Za-z]+\.(?:ttf|woff2)|OFL-license\.txt)$/.test(path);
  if((publicPaths.includes(path)||fontPath)&&request.method!=='POST')return env.ASSETS.fetch(request);
  if(!env.DB||!env.PASSWORD_PEPPER||env.PASSWORD_PEPPER.length<32)return json({error:'서버 초기 설정이 필요합니다. 관리자에게 문의해 주세요.'},503);
  const user=await session(request,env);

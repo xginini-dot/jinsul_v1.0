@@ -13,11 +13,25 @@ if(document.querySelector('#cards')){
    for(const app of apps)app.group=app.categoryName;
    let favorites;try{favorites=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(favorites))favorites=[];}catch{favorites=[];}
    for(const button of document.querySelectorAll('[data-group]'))if(!['전체','즐겨찾기'].includes(button.dataset.group)&&!apps.some(a=>a.group===button.dataset.group))button.hidden=true;
-   function render(){const q=document.querySelector('#search').value.trim().toLowerCase();const visible=apps.filter(a=>(group==='전체'||group==='즐겨찾기'&&favorites.includes(a.file)||a.group===group)&&`${a.title} ${a.description} ${a.group}`.toLowerCase().includes(q));const cards=document.querySelector('#cards');cards.replaceChildren();document.querySelector('#count').textContent=`${visible.length}개 업무`;document.querySelector('#heading').textContent=group==='전체'?'전체 업무':group;
-    for(const app of visible){const card=document.createElement('article');card.className='card';const tag=document.createElement('span');tag.className='group';tag.textContent=app.group;const title=document.createElement('h2');title.textContent=app.title;const description=document.createElement('p');description.textContent=app.description;const link=document.createElement('a');link.href='/'+app.file;link.textContent='업무 열기 →';const star=document.createElement('button');star.className='star';star.textContent=favorites.includes(app.file)?'★':'☆';star.setAttribute('aria-label',app.title+' 즐겨찾기');star.setAttribute('aria-pressed',favorites.includes(app.file));star.onclick=()=>{favorites=favorites.includes(app.file)?favorites.filter(f=>f!==app.file):[...favorites,app.file];localStorage.setItem(storageKey,JSON.stringify(favorites));render();};card.append(tag,title,description,link,star);cards.append(card);}
-    document.querySelector('#message').textContent=visible.length?'':'해당하는 업무가 없습니다.';
+   const cards=document.querySelector('#cards'),entries=new Map(),fragment=document.createDocumentFragment();
+   for(const app of apps){
+    const card=document.createElement('article');card.className='card';
+    const tag=document.createElement('span');tag.className='group';tag.textContent=app.group;
+    const title=document.createElement('h2');title.textContent=app.title;
+    const description=document.createElement('p');description.textContent=app.description;
+    const link=document.createElement('a');link.href='/'+app.file;link.textContent='업무 열기 →';
+    const star=document.createElement('button');star.className='star';star.setAttribute('aria-label',app.title+' 즐겨찾기');
+    star.onclick=()=>{favorites=favorites.includes(app.file)?favorites.filter(f=>f!==app.file):[...favorites,app.file];localStorage.setItem(storageKey,JSON.stringify(favorites));render();};
+    card.append(tag,title,description,link,star);fragment.append(card);entries.set(app.file,{card,star,search:(app.title+' '+app.description+' '+app.group).toLowerCase()});
    }
-   document.querySelector('#search').addEventListener('input',render);document.querySelector('#navigation').addEventListener('click',event=>{const button=event.target.closest('[data-group]');if(!button)return;group=button.dataset.group;document.querySelectorAll('[data-group]').forEach(b=>b.classList.toggle('active',b===button));render();});render();
+   cards.replaceChildren(fragment);
+   function render(){
+    const q=document.querySelector('#search').value.trim().toLowerCase();let count=0;
+    for(const app of apps){const entry=entries.get(app.file),favorite=favorites.includes(app.file);const visible=(group==='전체'||group==='즐겨찾기'&&favorite||app.group===group)&&entry.search.includes(q);entry.card.hidden=!visible;if(visible)count++;entry.star.textContent=favorite?'★':'☆';entry.star.setAttribute('aria-pressed',String(favorite));}
+    document.querySelector('#count').textContent=count+'개 업무';document.querySelector('#heading').textContent=group==='전체'?'전체 업무':group;document.querySelector('#message').textContent=count?'':'해당하는 업무가 없습니다.';
+   }
+   let renderFrame;function scheduleRender(){cancelAnimationFrame(renderFrame);renderFrame=requestAnimationFrame(render);}
+   document.querySelector('#search').addEventListener('input',scheduleRender);document.querySelector('#navigation').addEventListener('click',event=>{const button=event.target.closest('[data-group]');if(!button)return;group=button.dataset.group;document.querySelectorAll('[data-group]').forEach(b=>b.classList.toggle('active',b===button));render();});render();
   }
  }catch(error){document.querySelector('#message').textContent=error.message;}
 }
