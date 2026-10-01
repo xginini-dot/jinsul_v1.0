@@ -172,7 +172,7 @@ export default {
   const reusable=/^\/(?:fonts\/|fonts\.css$|진설로고\.png$)/.test(assetPath);
   const shared=/^\/(?:portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
   const successful=secured.ok||secured.status===304;
-  secured.headers.set('Cache-Control',successful&&reusable?'public, max-age=86400':successful&&shared?'private, max-age=0, must-revalidate':'no-store');
+  secured.headers.set('Cache-Control',successful&&reusable?'public, max-age=86400':successful&&shared?(/^[a-f0-9]{16}$/.test(new URL(request.url).searchParams.get('v')||'')?'private, max-age=86400, immutable':'private, max-age=0, must-revalidate'):'no-store');
   secured.headers.set('X-Content-Type-Options','nosniff');
   secured.headers.set('X-Frame-Options','SAMEORIGIN');
   secured.headers.set('Referrer-Policy','same-origin');
