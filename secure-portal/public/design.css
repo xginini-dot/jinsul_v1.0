@@ -103,3 +103,39 @@ html:root[data-theme] body[data-jinsul-ui] :where(input,textarea)::placeholder{c
 html:root[data-theme] body[data-jinsul-ui] :where(.status.ok,.kpi.ok .value,.diff-zero){color:var(--j-positive)!important}
 html:root[data-theme] body[data-jinsul-ui] :where(.status.err,.kpi.error .value,.diff-bad){color:var(--j-danger)!important}
 html:root[data-theme] body[data-jinsul-ui] .guide-route em{color:var(--j-brand)!important}
+
+/* Restrained premium workspace: compact headings, one brand mark, quiet surfaces. */
+html:root{--j-bg:#f4f3ef;--j-panel:#fcfbf8;--j-soft:#f1f0eb;--j-ink:#292e32;--j-muted:#626964;--j-line:#e2e2d9;--j-brand:#75664e;--j-brand-soft:#ede9df;--j-radius:12px;--j-shadow:0 2px 10px #292e3203}
+html[data-theme=dark]{--j-bg:#191d1e;--j-panel:#222829;--j-soft:#2a3232;--j-ink:#edf0eb;--j-muted:#b8c0b9;--j-line:#394342;--j-brand:#ceba94;--j-brand-soft:#353a32;--j-shadow:none}
+html:root[data-theme] body[data-jinsul-ui] :where(.wrap,.page,.container,.shell){max-width:1440px!important}
+html:root[data-theme] body[data-jinsul-ui]>:where(.wrap,.page,.container,.shell){padding:28px 32px 48px!important}
+html:root[data-theme] body[data-jinsul-ui]>header:has(h1){max-width:1376px!important;width:calc(100% - 64px)!important;margin:32px auto 0!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.hero,.brand-header,.brandbar,.jinsul-hero,.header,.head,header:has(h1),.jinsul-page-header){position:relative;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0 0 24px!important;margin-bottom:24px!important;min-height:0!important;height:auto!important;text-align:left!important;border-bottom:1px solid var(--j-line)!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.hero,.brand-header,.brandbar,.jinsul-hero,.header,.head,header:has(h1),.jinsul-page-header) :where(h1){margin:0 0 10px!important;font-size:clamp(24px,2.2vw,30px)!important;line-height:1.4!important;font-weight:600!important;letter-spacing:-.6px!important;text-align:left!important;grid-column:auto!important;grid-row:auto!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.hero,.brand-header,.brandbar,.jinsul-hero,.header,.head,header:has(h1),.jinsul-page-header) :where(p,.sub,.subtitle){margin:0!important;padding:0!important;max-width:960px!important;font-size:14px!important;color:var(--j-muted)!important;line-height:1.75!important;text-align:left!important;grid-column:auto!important;grid-row:auto!important;word-break:keep-all;overflow-wrap:anywhere}
+html:root[data-theme] body[data-jinsul-ui] :where(.brand-header,.brand-copy,.brand-row,.brand-left,.hero-copy){display:block!important;min-width:0!important;gap:0!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.brand-mark,.logo-box,.hero-badge,.heroWatermark,.company){display:none!important}
+html:root[data-theme] body[data-jinsul-ui] img[src*="진설로고"]:not(#jinsul-shell img),html:root[data-theme] body[data-jinsul-ui] img[src*="%EC%A7%84%EC%84%A4%EB%A1%9C%EA%B3%A0"]:not(#jinsul-shell img){display:none!important}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-decorative-label{display:none!important}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-header-actions{display:flex;align-items:center;gap:8px;position:absolute;right:0;top:0}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-page-header:has(.jinsul-header-actions){padding-right:112px!important}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-empty-toolbar{display:none!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.card,.panel,.upload-card,.uploadCard,.table-card,.guide-item){box-shadow:none!important;border-radius:12px!important;background:var(--j-panel)!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.upload-grid)[data-jinsul-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+html:root[data-theme] body[data-jinsul-ui] .upload-grid[data-jinsul-columns="2"]>.upload-card{display:flex;flex-direction:column;padding:20px!important;gap:12px;min-height:188px;background:var(--j-soft)!important}
+html:root[data-theme] body[data-jinsul-ui] .upload-grid[data-jinsul-columns="2"] :where(.upload-title){font-weight:600!important;font-size:14px!important;margin:0!important}
+html:root[data-theme] body[data-jinsul-ui] .upload-grid[data-jinsul-columns="2"] :where(.upload-desc){font-size:13px!important;margin:0!important;flex:1}
+html:root[data-theme] body[data-jinsul-ui] .upload-grid[data-jinsul-columns="2"] :where(.upload-drop){margin:0!important;padding:12px!important;border:1px solid var(--j-line)!important;background:var(--j-panel)!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell{background:var(--j-panel)!important;border-bottom:1px solid var(--j-line)!important;min-height:72px!important;padding:14px 32px!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-home{border:0!important;padding:0!important;background:transparent!important;font-size:14px!important;gap:12px!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-logo-symbol{position:relative;display:block;width:46px;height:31px;overflow:hidden;flex:none}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-logo-symbol img{position:absolute;left:-23px;top:0;display:block!important;width:98px!important;max-width:none!important;height:61px!important;max-height:none!important;object-fit:fill!important;background:transparent!important;border-radius:0!important;filter:none!important;margin:0!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell :where(button,select,a:not(.jinsul-home)){background:transparent!important;border-color:var(--j-line)!important;min-height:36px!important;font-size:12px!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-user-name{font-size:12px;color:var(--j-muted);padding:0 6px}
+html:root[data-theme] body[data-jinsul-ui] :where(.section-head,.upload-head,.paste-head){align-items:center;gap:12px}
+@media(max-width:800px){html:root[data-theme] body[data-jinsul-ui]>:where(.wrap,.page,.container,.shell){padding:22px 16px 36px!important}html:root[data-theme] body[data-jinsul-ui]>header:has(h1){width:calc(100% - 32px)!important;margin:24px auto 0!important;padding:0 0 20px!important}html:root[data-theme] body[data-jinsul-ui] .upload-grid[data-jinsul-columns="2"]{grid-template-columns:minmax(0,1fr)!important}html:root[data-theme] body[data-jinsul-ui] .jinsul-header-actions{position:static;margin-top:16px}html:root[data-theme] body[data-jinsul-ui] .jinsul-page-header:has(.jinsul-header-actions){padding-right:0!important}html:root[data-theme] body[data-jinsul-ui] #jinsul-shell{padding:14px 16px!important}html:root[data-theme] body[data-jinsul-ui] :where(.hero,.brand-header,.brandbar,.jinsul-hero,.header,.head){padding:0 0 20px!important}}
+@media print{html:root[data-theme] body[data-jinsul-ui] header img[src*="진설로고"]{display:block!important;width:120px!important;background:transparent!important}.jinsul-header-actions{display:none!important}}
+html:root[data-theme] body[data-jinsul-ui]>:where(.wrap,.page,.container,.shell){width:100%!important;margin-left:auto!important;margin-right:auto!important}
+html:root[data-theme] body[data-jinsul-ui] :where(header:has(h1),.jinsul-page-header)::before,html:root[data-theme] body[data-jinsul-ui] :where(header:has(h1),.jinsul-page-header)::after{display:none!important;content:none!important}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-page-header img{display:none!important}
+@media print{html:root[data-theme] body[data-jinsul-ui] .jinsul-page-header img{display:block!important;width:120px!important;background:transparent!important}}
