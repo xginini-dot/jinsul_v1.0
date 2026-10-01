@@ -1,0 +1,4 @@
+// Imported module also initializes the shared theme.
+import {api,identity} from './portal.js';
+try{const user=await identity();if(user?.mustChange)document.querySelector('#notice').textContent='임시 비밀번호를 변경해야 업무를 이용할 수 있습니다. 새 비밀번호는 12자 이상입니다.';}catch(error){document.querySelector('#message').textContent=error.message;}
+document.querySelector('#password-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.target.querySelector('button');const password=document.querySelector('#password').value;if(password!==document.querySelector('#confirm').value){document.querySelector('#message').textContent='새 비밀번호가 일치하지 않습니다.';return;}button.disabled=true;try{await api('/api/password',{current:document.querySelector('#current').value,password});location.href='/login.html';}catch(error){document.querySelector('#message').textContent=error.message;}finally{button.disabled=false;}});
