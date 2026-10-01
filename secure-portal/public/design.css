@@ -160,3 +160,14 @@ html:root[data-theme] body[data-jinsul-ui] span[style*="--c-conv"]{color:var(--j
 html:root[data-theme] body[data-jinsul-ui] span[style*="--c-90"]{color:var(--j-brand)!important}
 html:root[data-theme] body[data-jinsul-ui]{--j-gold:var(--j-brand)!important;--j-gold2:var(--j-brand)!important}
 @media(max-width:600px){html:root[data-theme] body[data-jinsul-ui] :where(.paste-actions button,.actions button,.btn-row button){white-space:normal!important;overflow-wrap:anywhere;word-break:keep-all;min-width:0!important;flex-shrink:1}}
+/* Keep legacy form labels and utility surfaces readable in both themes. */
+html:root[data-theme] body[data-jinsul-ui] :where(label,.fileCount,.brandText,.inputUnit,.mini,.miniSub){color:var(--j-muted)!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.sidebarHeader,.section,.statGrid,.chip){background:var(--j-panel)!important;color:var(--j-ink)!important;border-color:var(--j-line)!important}
+html:root[data-theme] body[data-jinsul-ui] .btn{color:var(--j-ink)!important;background:var(--j-panel)!important}
+html:root[data-theme] body[data-jinsul-ui] .btn.primary{color:var(--j-panel)!important;background:var(--j-brand)!important}
+html:root[data-theme=dark] body[data-jinsul-ui] :where([style*="color:#666"],[style*="color: #666"]){color:var(--j-muted)!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.panel.upload p,.miniCharts p){color:var(--j-muted)!important}
+html:root[data-theme] body[data-jinsul-ui] .summary b{color:var(--j-ink)!important}
+html:root[data-theme=dark] body[data-jinsul-ui]:has(#files):has(#drop) td{background:var(--j-panel)!important;color:var(--j-ink)!important}
+html:root[data-theme] body[data-jinsul-ui] .head:has(h1){display:block!important;width:100%!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.summary,.miniCharts>p,.card>p){color:var(--j-muted)!important}
