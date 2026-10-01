@@ -1323,9 +1323,9 @@ margin-top:0;
 <div class="fileInner">
 <div class="fileGuide">
 <strong>엑셀 파일을 선택하거나 드래그하세요</strong>
-<span>.xls, .xlsx 파일만 업로드 가능합니다.</span>
+<span>.xls, .xlsx, .csv 파일을 여러 개 함께 선택할 수 있습니다.</span>
 </div>
-<input id="file" type="file" accept=".xls,.xlsx,.csv"/>
+<input id="file" type="file" accept=".xls,.xlsx,.csv" multiple/>
 </div>
 </div>
 <div class="hint">
@@ -1635,12 +1635,26 @@ if(help) help.textContent=mode==='manual'?'* 직접 설정: 매출 = 총투여�
 }
 
 async function runFile() {
-const f = document.getElementById('file').files[0];
-if (!f) {
+const files = Array.from(document.getElementById('file').files);
+if (!files.length) {
 setStatus('파일을 먼저 선택해주세요.', true);
 return;
 }
-setStatus('파일을 읽는 중입니다...');
+const columns = [
+['차트번호', ['차트번호', '차트']],
+['성명', ['수진자명', '성명', '환자명']],
+['주민등록번호', ['주민등록번호', '주민번호', '주민등록']],
+['내원일', ['내원일', '내원일자', '진료일', '진료일자', '조회일', '처방일자', '처방일']],
+['총투여량', ['총투여량', '총투여', '투여량합계', '투여량']],
+['금액', ['금액', '매출', '수납액', '진료비', '총금액']],
+['단가', ['단가', '수가', '처방단가']],
+['주치의', ['주치의', '진료의', '담당의', '의사명', '진료실', '진료실명', '진료실번호']]
+];
+const merged = [columns.map(c => c[0])];
+const formats = new Set();
+try {
+for (const [fileIndex, f] of files.entries()) {
+setStatus(`파일을 읽는 중입니다... (${fileIndex + 1}/${files.length})`);
 const data = await f.arrayBuffer();
 const wb = XLSX.read(data, {
 type: 'array',
@@ -1672,16 +1686,28 @@ score
 };
 }
 if (!best || best.score < 6) {
-setStatus('통계 산정에 필요한 컬럼을 찾지 못했습니다. 차트번호/성명/주민번호, 날짜, 총투여량 컬럼을 확인해주세요.', true);
-return;
+throw new Error(`${f.name}: 필수 컬럼을 찾지 못했습니다. 환자 식별정보, 날짜, 총투여량 컬럼을 확인해주세요.`);
 }
-compute(best.rows, best.sheetName);
+const headerIndex = findHeader(best.rows);
+formats.add(detectFormat(best.rows[headerIndex]));
+const indexes = columns.map(c => idx(best.rows[headerIndex], c[1]));
+if (indexes[3] < 0 || indexes[4] < 0 || indexes.slice(0, 3).every(i => i < 0)) {
+throw new Error(`${f.name}: 환자 식별정보, 날짜, 총투여량 컬럼을 확인해주세요.`);
 }
-function compute(rows, sheetName='') {
+for (const row of best.rows.slice(headerIndex + 1)) {
+merged.push(indexes.map(i => i < 0 ? null : row[i]));
+}
+}
+compute(merged, `${files.length}개 파일 통합`, Array.from(formats).join('·'));
+} catch (error) {
+setStatus(error.message || '파일을 읽지 못했습니다. 파일 형식을 확인해주세요.', true);
+}
+}
+function compute(rows, sheetName='', sourceFormat='') {
 try {
 const hrow = findHeader(rows);
 const headers = rows[hrow] || [];
-const source = detectFormat(headers);
+const source = sourceFormat || detectFormat(headers);
 const ci = idx(headers, ['차트번호', '차트']);
 const ni = idx(headers, ['수진자명', '성명', '환자명']);
 const ri = idx(headers, ['주민등록번호', '주민번호', '주민등록']);
