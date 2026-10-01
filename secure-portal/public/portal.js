@@ -6,7 +6,10 @@ if(document.querySelector('#cards')){
  try{
   const user=await identity();if(user){
    document.querySelector('#admin').hidden=user.role!=='admin';
-   const {apps}=await api('/api/catalog');let group='전체';const storageKey='jinsul-favorites:'+user.id;
+   const {apps,categories}=await api('/api/catalog');let group='전체';const storageKey='jinsul-favorites:'+user.id;
+   const nav=document.querySelector('#navigation');nav.querySelectorAll('[data-group]:not([data-group="전체"]):not([data-group="즐겨찾기"])').forEach(b=>b.remove());
+   for(const c of categories){if(!apps.some(a=>a.category===c.id))continue;const b=document.createElement('button');b.dataset.group=c.name;b.textContent=c.name;nav.insertBefore(b,document.querySelector('#admin'));}
+   for(const app of apps)app.group=app.categoryName;
    let favorites;try{favorites=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(favorites))favorites=[];}catch{favorites=[];}
    for(const button of document.querySelectorAll('[data-group]'))if(!['전체','즐겨찾기'].includes(button.dataset.group)&&!apps.some(a=>a.group===button.dataset.group))button.hidden=true;
    function render(){const q=document.querySelector('#search').value.trim().toLowerCase();const visible=apps.filter(a=>(group==='전체'||group==='즐겨찾기'&&favorites.includes(a.file)||a.group===group)&&`${a.title} ${a.description} ${a.group}`.toLowerCase().includes(q));const cards=document.querySelector('#cards');cards.replaceChildren();document.querySelector('#count').textContent=`${visible.length}개 업무`;document.querySelector('#heading').textContent=group==='전체'?'전체 업무':group;

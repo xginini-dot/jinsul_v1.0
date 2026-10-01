@@ -1,4 +1,5 @@
 import { apps, groups } from './catalog.mjs';
+import {readMenu,userMenu,validateMenu} from './menu.mjs';
 const encoder = new TextEncoder();
 const json = (data,status=200,headers={}) => new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers}});
 const fail = (message,status=400) => { throw Object.assign(new Error(message),{status}); };
@@ -6,7 +7,7 @@ const hex = bytes => Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart
 export const randomToken = () => hex(crypto.getRandomValues(new Uint8Array(32)));
 export const digest = async text => hex(await crypto.subtle.digest('SHA-256',encoder.encode(text)));
 export function equal(a,b) { if(typeof a!=='string'||typeof b!=='string'||a.length!==b.length)return false; let diff=0; for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i); return diff===0; }
-export function validPassword(password) { return typeof password==='string'&&password.length>=12&&password.length<=128; }
+export function validPassword(password) { return typeof password==='string'&&password.length>0; }
 export async function passwordHash(password,salt,pepper) {
  const key = await crypto.subtle.importKey('raw',encoder.encode(pepper),{name:'HMAC',hash:'SHA-256'},false,['sign']);
  const material = await crypto.subtle.sign('HMAC',key,encoder.encode(password));
@@ -17,9 +18,9 @@ const now = () => Math.floor(Date.now()/1000);
 const cookie = token => `__Host-jinsul=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800`;
 const clearCookie = '__Host-jinsul=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0';
 const publicUser = u => ({id:u.id,username:u.username,name:u.name,role:u.role,permissions:JSON.parse(u.permissions),active:!!u.active,mustChange:!!u.must_change});
-async function body(request) {
- if(Number(request.headers.get('Content-Length')||0)>8192)fail('요청이 너무 큽니다.',413);
- const text=await request.text(); if(text.length>8192)fail('요청이 너무 큽니다.',413);
+async function body(request,max=8192) {
+ if(Number(request.headers.get('Content-Length')||0)>max)fail('요청이 너무 큽니다.',413);
+ const text=await request.text(); if(text.length>max)fail('요청이 너무 큽니다.',413);
  try { const data=JSON.parse(text); if(!data||Array.isArray(data)||typeof data!=='object')fail('잘못된 요청'); return data; } catch { fail('잘못된 요청입니다.'); }
 }
 async function audit(env,actor,action,target='') { await env.DB.prepare('INSERT INTO audit(actor,action,target,created_at) VALUES(?,?,?,?)').bind(actor,action,target,now()).run(); }
@@ -47,7 +48,7 @@ async function api(request,env,path,user) {
   await limit(env,'bootstrap:'+await digest(request.headers.get('CF-Connecting-IP')||'local'),5);
   const data=await body(request);
   if(!env.BOOTSTRAP_TOKEN||!equal(await digest(data.token||''),await digest(env.BOOTSTRAP_TOKEN)))fail('초기 설정 키를 확인해 주세요.',403);
-  if(!validPassword(data.password))fail('비밀번호는 12~128자입니다.');
+  if(!validPassword(data.password))fail('비밀번호를 입력해 주세요.');
   validateAccount({...data,role:'admin',permissions:groups});
   const salt=randomToken(),hash=await passwordHash(data.password,salt,env.PASSWORD_PEPPER);
   const result=await env.DB.prepare("INSERT INTO users(id,username,name,role,permissions,password_hash,salt,must_change,created_at) SELECT ?,?,?,'admin',?,?,?,0,? WHERE NOT EXISTS(SELECT 1 FROM users)").bind(crypto.randomUUID(),data.username.toLowerCase(),data.name.trim(),JSON.stringify(groups),hash,salt,now()).run();
@@ -59,7 +60,7 @@ async function api(request,env,path,user) {
   const data=await body(request),username=String(data.username||'').toLowerCase();
   await limit(env,'ip:'+await digest(request.headers.get('CF-Connecting-IP')||'local'),30);
   await limit(env,'user:'+await digest(username),10);
-  if(typeof data.password!=='string'||data.password.length>128)fail('아이디 또는 비밀번호를 확인해 주세요.',401);
+  if(typeof data.password!=='string'||!data.password.length)fail('아이디 또는 비밀번호를 확인해 주세요.',401);
   const found=await env.DB.prepare('SELECT * FROM users WHERE username=?').bind(username).first();
   const hash=await passwordHash(data.password,found?.salt||'dummy-account-salt',env.PASSWORD_PEPPER);
   if(!found||!found.active||!equal(hash,found.password_hash)) { await audit(env,null,'로그인 실패',username.slice(0,40)); fail('아이디 또는 비밀번호를 확인해 주세요.',401); }
@@ -77,8 +78,8 @@ async function api(request,env,path,user) {
  if(request.method==='POST'&&path==='/api/password') {
   const data=await body(request);
   await limit(env,'password:'+user.id,10);
-  if(typeof data.current!=='string'||data.current.length>128||!equal(await passwordHash(data.current,user.salt,env.PASSWORD_PEPPER),user.password_hash))fail('현재 비밀번호를 확인해 주세요.',403);
-  if(!validPassword(data.password)||data.password===data.current)fail('기존과 다른 12~128자 비밀번호를 입력해 주세요.');
+  if(typeof data.current!=='string'||!data.current.length||!equal(await passwordHash(data.current,user.salt,env.PASSWORD_PEPPER),user.password_hash))fail('현재 비밀번호를 확인해 주세요.',403);
+  if(!validPassword(data.password)||data.password===data.current)fail('기존과 다른 비밀번호를 입력해 주세요.');
   const salt=randomToken();
   await env.DB.batch([
    env.DB.prepare('UPDATE users SET password_hash=?,salt=?,must_change=0,version=version+1 WHERE id=?').bind(await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,user.id),
@@ -88,8 +89,17 @@ async function api(request,env,path,user) {
   return json({ok:true},200,{'Set-Cookie':clearCookie});
  }
  if(user.must_change)fail('먼저 임시 비밀번호를 변경해 주세요.',403);
- if(path==='/api/catalog'&&request.method==='GET')return json({apps:apps.filter(a=>user.role==='admin'||JSON.parse(user.permissions).includes(a.group))});
+ if(path==='/api/catalog'&&request.method==='GET')return json(await userMenu(env,user));
  if(user.role!=='admin')fail('관리자 권한이 필요합니다.',403);
+ if(path==='/api/menu'&&request.method==='GET')return json(await readMenu(env));
+ if(path==='/api/menu'&&request.method==='POST'){
+  const data=await body(request,262144);
+  let menu;try{menu=validateMenu(data.menu);}catch(error){fail(error.message);}
+  if(!Number.isInteger(data.revision)||data.revision<0)fail('다시 불러온 뒤 저장해 주세요.');
+  const result=await env.DB.prepare('INSERT INTO portal_menu(id,value,revision) SELECT 1,?,1 WHERE ?=0 OR EXISTS(SELECT 1 FROM portal_menu WHERE id=1 AND revision=?) ON CONFLICT(id) DO UPDATE SET value=excluded.value,revision=portal_menu.revision+1 WHERE portal_menu.revision=?').bind(JSON.stringify(menu),data.revision,data.revision,data.revision).run();
+  if(!result.meta.changes)fail('다른 관리자가 먼저 변경했습니다. 다시 불러온 뒤 수정해 주세요.',409);
+  await audit(env,user.id,'업무·카테고리 변경');return json({ok:true,revision:data.revision+1});
+ }
  if(path==='/api/users'&&request.method==='GET') {
   const {results}=await env.DB.prepare('SELECT id,username,name,role,permissions,active,must_change FROM users ORDER BY created_at DESC').all();
   return json({users:results.map(publicUser)});
@@ -97,7 +107,7 @@ async function api(request,env,path,user) {
  if(path==='/api/audit'&&request.method==='GET')return json(await env.DB.prepare('SELECT a.action,a.target,a.created_at,COALESCE(u.name,\'시스템\') AS actor FROM audit a LEFT JOIN users u ON u.id=a.actor ORDER BY a.id DESC LIMIT 100').all());
  if(path==='/api/users'&&request.method==='POST') {
   const data=await body(request); validateAccount(data);
-  if(!validPassword(data.password))fail('임시 비밀번호는 12~128자입니다.');
+  if(!validPassword(data.password))fail('임시 비밀번호를 입력해 주세요.');
   const salt=randomToken();
   try { await env.DB.prepare('INSERT INTO users(id,username,name,role,permissions,password_hash,salt,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),data.username.toLowerCase(),data.name.trim(),data.role,JSON.stringify([...new Set(data.permissions)]),await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,now()).run(); }
   catch(error) { if(String(error).includes('UNIQUE'))fail('이미 사용 중인 아이디입니다.',409); throw error; }
@@ -110,7 +120,7 @@ async function api(request,env,path,user) {
   const data=await body(request);
   if(match[2]) {
    if(target.id===user.id)fail('본인 비밀번호는 비밀번호 변경 메뉴를 이용해 주세요.');
-   if(!validPassword(data.password))fail('임시 비밀번호는 12~128자입니다.');
+   if(!validPassword(data.password))fail('임시 비밀번호를 입력해 주세요.');
    const salt=randomToken();
    await env.DB.batch([env.DB.prepare('UPDATE users SET password_hash=?,salt=?,must_change=1,version=version+1 WHERE id=?').bind(await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,target.id),env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(target.id)]);
    await audit(env,user.id,'비밀번호 초기화',target.username);
@@ -148,7 +158,7 @@ export async function handle(request,env) {
  if(app&&user.role!=='admin'&&!JSON.parse(user.permissions).includes(app.group))return json({error:'해당 업무의 접근 권한이 없습니다.'},403);
  const support=['/','/index.html','/account.html','/account.js','/admin.html','/admin.js','/portal.js','/portal.css','/shell.js','/shell.css','/design.css','/theme.js','/xlsx.full.min.js','/hira-prices.json','/hira-codes.json','/catalog.json','/build-info.json','/진설로고.png'];
  if(!app&&!support.includes(path))return json({error:'페이지를 찾을 수 없습니다.'},404);
- if(path==='/catalog.json')return json({apps:apps.filter(a=>user.role==='admin'||JSON.parse(user.permissions).includes(a.group))});
+ if(path==='/catalog.json')return json(await userMenu(env,user));
  if(path==='/'){const assetURL=new URL(request.url);assetURL.pathname='/index.html';return env.ASSETS.fetch(new Request(assetURL,request));}
  return env.ASSETS.fetch(request);
 }
