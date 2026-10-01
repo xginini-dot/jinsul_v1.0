@@ -51,3 +51,55 @@ html:root[data-theme] body[data-jinsul-ui]:has(#setBoard) #setBoard,html:root[da
 html:root[data-theme] body[data-jinsul-ui]:has(#setBoard)>.container{width:100%!important;max-width:1400px!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;gap:20px!important;box-sizing:border-box!important}
 html:root[data-theme] body[data-jinsul-ui]:has(#setBoard)>.container>*{min-width:0!important;overflow-x:auto}
 @media(max-width:1000px){html:root[data-theme] body[data-jinsul-ui]:has(#setBoard)>.container{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Shared visual rhythm and intrinsic sizing; keep all original controls and handlers. */
+html:root{--j-bg:#f6f4f0;--j-soft:#f1eee8;--j-ink:#292d34;--j-muted:#646971;--j-line:#e2ddd4;--j-brand:#79684d;--j-brand-soft:#eee8dc}
+html[data-theme=dark]{--j-bg:#15191e;--j-soft:#29313a;--j-ink:#eef1f5;--j-muted:#bac1cb;--j-line:#414953;--j-brand:#ddc59c;--j-brand-soft:#37332c}
+html:root[data-theme] body[data-jinsul-ui] *,html:root[data-theme] body[data-jinsul-ui] *::before,html:root[data-theme] body[data-jinsul-ui] *::after{box-sizing:border-box}
+html:root[data-theme] body[data-jinsul-ui] :where(.wrap,.page,.container,.shell){width:100%;min-width:0}
+html:root[data-theme] body[data-jinsul-ui] :where(.card,.panel,.upload-card,.uploadCard,.upload-box,.paste-ledger,.brand-copy,.guide-item,.kpi,.stat-card,.grid>*,.upload-grid>*,.guide>*){min-width:0}
+html:root[data-theme] body[data-jinsul-ui] :where(p,.hint,.note,.sub,.subtitle,.description,.guide-item){word-break:keep-all;overflow-wrap:anywhere}
+html:root[data-theme] body[data-jinsul-ui] :where(button,.btn,.btn2,.util-btn,.file-btn,.paste-btn,.toolbar-btn){height:auto!important;line-height:1.45!important;white-space:nowrap!important;flex-shrink:0;font-weight:600!important;max-width:100%}
+html:root[data-theme] body[data-jinsul-ui] :where(input,select,textarea){max-width:100%;min-width:0;line-height:1.5}
+html:root[data-theme] body[data-jinsul-ui] textarea{height:auto;min-height:96px;padding:12px!important;resize:vertical}
+html:root[data-theme] body[data-jinsul-ui] :where(.paste-actions,.actions,.btn-row,.button-row,.buttons,.upload-head,.paste-head,.uploadHead){flex-wrap:wrap;gap:8px!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.paste-info){flex:1 1 100%;white-space:normal!important;overflow:visible!important;word-break:keep-all;overflow-wrap:anywhere;margin:4px 0 0!important;font-size:12px!important;line-height:1.6!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.paste-date){flex-wrap:wrap;gap:6px;white-space:nowrap}
+html:root[data-theme] body[data-jinsul-ui] :where(.paste-date input){width:148px;font-size:13px!important;font-weight:500}
+html:root[data-theme] body[data-jinsul-ui] :where(.dropzone){min-height:164px;padding:24px 18px!important;background:var(--j-panel)!important;border-color:#c9bdab!important;display:flex;flex-direction:column;justify-content:center;word-break:keep-all;overflow-wrap:anywhere}
+html:root[data-theme] body[data-jinsul-ui] :where(.dropzone h3,.upload-head h3){font-weight:600!important}
+html:root[data-theme] body[data-jinsul-ui] :where(img.logo,.brandLogo,.logo-box img,.brand-left img,.brand-header img,.brandbar img,.jinsul-hero img){width:144px!important;max-width:100%!important;height:auto!important;max-height:72px!important;object-fit:contain!important;filter:none!important;border-radius:8px}
+html:root[data-theme] body[data-jinsul-ui] :where(.brand-mark,.logo-box){min-width:0;max-width:160px}
+html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .brand-copy{grid-template-columns:160px minmax(0,1fr)!important;column-gap:24px!important}
+html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) :where(.upload-grid,.guide){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .upload-grid{background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important;gap:16px!important}
+html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .upload-card{background:var(--j-panel)!important;padding:20px!important}
+html:root[data-theme] body[data-jinsul-ui] .top-actions:has(.jinsul-legacy-navigation){position:static!important;padding:0!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.table-wrap,.tablebox,.table-wrapper,.tableWrap){max-width:100%;overflow-x:auto!important}
+@media(max-width:1200px){html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .upload-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .upload-card:last-child{grid-column:1/-1}}
+@media(max-width:800px){html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) :where(.upload-grid,.guide){grid-template-columns:minmax(0,1fr)!important}html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .brand-copy{display:block!important}html:root[data-theme] body[data-jinsul-ui]:has(#pasteA) .brand-mark{margin-bottom:16px!important}html:root[data-theme] body[data-jinsul-ui] :where(.paste-head){align-items:flex-start;flex-direction:column}html:root[data-theme] body[data-jinsul-ui] :where(.paste-actions button){padding:8px 12px!important}}
+
+/* Original pages may assign button width globally; isolate the shared menu. */
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell{display:flex!important;width:100%!important;max-width:none!important;flex:0 0 auto!important;align-self:stretch!important;text-align:left!important;margin:0!important;height:auto!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-tools{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;flex:0 1 auto!important;width:auto!important;gap:8px!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell :where(button,a,select){width:auto!important;flex:0 0 auto!important;margin:0!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-home{display:flex!important;white-space:nowrap!important;flex-direction:row!important}
+html:root[data-theme] body[data-jinsul-ui] #jinsul-shell img{width:64px!important;height:32px!important;max-height:32px!important;object-fit:contain!important}
+html:root[data-theme] body[data-jinsul-ui] :where(header:has(h1)){background:var(--j-panel)!important;color:var(--j-ink)!important;border:1px solid var(--j-line)!important;border-radius:var(--j-radius)!important;padding:22px 26px!important;text-align:left!important;box-shadow:var(--j-shadow)!important;margin-bottom:24px!important}
+html:root[data-theme] body[data-jinsul-ui]>header:has(h1){width:calc(100% - 64px)!important;max-width:1416px!important;margin:28px auto 24px!important}
+html:root[data-theme] body[data-jinsul-ui] header:has(h1) :where(img){max-width:144px!important;max-height:72px!important;object-fit:contain!important;display:block;margin:0 0 12px!important;filter:none!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.hero-badge,.heroWatermark,.company){display:none!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.logo-box){width:160px!important;height:auto!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.topTitle){min-width:0!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere}
+html:root[data-theme] body[data-jinsul-ui]:has(#setBoard)>header{margin:24px auto!important;padding:20px!important;width:calc(100% - 56px)!important;max-width:1344px!important;text-align:left!important;background:var(--j-panel)!important;border:1px solid var(--j-line)!important;border-radius:14px!important}
+html:root[data-theme] body[data-jinsul-ui]:has(#setBoard)>header img{height:58px!important;max-width:144px!important;filter:none!important;margin:0!important}
+@media(max-width:800px){html:root[data-theme] body[data-jinsul-ui]>header:has(h1){width:calc(100% - 28px)!important;margin:18px auto!important;padding:18px!important}html:root[data-theme] body[data-jinsul-ui] #jinsul-shell .jinsul-tools{justify-content:flex-start!important}html:root[data-theme] body[data-jinsul-ui] #jinsul-shell select{max-width:220px!important}}
+html:root[data-theme] body[data-jinsul-ui] :where(.upload-button,.upload-btn,.file-select-btn){display:inline-flex;align-items:center;justify-content:center;min-height:38px;height:auto!important;padding:9px 15px!important;white-space:nowrap!important;background:var(--j-brand)!important;color:var(--j-panel)!important;border:1px solid var(--j-brand)!important;border-radius:8px!important;box-shadow:none!important;font-size:13px!important;font-weight:600!important;line-height:1.45!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.jinsul-top-actions,.top-actions,.jinsulFloatingActions,.jinsul-floating-actions,.floating-actions):not(:has(button:not(.jinsul-legacy-navigation))){display:none!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.hero,.brand-header,.brandbar,.jinsul-hero,.header,.head)::after{display:none!important}
+html:root[data-theme] body[data-jinsul-ui] .jinsul-tool-heading{margin:12px 0 6px!important}
+html:root[data-theme] body[data-jinsul-ui] :where(img.logo,.brand-logo,.brandLogo,.logo-box img,.brand-left img,header img,#jinsul-shell img){background:#f0ede5!important;opacity:1!important;mix-blend-mode:normal!important;border-radius:6px!important}
+html:root[data-theme] body[data-jinsul-ui] :where(input,textarea)::placeholder{color:var(--j-muted)!important;opacity:.85!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.status.ok,.kpi.ok .value,.diff-zero){color:var(--j-positive)!important}
+html:root[data-theme] body[data-jinsul-ui] :where(.status.err,.kpi.error .value,.diff-bad){color:var(--j-danger)!important}
+html:root[data-theme] body[data-jinsul-ui] .guide-route em{color:var(--j-brand)!important}

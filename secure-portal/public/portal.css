@@ -3,3 +3,7 @@
 .content{margin:0 auto}.error:empty{display:none}
 
 :root{--bg:#f5f6f8;--panel:#fff;--ink:#202b3b;--muted:#596779;--line:#dce2e9;--accent:#756347;--soft:#f0f2f5}html[data-theme=dark]{--bg:#111820;--panel:#1b2531;--ink:#eef3fa;--muted:#b0bfd1;--line:#37485b;--accent:#dfc69f;--soft:#253241}.brand{letter-spacing:1.2px}.card{box-shadow:0 4px 18px #18283b07}.hero{padding:16px 0}.search{margin-bottom:16px}.content{padding-top:24px}.auth .panel{box-shadow:0 8px 32px #18283b07}
+
+/* The portal and every tool share the JINSUL logo palette. */
+:root{--bg:#f6f4f0;--ink:#292d34;--muted:#646971;--line:#e2ddd4;--accent:#79684d;--soft:#f1eee8}html[data-theme=dark]{--bg:#15191e;--panel:#20262d;--ink:#eef1f5;--muted:#bac1cb;--line:#414953;--accent:#ddc59c;--soft:#29313a}.brand img{width:120px;height:48px;object-fit:contain;border-radius:6px}.brand{flex-wrap:wrap;font-size:18px;letter-spacing:1px}.card h2{word-break:keep-all;overflow-wrap:anywhere;line-height:1.5}.card p{word-break:keep-all;overflow-wrap:anywhere}.layout>*{min-width:0}button,.button{white-space:nowrap;height:auto;line-height:1.5}input,select{min-width:0;max-width:100%}@media(max-width:420px){.cards{grid-template-columns:minmax(0,1fr)}.auth{padding:16px}.auth .panel{padding:22px}}
+.brand img{background:#f0ede5;opacity:1;mix-blend-mode:normal}
