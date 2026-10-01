@@ -33,8 +33,8 @@ async function session(request,env) {
  const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-jinsul=([a-f0-9]{64})(?:;|$)/)?.[1];
  if(!token)return null;
  const hash=await digest(token),time=now();
- const user=await env.DB.prepare('SELECT u.*,s.token_hash FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND s.last_seen>? AND s.version=u.version AND u.active=1').bind(hash,time,time-1800).first();
- if(user)await env.DB.prepare('UPDATE sessions SET last_seen=? WHERE token_hash=?').bind(time,hash).run();
+ const user=await env.DB.prepare('SELECT u.*,s.token_hash,s.last_seen FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND s.last_seen>? AND s.version=u.version AND u.active=1').bind(hash,time,time-1800).first();
+ if(user&&user.last_seen<=time-60)await env.DB.prepare('UPDATE sessions SET last_seen=? WHERE token_hash=?').bind(time,hash).run();
  return user;
 }
 function validateAccount(data) {
@@ -89,6 +89,7 @@ async function api(request,env,path,user) {
   return json({ok:true},200,{'Set-Cookie':clearCookie});
  }
  if(user.must_change)fail('먼저 임시 비밀번호를 변경해 주세요.',403);
+ if(path==='/api/workspace'&&request.method==='GET')return json({user:publicUser(user),...await userMenu(env,user)});
  if(path==='/api/catalog'&&request.method==='GET')return json(await userMenu(env,user));
  if(user.role!=='admin')fail('관리자 권한이 필요합니다.',403);
  if(path==='/api/menu'&&request.method==='GET')return json(await readMenu(env));
@@ -167,7 +168,11 @@ export default {
   let response;
   try { response=await handle(request,env); } catch(error) { response=json({error:error.status?error.message:'처리 중 오류가 발생했습니다. 관리자에게 문의해 주세요.'},error.status||500); }
   const secured=new Response(response.body,response);
-  secured.headers.set('Cache-Control',/^\/fonts\//.test(new URL(request.url).pathname)&&secured.ok?'public, max-age=86400':'no-store');
+  const assetPath=new URL(request.url).pathname;
+  const reusable=/^\/(?:fonts\/|fonts\.css$|진설로고\.png$)/.test(assetPath);
+  const shared=/^\/(?:portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
+  const successful=secured.ok||secured.status===304;
+  secured.headers.set('Cache-Control',successful&&reusable?'public, max-age=86400':successful&&shared?'private, max-age=0, must-revalidate':'no-store');
   secured.headers.set('X-Content-Type-Options','nosniff');
   secured.headers.set('X-Frame-Options','SAMEORIGIN');
   secured.headers.set('Referrer-Policy','same-origin');
