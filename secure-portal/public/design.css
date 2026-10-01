@@ -171,3 +171,12 @@ html:root[data-theme] body[data-jinsul-ui] .summary b{color:var(--j-ink)!importa
 html:root[data-theme=dark] body[data-jinsul-ui]:has(#files):has(#drop) td{background:var(--j-panel)!important;color:var(--j-ink)!important}
 html:root[data-theme] body[data-jinsul-ui] .head:has(h1){display:block!important;width:100%!important}
 html:root[data-theme] body[data-jinsul-ui] :where(.summary,.miniCharts>p,.card>p){color:var(--j-muted)!important}
+
+/* Short native page transitions; never delay navigation or alter tool execution. */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:140ms;animation-timing-function:ease-out}
+#jinsul-shell{view-transition-name:jinsul-navigation}
+::view-transition-old(jinsul-navigation),::view-transition-new(jinsul-navigation){animation:none}
+.jinsul-loading{font:12px/1.5 Paperlogy,sans-serif;color:var(--j-muted,#596779)}
+@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}::view-transition-group(*){animation:none!important}}
+@media print{#jinsul-shell[data-jinsul-pending]{display:none!important}}
