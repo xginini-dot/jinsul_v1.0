@@ -7,6 +7,7 @@ function refineJinsulLayout(){
  const header=heading?.closest('header,.hero,.brand-header,.brandbar,.head,.header');
  if(header){
   header.classList.add('jinsul-page-header');
+  if(header.matches('.card,.panel')&&header.querySelector('input,select,textarea'))header.classList.add('jinsul-workspace-header');
   for(const label of header.querySelectorAll('span,div,p')){
    if(!label.children.length&&/^(JINSUL[ A-Z·-]*|[A-Z ]*STATISTICS SYSTEM|[A-Z ]*REPORT)$/.test(label.textContent.trim()))label.classList.add('jinsul-decorative-label');
   }
@@ -17,6 +18,12 @@ function refineJinsulLayout(){
     const actions=document.createElement('div');actions.className='jinsul-header-actions no-print';actions.append(button);header.append(actions);toolbar.classList.add('jinsul-empty-toolbar');
    }
   }
+ }
+ for(const chip of document.querySelectorAll('.brand-chip')){
+  if(/^JINSUL[ A-Z·-]*$/.test(chip.textContent.trim())&&!chip.querySelector('input,select,button,a'))chip.classList.add('jinsul-decorative-label');
+ }
+ for(const row of document.querySelectorAll('.topbar')){
+  if(!row.querySelector('input,select,textarea,a:not(.jinsul-legacy-navigation),button:not(.jinsul-legacy-navigation)')&&row.querySelector('.jinsul-decorative-label'))row.classList.add('jinsul-empty-toolbar');
  }
  for(const grid of document.querySelectorAll('.upload-grid')){
   if([...grid.children].filter(e=>e.classList.contains('upload-card')).length===4)grid.dataset.jinsulColumns='2';
