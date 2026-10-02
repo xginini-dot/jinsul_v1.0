@@ -198,8 +198,9 @@ html:root[data-theme] body[data-jinsul-education] .clinic-guide p{font-size:13px
 html:root[data-theme] body[data-jinsul-education] .clinic-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:6px;font-size:11px!important;line-height:1.4;font-weight:600;color:var(--j-muted);background:var(--j-soft);border:1px solid var(--j-line)}
 html:root[data-theme] body[data-jinsul-education] .clinic-badge.required{color:var(--edu-required)!important;background:var(--edu-required-bg)!important;border-color:var(--edu-required)!important}
 html:root[data-theme] body[data-jinsul-education] .clinic-badge.conditional{color:var(--edu-condition)!important;background:var(--edu-condition-bg)!important;border-color:var(--edu-condition)!important}
-html:root[data-theme] body[data-jinsul-education] .card.clinic-required{border-left:4px solid var(--edu-required)!important;background:var(--edu-required-bg)!important;box-shadow:none!important}
-html:root[data-theme] body[data-jinsul-education] .card.clinic-conditional{border-left:4px solid var(--edu-condition)!important;box-shadow:none!important}
 html:root[data-theme] body[data-jinsul-education] .clinic-note{margin:12px 0 16px!important;font-size:12px!important;font-weight:400!important;line-height:1.7!important;color:var(--j-muted)!important}
 html:root[data-theme] body[data-jinsul-education] .badges{display:flex;flex-wrap:wrap;gap:6px}
 @media(max-width:700px){html:root[data-theme] body[data-jinsul-education] .clinic-guide{grid-template-columns:1fr;padding:18px}.clinic-sources{grid-column:auto}}
+
+html:root[data-theme] body[data-jinsul-education] .clinic-required-marker{display:table;background:#236e64!important;color:#fff!important;border:0!important;border-radius:5px;padding:7px 12px;margin:0 0 0 21px;font-size:12px!important;font-weight:600;line-height:1.4}
+html:root[data-theme] body[data-jinsul-education] .clinic-badge.required{background:#236e64!important;color:#fff!important;border-color:#236e64!important}
