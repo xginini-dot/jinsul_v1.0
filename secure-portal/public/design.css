@@ -182,3 +182,24 @@ html:root[data-theme] body[data-jinsul-ui] :where(.summary,.miniCharts>p,.card>p
 @media(prefers-reduced-motion:reduce){:where(button,a.button,input,select,textarea){transition:none!important}}
 html:root[data-theme] body[data-jinsul-ui] :where(button,input,select,textarea){box-shadow:none!important}
 html:root[data-theme] body[data-jinsul-ui] button:hover{transform:none!important}
+
+/* Education: compact identity and explicit clinic applicability. */
+html:root[data-theme] body[data-jinsul-education] .edu-topbar{display:flex!important;align-items:center;justify-content:space-between;background:transparent!important;box-shadow:none!important;border:0!important;padding:0!important;margin:0 0 24px!important}
+html:root[data-theme] body[data-jinsul-education] .edu-brand{display:inline-flex;align-items:center;gap:12px;color:var(--j-brand);font-size:18px;font-weight:600;letter-spacing:1.4px;text-decoration:none}
+html:root[data-theme] body[data-jinsul-education] .edu-brand small{display:block;font-size:10px;letter-spacing:1.6px;font-weight:500;color:var(--j-muted)}
+html:root[data-theme] body[data-jinsul-education] .edu-symbol{display:block;position:relative;width:46px;height:31px;overflow:hidden;flex:none}
+html:root[data-theme] body[data-jinsul-ui][data-jinsul-education] #edu-brand .edu-symbol img{display:block!important;position:absolute!important;left:-23px!important;top:0!important;width:98px!important;height:61px!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;filter:none!important;box-shadow:none!important;object-fit:fill!important}
+html:root[data-theme] body[data-jinsul-education]{--edu-required:#236e64;--edu-required-bg:#edf6f3;--edu-condition:#865c24;--edu-condition-bg:#f8f2e7}
+html:root[data-theme=dark] body[data-jinsul-education]{--edu-required:#8bd4c5;--edu-required-bg:#203a35;--edu-condition:#e4c18a;--edu-condition-bg:#3a3123}
+html:root[data-theme] body[data-jinsul-education] .clinic-guide{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px 28px;margin:20px 0;padding:20px 24px;border:1px solid var(--j-line);border-radius:12px;background:var(--j-panel);box-shadow:none}
+html:root[data-theme] body[data-jinsul-education] .clinic-guide h2{font-size:17px!important;font-weight:600!important;margin:0 0 8px!important}
+html:root[data-theme] body[data-jinsul-education] .clinic-guide p{font-size:13px;line-height:1.7;color:var(--j-muted);margin:0 0 12px}
+.clinic-legend{display:flex;gap:8px;flex-wrap:wrap}.clinic-filter{font-size:12px;display:grid;align-content:center;gap:8px}.clinic-sources{grid-column:1/-1;font-size:12px;color:var(--j-muted)}.clinic-sources summary{cursor:pointer}.clinic-sources a{display:inline-block;margin:8px 16px 0 0;text-decoration:underline}
+html:root[data-theme] body[data-jinsul-education] .clinic-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:6px;font-size:11px!important;line-height:1.4;font-weight:600;color:var(--j-muted);background:var(--j-soft);border:1px solid var(--j-line)}
+html:root[data-theme] body[data-jinsul-education] .clinic-badge.required{color:var(--edu-required)!important;background:var(--edu-required-bg)!important;border-color:var(--edu-required)!important}
+html:root[data-theme] body[data-jinsul-education] .clinic-badge.conditional{color:var(--edu-condition)!important;background:var(--edu-condition-bg)!important;border-color:var(--edu-condition)!important}
+html:root[data-theme] body[data-jinsul-education] .card.clinic-required{border-left:4px solid var(--edu-required)!important;background:var(--edu-required-bg)!important;box-shadow:none!important}
+html:root[data-theme] body[data-jinsul-education] .card.clinic-conditional{border-left:4px solid var(--edu-condition)!important;box-shadow:none!important}
+html:root[data-theme] body[data-jinsul-education] .clinic-note{margin:12px 0 16px!important;font-size:12px!important;font-weight:400!important;line-height:1.7!important;color:var(--j-muted)!important}
+html:root[data-theme] body[data-jinsul-education] .badges{display:flex;flex-wrap:wrap;gap:6px}
+@media(max-width:700px){html:root[data-theme] body[data-jinsul-education] .clinic-guide{grid-template-columns:1fr;padding:18px}.clinic-sources{grid-column:auto}}
