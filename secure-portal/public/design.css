@@ -204,3 +204,10 @@ html:root[data-theme] body[data-jinsul-education] .badges{display:flex;flex-wrap
 
 html:root[data-theme] body[data-jinsul-education] .clinic-required-marker{display:table;background:#236e64!important;color:#fff!important;border:0!important;border-radius:5px;padding:7px 12px;margin:0 0 0 21px;font-size:12px!important;font-weight:600;line-height:1.4}
 html:root[data-theme] body[data-jinsul-education] .clinic-badge.required{background:#236e64!important;color:#fff!important;border-color:#236e64!important}
+
+/* Monthly comparison: keep all eight columns within the report width. */
+html:root[data-theme] body[data-jinsul-ui] #compareTable{width:100%!important;min-width:0!important;table-layout:fixed}
+html:root[data-theme] body[data-jinsul-ui] #compareTable :is(th,td){padding:10px 7px!important;font-size:13px!important;white-space:normal!important;overflow-wrap:anywhere;line-height:1.5}
+html:root[data-theme] body[data-jinsul-ui] #compareTable td.left{word-break:keep-all}
+html:root[data-theme] body[data-jinsul-ui] #compareTable .diff-badge{min-width:0!important;max-width:100%;height:auto!important;min-height:28px;box-sizing:border-box;padding:4px 6px!important;white-space:normal!important;overflow-wrap:anywhere}
+html:root[data-theme] body[data-jinsul-ui] #compareTable .split-right{border-right-width:2px!important}
