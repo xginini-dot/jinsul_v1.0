@@ -936,6 +936,18 @@
                 return Number(String(v).replace(/,/g, '').trim()) || 0;
             }
             function excelDateToISO(v) {
+      // Preserve the source calendar day for Excel times and date-shaped values.
+      {
+        if(v instanceof Date && !isNaN(v))return [v.getFullYear(),String(v.getMonth()+1).padStart(2,'0'),String(v.getDate()).padStart(2,'0')].join('-');
+        const text=String(v??'').trim();
+        const parts=text.match(/^(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})(?:$|[T\s일])/);
+        if(parts)return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
+        if(typeof v==='number'||/^\d{5}(?:\.\d+)?$/.test(text)){
+          const serial=Number(v);
+          if(Number.isFinite(serial)&&serial>0&&serial<100000){const d=new Date((Math.floor(serial)-25569)*86400000);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+        }
+      }
+
                 if (v == null || v === '')
                     return '';
                 if (typeof v === 'number' && v > 20000) {

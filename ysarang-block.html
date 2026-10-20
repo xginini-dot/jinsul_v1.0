@@ -493,13 +493,17 @@ html[data-theme="dark"] .cell-strong { color: var(--j-gold) !important; }
 
   function excelSerialDateToJSDate(serial) {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    const ms = serial * 24 * 60 * 60 * 1000;
-    return new Date(excelEpoch.getTime() + ms);
+    const ms = Math.floor(serial) * 24 * 60 * 60 * 1000;
+    const day = new Date(excelEpoch.getTime() + ms);
+    return new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate());
   }
 
   function parseDateFlexible(value) {
     if (!value && value !== 0) return null;
-    if (value instanceof Date) return value;
+    if (value instanceof Date) return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    const compact = String(value).trim().match(/^(20\d{2})(\d{2})(\d{2})$/);
+    if(compact)return new Date(+compact[1],+compact[2]-1,+compact[3]);
+    if(typeof value==="string" && /^\d{5}(?:\.\d+)?$/.test(value.trim()))return excelSerialDateToJSDate(Number(value));
 
     if (typeof value === "number") {
       return excelSerialDateToJSDate(value);
