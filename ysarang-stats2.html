@@ -5661,7 +5661,7 @@ body.jinsul-analysis-open{
 })();
 </script>
 
-<div id="weeklyModal" class="dr-overlay" role="dialog" aria-modal="true" aria-label="주간통계 데이터"><div class="dr-modal weekly-modal"><div class="dr-modal-head"><div><h2>📅 주간통계 데이터</h2><p class="hint">일요일~토요일 4주와 최근 4주 합계 · 자동 값은 자료 기준, 흰색 칸은 직접 입력</p></div><div class="weekly-actions"><label>기준 주 <input type="date" id="weeklyAnchor"></label><button type="button" id="weeklyExport">엑셀 다운로드</button><button type="button" id="weeklyClose">닫기</button></div></div><p class="hint" id="weeklyNote"></p><div id="weeklyOutput"></div></div></div>
+<div id="weeklyModal" class="dr-overlay" role="dialog" aria-modal="true" aria-label="주간통계 데이터"><div class="dr-modal weekly-modal"><div class="dr-modal-head"><div><h2>📅 주간통계 데이터</h2><p class="hint">일요일~토요일 4주와 최근 4주 합계 · 자동 값은 자료 기준, 흰색 칸은 직접 입력</p></div><div class="weekly-actions"><label>90초진 추정 기준 <select id="weeklyEstimateDays"><option value="30">30일 (리뉴얼 기본)</option><option value="90">90일</option></select></label><label>기준 주 <input type="date" id="weeklyAnchor"></label><button type="button" id="weeklyExport">엑셀 다운로드</button><button type="button" id="weeklyClose">닫기</button></div></div><p class="hint" id="weeklyNote"></p><div id="weeklyOutput"></div></div></div>
 <style>
 .weekly-modal{width:min(1540px,99vw);max-height:96vh}.weekly-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #weeklyOutput{overflow:auto;max-height:73vh}.weekly-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;color:#263144;font-size:13px}
@@ -5700,6 +5700,25 @@ body.jinsul-analysis-open{
   let edits={};try{edits=JSON.parse(localStorage.getItem('jinsul-weekly-manual-v1')||'{}')}catch(e){}
   function persist(){try{localStorage.setItem('jinsul-weekly-manual-v1',JSON.stringify(edits))}catch(e){}}
   function ageBand(n){n=Number(n);if(!Number.isFinite(n)||n<1)return -1;return n>=70?6:Math.max(0,Math.floor(n/10)-1)}
+  function renewalWeeklyInitials(ctx,estimateDays=30,overrides={}){
+    if(![30,90].includes(Number(estimateDays)))throw Error('추정 기준은 30일 또는 90일이어야 합니다.');
+    const totalKeys=new Set(),days=new Set();
+    for(const r of ctx.outpatientRecords||[]){if(!r.id||!r.date)continue;totalKeys.add(r.id+'|'+r.date);days.add(r.date);}
+    const matched=new Map();
+    for(const e of ctx.allInitialEvents||[]){const key=e.id+'|'+e.date;if(totalKeys.has(key)&&!matched.has(key))matched.set(key,e);}
+    const dailyAverage=days.size?matched.size/days.size:0,chartDistance=dailyAverage*Number(estimateDays),maxByDate=new Map();
+    const chartNumber=id=>{const s=String(id??'').trim().replace(/\.0$/,'');return /^\d+$/.test(s)&&Number.isSafeInteger(Number(s))?Number(s):NaN;};
+    for(const e of matched.values()){const n=chartNumber(e.id);if(Number.isFinite(n))maxByDate.set(e.date,Math.max(maxByDate.get(e.date)??0,n));}
+    let nonNumeric=0,estimatedNinety=0,manualCount=0;
+    const events=[...matched.values()].map(e=>{
+      const n=chartNumber(e.id);if(!Number.isFinite(n))nonNumeric++;
+      const estimate=Number.isFinite(n)&&n<=maxByDate.get(e.date)-chartDistance?'90초진':'초진';
+      if(estimate==='90초진')estimatedNinety++;
+      const override=overrides[e.id+'__'+e.date],manual=['초진','90초진','재진'].includes(override);if(manual)manualCount++;
+      return {...e,finalClass:manual?override:estimate};
+    }).filter(e=>e.finalClass==='초진'||e.finalClass==='90초진');
+    return {events,estimateDays:Number(estimateDays),dailyAverage,chartDistance,clinicDays:days.size,initialCount:matched.size,nonNumeric,estimatedNinety,manualCount};
+  }
   function weeklyPrepare(ctx){
     const range=[...ctx.outpatientRecords.map(r=>r.date),...ctx.allInitialEvents.map(e=>e.date)].filter(Boolean).sort();
     window.__weeklyContext=ctx;
@@ -5715,7 +5734,8 @@ body.jinsul-analysis-open{
     if(!anchor)return null;
     const last=weekStart(anchor),weeks=[3,2,1,0].map(n=>plus(last,-7*n));
     const rooms=[...new Set(ctx.outpatientRecords.map(r=>r.room).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
-    const initial=ctx.allInitialEvents.filter(e=>e.finalClass==='초진'||e.finalClass==='90초진');
+    const estimate=renewalWeeklyInitials(ctx,Number($w('weeklyEstimateDays').value),window.__initialClassOverrides||{});
+    const initial=estimate.events;
     const firstKeys=new Set(initial.map(e=>`${e.id}|${e.date}`));
     const visitMap=new Map();ctx.outpatientRecords.forEach(r=>{
       const k=`${r.id}|${r.date}|${r.room}`;
@@ -5723,6 +5743,8 @@ body.jinsul-analysis-open{
       else{const prev=visitMap.get(k);prev.isInitial||=r.isInitial;prev.isRevisit||=r.isRevisit}
     });
     const visits=[...visitMap.values()];
+    const candidateKeys=new Set(ctx.allInitialEvents.map(e=>e.id+'|'+e.date));
+    visits.forEach(r=>{const pair=r.id+'|'+r.date;if(candidateKeys.has(pair)){r.isInitial=firstKeys.has(pair);r.isRevisit=!r.isInitial}});
     const carm=ctx.fileMap.carm?.length?drParseCarm(ctx.fileMap.carm,ctx.startDate,ctx.endDate).source:new Set();
     const pairRooms=new Map();visits.forEach(v=>{const p=`${v.id}|${v.date}`;if(!pairRooms.has(p))pairRooms.set(p,new Set());pairRooms.get(p).add(v.room)});
     const carmRoom=new Map();carm.forEach(pair=>{const rs=pairRooms.get(pair);if(rs?.size===1)carmRoom.set(pair,[...rs][0])});
@@ -5782,7 +5804,7 @@ rooms.forEach(room => {
 });
       return {values,roomValues};
     }
-    return {weeks,rooms,results:weeks.map(calculate),ctx};
+    return {weeks,rooms,results:weeks.map(calculate),ctx,estimate};
   }
   function rowValue(row,week,room,data){
     const [id,,kind,fmt,numerator,denominator]=row;
@@ -5812,7 +5834,7 @@ rooms.forEach(room => {
       return `<tr><td>${esc(label)}</td><td class="weekly-total">${total}</td>${cells}</tr>`;
     }).join('');
     $w('weeklyOutput').innerHTML=`<table class="weekly-table">${head}<tbody>${body}</tbody></table>`;
-    $w('weeklyNote').textContent=`조회기간 ${ctx.startDate||'전체 시작'} ~ ${ctx.endDate||'전체 종료'}에 포함된 파일 기록으로 계산합니다. 주간 범위가 조회기간 밖이면 해당 주의 자동 값은 부분 집계입니다. C-ARM은 업로드 파일에서 arthro가 이미 제외된 것으로 간주합니다. 최근 4주의 입력 비율은 입력된 주의 평균입니다. 빈 직접 입력칸은 합계에 넣지 않으며, 입력값은 이 브라우저에 저장됩니다.`;
+    $w('weeklyNote').textContent=`90초진은 리뉴얼 차트번호 추정 방식 (${model.estimate.estimateDays}일)입니다. 일평균 초진 ${model.estimate.dailyAverage.toFixed(2)}건 × ${model.estimate.estimateDays}일 = 차트번호 차이 ${model.estimate.chartDistance.toFixed(2)}. 당일 초진 최대 차트번호에서 이 차이를 뺀 번호 이하를 90초진으로 추정하며, 수동 보정 ${model.estimate.manualCount}건을 우선합니다. 실제 90일 경과 판정과 다릅니다.${model.estimate.nonNumeric?' 숫자가 아닌 차트번호 '+model.estimate.nonNumeric+'건은 추정에서 제외해 신환으로 유지합니다.':''} 조회기간 ${ctx.startDate||'전체 시작'} ~ ${ctx.endDate||'전체 종료'}에 포함된 파일 기록으로 계산합니다. 주간 범위가 조회기간 밖이면 해당 주의 자동 값은 부분 집계입니다. C-ARM은 업로드 파일에서 arthro가 이미 제외된 것으로 간주합니다. 최근 4주의 입력 비율은 입력된 주의 평균입니다. 빈 직접 입력칸은 합계에 넣지 않으며, 입력값은 이 브라우저에 저장됩니다.`;
   }
   function exportWeekly(){
     const model=window.__weeklyModel||buildWeekly();if(!model)return;
@@ -5826,6 +5848,7 @@ rooms.forEach(room => {
         aoa.push([section.section+(room?` · ${room}`:''),row[1],sum??'',...vals.map(v=>v??'')]);
       }))
     });
+    aoa.push([],['90초진 산정 방식','리뉴얼 차트번호 추정'],['추정 기준(일)',model.estimate.estimateDays],['일평균 초진',model.estimate.dailyAverage],['차트번호 차이 기준',model.estimate.chartDistance],['수동 보정 우선 적용(건)',model.estimate.manualCount]);
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'주간통계');XLSX.writeFile(wb,`의사랑_주간통계_${weeks[0]}_${plus(weeks[3],6)}.xlsx`);
   }
   $w('weeklyOpenBtn').disabled=true;
@@ -5833,6 +5856,7 @@ rooms.forEach(room => {
   $w('weeklyClose').addEventListener('click',()=>$w('weeklyModal').classList.remove('show'));
   $w('weeklyModal').addEventListener('click',e=>{if(e.target.id==='weeklyModal')e.currentTarget.classList.remove('show')});
   $w('weeklyAnchor').addEventListener('change',renderWeekly);
+  $w('weeklyEstimateDays').addEventListener('change',renderWeekly);
   $w('weeklyOutput').addEventListener('input',e=>{
     const input=e.target.closest('[data-weekly-row]');if(!input)return;
     edits[key(input.dataset.weeklyRow,input.dataset.weeklyWeek,input.dataset.weeklyRoom)]=input.value;persist();
