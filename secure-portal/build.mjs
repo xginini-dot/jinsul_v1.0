@@ -45,7 +45,7 @@ for (const name of ['xlsx.full.min.js','진설로고.png','hira-prices.json','hi
 for(const name of await readdir(path.join(root,'public'))){
  if(name.endsWith('.html'))await writeFile(path.join(dist,name),versionAssets(await readFile(path.join(root,'public',name),'utf8')));
  if(name.endsWith('.css')){const css=await readFile(path.join(root,'public',name),'utf8');await writeFile(path.join(dist,name),css.replace('/fonts.css','/fonts.css?v='+assetVersion).replace(/\.woff2(?=['"])/g,'.woff2?v='+assetVersion));}
- if(name.endsWith('.js')){const script=await readFile(path.join(root,'public',name),'utf8');await writeFile(path.join(dist,name),script.replace(/(['"])\.\/portal\.js\1/g,(_,quote)=>quote+'./portal.js?v='+assetVersion+quote));}
+ if(name.endsWith('.js')){const script=await readFile(path.join(root,'public',name),'utf8');await writeFile(path.join(dist,name),script.replace(/(['"])\.\/(portal|session)\.js\1/g,(_,quote,name)=>quote+'./'+name+'.js?v='+assetVersion+quote));}
 }
 await writeFile(path.join(dist,'catalog.json'),JSON.stringify(apps));
 await writeFile(path.join(dist,'build-info.json'),JSON.stringify({commit:snapshot.commit,repository:snapshot.repository}));

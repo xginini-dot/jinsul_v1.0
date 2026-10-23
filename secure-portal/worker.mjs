@@ -1,3 +1,4 @@
+import {ensureSessionSettings,accountIdleMinutes} from './session-settings.mjs';
 import { apps, groups } from './catalog.mjs';
 import {readMenu,userMenu,validateMenu} from './menu.mjs';
 const encoder = new TextEncoder();
@@ -17,7 +18,7 @@ export async function passwordHash(password,salt,pepper) {
 const now = () => Math.floor(Date.now()/1000);
 const cookie = token => `__Host-jinsul=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800`;
 const clearCookie = '__Host-jinsul=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0';
-const publicUser = u => ({id:u.id,username:u.username,name:u.name,role:u.role,permissions:JSON.parse(u.permissions),active:!!u.active,mustChange:!!u.must_change});
+const publicUser = u => ({id:u.id,username:u.username,name:u.name,role:u.role,permissions:JSON.parse(u.permissions),active:!!u.active,mustChange:!!u.must_change,idleMinutes:accountIdleMinutes(u)});
 async function body(request,max=8192) {
  if(Number(request.headers.get('Content-Length')||0)>max)fail('요청이 너무 큽니다.',413);
  const text=await request.text(); if(text.length>max)fail('요청이 너무 큽니다.',413);
@@ -33,11 +34,13 @@ async function session(request,env) {
  const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-jinsul=([a-f0-9]{64})(?:;|$)/)?.[1];
  if(!token)return null;
  const hash=await digest(token),time=now();
- const user=await env.DB.prepare('SELECT u.*,s.token_hash,s.last_seen FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND s.last_seen>? AND s.version=u.version AND u.active=1').bind(hash,time,time-1800).first();
- if(user&&user.last_seen<=time-60)await env.DB.prepare('UPDATE sessions SET last_seen=? WHERE token_hash=?').bind(time,hash).run();
+ await ensureSessionSettings(env.DB);
+ const user=await env.DB.prepare('SELECT u.*,s.token_hash,s.last_seen,COALESCE(p.idle_minutes,30) AS idle_minutes FROM sessions s JOIN users u ON u.id=s.user_id LEFT JOIN user_session_settings p ON p.user_id=u.id WHERE s.token_hash=? AND s.expires_at>? AND s.last_seen>?-COALESCE(p.idle_minutes,30)*60 AND s.version=u.version AND u.active=1').bind(hash,time,time).first();
+ if(user&&user.last_seen<=time-Math.min(60,Math.max(5,Math.floor(accountIdleMinutes(user)*60/4))))await env.DB.prepare('UPDATE sessions SET last_seen=? WHERE token_hash=?').bind(time,hash).run();
  return user;
 }
 function validateAccount(data) {
+ const minutes=data.idleMinutes??30;if(!Number.isInteger(minutes)||minutes<1||minutes>480)fail('자동 로그아웃은 1~480분 사이의 정수로 입력해 주세요.');
  if(typeof data.username!=='string'||!/^[a-zA-Z0-9._-]{3,40}$/.test(data.username))fail('아이디는 영문·숫자·._- 3~40자입니다.');
  if(typeof data.name!=='string'||!data.name.trim()||data.name.length>60)fail('이름을 1~60자로 입력해 주세요.');
  if(!['admin','manager','staff'].includes(data.role))fail('권한을 확인해 주세요.');
@@ -61,7 +64,8 @@ async function api(request,env,path,user) {
   await limit(env,'ip:'+await digest(request.headers.get('CF-Connecting-IP')||'local'),30);
   await limit(env,'user:'+await digest(username),10);
   if(typeof data.password!=='string'||!data.password.length)fail('아이디 또는 비밀번호를 확인해 주세요.',401);
-  const found=await env.DB.prepare('SELECT * FROM users WHERE username=?').bind(username).first();
+  await ensureSessionSettings(env.DB);
+  const found=await env.DB.prepare('SELECT u.*,COALESCE(p.idle_minutes,30) AS idle_minutes FROM users u LEFT JOIN user_session_settings p ON p.user_id=u.id WHERE u.username=?').bind(username).first();
   const hash=await passwordHash(data.password,found?.salt||'dummy-account-salt',env.PASSWORD_PEPPER);
   if(!found||!found.active||!equal(hash,found.password_hash)) { await audit(env,null,'로그인 실패',username.slice(0,40)); fail('아이디 또는 비밀번호를 확인해 주세요.',401); }
   const token=randomToken();
@@ -102,21 +106,21 @@ async function api(request,env,path,user) {
   await audit(env,user.id,'업무·카테고리 변경');return json({ok:true,revision:data.revision+1});
  }
  if(path==='/api/users'&&request.method==='GET') {
-  const {results}=await env.DB.prepare('SELECT id,username,name,role,permissions,active,must_change FROM users ORDER BY created_at DESC').all();
+  const {results}=await env.DB.prepare('SELECT u.id,u.username,u.name,u.role,u.permissions,u.active,u.must_change,COALESCE(p.idle_minutes,30) AS idle_minutes FROM users u LEFT JOIN user_session_settings p ON p.user_id=u.id ORDER BY u.created_at DESC').all();
   return json({users:results.map(publicUser)});
  }
  if(path==='/api/audit'&&request.method==='GET')return json(await env.DB.prepare('SELECT a.action,a.target,a.created_at,COALESCE(u.name,\'시스템\') AS actor FROM audit a LEFT JOIN users u ON u.id=a.actor ORDER BY a.id DESC LIMIT 100').all());
  if(path==='/api/users'&&request.method==='POST') {
   const data=await body(request); validateAccount(data);
   if(!validPassword(data.password))fail('임시 비밀번호를 입력해 주세요.');
-  const salt=randomToken();
-  try { await env.DB.prepare('INSERT INTO users(id,username,name,role,permissions,password_hash,salt,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),data.username.toLowerCase(),data.name.trim(),data.role,JSON.stringify([...new Set(data.permissions)]),await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,now()).run(); }
+  const salt=randomToken(),newId=crypto.randomUUID();
+  try { await env.DB.batch([env.DB.prepare('INSERT INTO users(id,username,name,role,permissions,password_hash,salt,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(newId,data.username.toLowerCase(),data.name.trim(),data.role,JSON.stringify([...new Set(data.permissions)]),await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,now()),env.DB.prepare('INSERT INTO user_session_settings(user_id,idle_minutes) VALUES(?,?)').bind(newId,data.idleMinutes??30)]); }
   catch(error) { if(String(error).includes('UNIQUE'))fail('이미 사용 중인 아이디입니다.',409); throw error; }
   await audit(env,user.id,'계정 생성',data.username); return json({ok:true},201);
  }
  const match=path.match(/^\/api\/users\/([a-f0-9-]{36})(\/reset)?$/);
  if(match&&request.method==='POST') {
-  const target=await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(match[1]).first();
+  const target=await env.DB.prepare('SELECT u.*,COALESCE(p.idle_minutes,30) AS idle_minutes FROM users u LEFT JOIN user_session_settings p ON p.user_id=u.id WHERE u.id=?').bind(match[1]).first();
   if(!target)fail('계정을 찾을 수 없습니다.',404);
   const data=await body(request);
   if(match[2]) {
@@ -126,11 +130,12 @@ async function api(request,env,path,user) {
    await env.DB.batch([env.DB.prepare('UPDATE users SET password_hash=?,salt=?,must_change=1,version=version+1 WHERE id=?').bind(await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,target.id),env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(target.id)]);
    await audit(env,user.id,'비밀번호 초기화',target.username);
   } else {
-   validateAccount({...data,username:target.username});
+   validateAccount({...data,username:target.username,idleMinutes:data.idleMinutes??accountIdleMinutes(target)});
    if(typeof data.active!=='boolean')fail('계정 상태를 확인해 주세요.');
    if(target.id===user.id&&(data.role!=='admin'||!data.active))fail('본인 관리자 권한은 해제하거나 정지할 수 없습니다.');
    const result=await env.DB.prepare("UPDATE users SET name=?,role=?,permissions=?,active=?,version=version+1 WHERE id=? AND (role!='admin' OR ( ?='admin' AND ?=1) OR (SELECT COUNT(*) FROM users WHERE role='admin' AND active=1)>1)").bind(data.name.trim(),data.role,JSON.stringify([...new Set(data.permissions)]),data.active?1:0,target.id,data.role,data.active?1:0).run();
    if(!result.meta.changes)fail('마지막 관리자는 유지해야 합니다.',409);
+   await env.DB.prepare('INSERT INTO user_session_settings(user_id,idle_minutes) VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET idle_minutes=excluded.idle_minutes').bind(target.id,data.idleMinutes??accountIdleMinutes(target)).run();
    await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(target.id).run();
    await audit(env,user.id,'계정·권한 변경',target.username);
   }
@@ -153,11 +158,11 @@ export async function handle(request,env) {
  if(path.startsWith('/api/'))return api(request,env,path,user);
  if(request.method==='POST')return json({error:'허용되지 않은 요청입니다.'},405);
  if(!user)return new Response(null,{status:302,headers:{Location:'/login.html','Cache-Control':'no-store'}});
- if(user.must_change&&!['/account.html','/portal.css','/account.js','/portal.js'].includes(path))return new Response(null,{status:302,headers:{Location:'/account.html','Cache-Control':'no-store'}});
+ if(user.must_change&&!['/account.html','/portal.css','/account.js','/portal.js','/session.js'].includes(path))return new Response(null,{status:302,headers:{Location:'/account.html','Cache-Control':'no-store'}});
  if((path==='/admin.html'||path==='/admin.js')&&user.role!=='admin')return json({error:'관리자 권한이 필요합니다.'},403);
  const app=apps.find(a=>'/'+a.file===path);
  if(app&&user.role!=='admin'&&!JSON.parse(user.permissions).includes(app.group))return json({error:'해당 업무의 접근 권한이 없습니다.'},403);
- const support=['/','/index.html','/account.html','/account.js','/admin.html','/admin.js','/portal.js','/portal.css','/shell.js','/shell.css','/design.css','/theme.js','/xlsx.full.min.js','/hira-prices.json','/hira-codes.json','/catalog.json','/build-info.json','/진설로고.png'];
+ const support=['/','/index.html','/account.html','/account.js','/admin.html','/admin.js','/session.js','/portal.js','/portal.css','/shell.js','/shell.css','/design.css','/theme.js','/xlsx.full.min.js','/hira-prices.json','/hira-codes.json','/catalog.json','/build-info.json','/진설로고.png'];
  if(!app&&!support.includes(path))return json({error:'페이지를 찾을 수 없습니다.'},404);
  if(path==='/catalog.json')return json(await userMenu(env,user));
  if(path==='/'){const assetURL=new URL(request.url);assetURL.pathname='/index.html';return env.ASSETS.fetch(new Request(assetURL,request));}
@@ -170,7 +175,7 @@ export default {
   const secured=new Response(response.body,response);
   const assetPath=new URL(request.url).pathname;
   const reusable=/^\/(?:fonts\/|fonts\.css$|진설로고\.png$)/.test(assetPath);
-  const shared=/^\/(?:portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
+  const shared=/^\/(?:session|portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
   const successful=secured.ok||secured.status===304;
   secured.headers.set('Cache-Control',successful&&reusable?'public, max-age=86400':successful&&shared?(/^[a-f0-9]{16}$/.test(new URL(request.url).searchParams.get('v')||'')?'private, max-age=86400, immutable':'private, max-age=0, must-revalidate'):'no-store');
   secured.headers.set('X-Content-Type-Options','nosniff');
@@ -180,6 +185,6 @@ export default {
   return secured;
  },
  async scheduled(event,env) {
-  await env.DB.batch([env.DB.prepare('DELETE FROM sessions WHERE expires_at<? OR last_seen<?').bind(now(),now()-1800),env.DB.prepare('DELETE FROM rate_limits WHERE reset_at<?').bind(now()),env.DB.prepare('DELETE FROM audit WHERE created_at<?').bind(now()-90*86400)]);
+  await env.DB.batch([env.DB.prepare('DELETE FROM sessions WHERE expires_at<? OR last_seen<?').bind(now(),now()-28800),env.DB.prepare('DELETE FROM rate_limits WHERE reset_at<?').bind(now()),env.DB.prepare('DELETE FROM audit WHERE created_at<?').bind(now()-90*86400)]);
  }
 };
