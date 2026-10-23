@@ -168,9 +168,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
           ③ 차트번호가 있으면 차트번호를 우선 사용하고, 없으면 환자명으로 매칭합니다. A1에 환자명만 있는 형식도 보조 인식합니다.
         </div>
       </div>
-      <div class="field"><label>시작 월</label><select id="monthStart" disabled></select></div>
-      <div class="field"><label>종료 월</label><select id="monthEnd" disabled></select></div>
+      <div class="field"><label for="monthStart">시작 월 · 빠른 선택</label><select id="monthStart" disabled></select><label for="dateStart">조회 시작일</label><input type="date" id="dateStart" disabled></div>
+      <div class="field"><label for="monthEnd">종료 월 · 빠른 선택</label><select id="monthEnd" disabled></select><label for="dateEnd">조회 종료일</label><input type="date" id="dateEnd" disabled></div>
     </div>
+    <p class="hint" id="combinationDateStatus" role="status" aria-live="polite">파일을 업로드한 뒤 시작일·종료일을 지정하세요. 선택한 날짜를 모두 포함합니다.</p>
     <div class="grid payout-upload-grid">
       <div class="field">
         <label>지급불능 내역 업로드 — 여러 월·보험유형 동시 선택 가능</label>
@@ -396,6 +397,7 @@ try{
 }catch(e){}
 const fileInput=document.getElementById('fileInput');
 const monthStart=document.getElementById('monthStart'),monthEnd=document.getElementById('monthEnd');
+const dateStart=document.getElementById('dateStart'),dateEnd=document.getElementById('dateEnd'),dateStatus=document.getElementById('combinationDateStatus');
 const searchInput=document.getElementById('searchInput'),typeFilter=document.getElementById('typeFilter'),minCount=document.getElementById('minCount');
 const matchMode=document.getElementById('matchMode'),comboLaSearch=document.getElementById('comboLaSearch');
 const statusEl=document.getElementById('status'),codeListEl=document.getElementById('codeList');
@@ -446,7 +448,9 @@ document.getElementById('savePriceBtn').addEventListener('click',e=>{e.stopPropa
 document.getElementById('restorePriceBtn').addEventListener('click',e=>{e.stopPropagation();restoreDefaultPrices()});
 fileInput.addEventListener('change',handleFiles);
 denialInput.addEventListener('change',handleDenialFiles);
-[monthStart,monthEnd,searchInput,typeFilter,minCount,matchMode,comboLaSearch].forEach(el=>el.addEventListener('input',recalc));
+[monthStart,monthEnd].forEach(el=>el.addEventListener('change',()=>{syncPeriodDates();recalc()}));
+[dateStart,dateEnd].forEach(el=>el.addEventListener('input',()=>{if(dateStart.value)monthStart.value=dateStart.value.slice(0,7);if(dateEnd.value)monthEnd.value=dateEnd.value.slice(0,7);recalc()}));
+[searchInput,typeFilter,minCount,matchMode,comboLaSearch].forEach(el=>el.addEventListener('input',recalc));
 [denialSearch,insuranceFilter,denialView].forEach(el=>el.addEventListener('input',renderDenial));
 document.getElementById('resetBtn').onclick=resetAll;
 document.getElementById('exportBtn').onclick=exportExcel;
@@ -618,9 +622,9 @@ function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart
 function ymKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function setupMonths(){
   monthStart.innerHTML='';monthEnd.innerHTML='';
-  if(!months.length){monthStart.disabled=monthEnd.disabled=true;return}
+  if(!months.length){monthStart.disabled=monthEnd.disabled=dateStart.disabled=dateEnd.disabled=true;dateStart.value=dateEnd.value='';return}
   months.forEach(m=>{monthStart.add(new Option(m,m));monthEnd.add(new Option(m,m))});
-  monthStart.value=months[0];monthEnd.value=months[months.length-1];monthStart.disabled=monthEnd.disabled=false;
+  monthStart.value=months[0];monthEnd.value=months[months.length-1];monthStart.disabled=monthEnd.disabled=dateStart.disabled=dateEnd.disabled=false;syncPeriodDates();
 }
 function buildVisits(){
   const map=new Map();
@@ -635,18 +639,25 @@ function buildVisits(){
   visits=[...map.values()].filter(v=>v.la.size>0);
 }
 function selectedExtra(){return [...document.querySelectorAll('#extraChecks input:checked')].map(x=>x.value).sort()}
-function periodVisits(){
-  if(!months.length)return [];
-  const s=monthStart.value||months[0],e=monthEnd.value||months[months.length-1];
-  return visits.filter(v=>v.ym>=s&&v.ym<=e);
+function monthLastDay(month){const [y,m]=month.split('-').map(Number);return month+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0')}
+function syncPeriodDates(){dateStart.value=monthStart.value?monthStart.value+'-01':'';dateEnd.value=monthEnd.value?monthLastDay(monthEnd.value):'';}
+function selectedPeriod(){
+  const start=dateStart.value||(monthStart.value?monthStart.value+'-01':''),end=dateEnd.value||(monthEnd.value?monthLastDay(monthEnd.value):'');
+  return {start,end,valid:!start||!end||start<=end};
 }
+function inSelectedPeriod(date){const {start,end,valid}=selectedPeriod();return valid&&!!date&&(!start||date>=start)&&(!end||date<=end);}
+function periodVisits(){return visits.filter(v=>inSelectedPeriod(v.dateKey));}
 function recalc(){
   if(!visits.length){renderEmpty();return}
+  const period=selectedPeriod();
+  dateStart.setCustomValidity(period.valid?'':'시작일이 종료일보다 늦습니다.');dateEnd.setCustomValidity(period.valid?'':'종료일이 시작일보다 빠릅니다.');
+  if(!period.valid){dateStatus.textContent='시작일이 종료일보다 늦습니다. 날짜를 확인해주세요.';renderEmpty();return}
+  dateStatus.textContent='조회기간: '+(period.start||'전체 시작')+' ~ '+(period.end||'전체 종료')+' (시작일·종료일 포함)';
   const pv=periodVisits();
   renderBase(pv);
   renderCross(pv);
   renderDenial();
-  const codes=[...new Set(rawRows.filter(r=>r.ym>=(monthStart.value||'')&&r.ym<=(monthEnd.value||'9999-99')).map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+  const codes=[...new Set(rawRows.filter(r=>inSelectedPeriod(r.dateKey)).map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
   codeListEl.textContent=codes.length?codes.join(', '):'-';
 }
 function laAmount(v){let n=0;for(const [c,d] of v.la)n+=(LA_INFO[c]?.price||0)*d;return n}
@@ -798,8 +809,7 @@ function renderDenial(){
     if(!q)return true;return normalizeName(`${v.name} ${v.chart} ${prescriptionLabel(v)}`).includes(q);
   });
   const matched=[...matchByVisit.entries()].filter(([v])=>visitSet.has(v));
-  const start=monthStart.value||months[0]||'',end=monthEnd.value||months[months.length-1]||'9999-99';
-  const unmatched=denialMatches.filter(m=>!m.visit&&m.denial.ym>=start&&m.denial.ym<=end&&(ins==='all'||m.denial.insurance===ins)&&(!q||normalizeName(`${m.denial.name} ${m.denial.dateKey}`).includes(q)));
+  const unmatched=denialMatches.filter(m=>!m.visit&&inSelectedPeriod(m.denial.dateKey)&&(ins==='all'||m.denial.insurance===ins)&&(!q||normalizeName(`${m.denial.name} ${m.denial.dateKey}`).includes(q)));
   dTotal.textContent=fmtInt(pv.length);dMatched.textContent=fmtInt(matched.length);dRatio.textContent=(pv.length?matched.length/pv.length*100:0).toFixed(1)+'%';
   dPatients.textContent=fmtInt(new Set(matched.map(([,d])=>normalizeName(d.name))).size);dUnmatched.textContent=fmtInt(unmatched.length);dClaim.textContent=fmtWon(matched.reduce((a,[,d])=>a+d.claim,0));
   const allPatients=new Set(pv.map(v=>v.patientKey)),deniedPatientKeys=new Set(matched.map(([v])=>v.patientKey));
@@ -899,12 +909,14 @@ function renderEmpty(){
 function resetAll(){
   rawRows=[];months=[];visits=[];currentBaseStats=null;currentComboVisits=[];denialRows=[];denialMatches=[];
   fileInput.value='';denialInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;
+  dateStart.value=dateEnd.value='';dateStart.disabled=dateEnd.disabled=true;dateStart.setCustomValidity('');dateEnd.setCustomValidity('');dateStatus.textContent='파일을 업로드한 뒤 시작일·종료일을 지정하세요. 선택한 날짜를 모두 포함합니다.';
   searchInput.value='';typeFilter.value='all';minCount.value=1;matchMode.value='all';comboLaSearch.value='';
   document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);
   denialSearch.value='';insuranceFilter.innerHTML='<option value="all">전체</option>';denialView.value='all';denialStatus.textContent='지급불능 파일 미업로드';
   statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();
 }
 function exportExcel(){
+  if(!selectedPeriod().valid){alert('시작일과 종료일을 확인해주세요.');return}
   if(!visits.length){alert('먼저 엑셀을 업로드해주세요.');return}
   const wb=XLSX.utils.book_new();
   const base1=[['순위','구분','LA코드 단독/조합','건수','비율(%)','총 LA 투여량','총 LA 금액'],
@@ -925,7 +937,7 @@ function exportExcel(){
   const denialDetail=[['상태','보험','차트번호','환자명','시행일','LA코드 조합 · 투여량','부가처방 조합 · 투여량','차단술 총투여량','부가처방 총투여량','청구액','명일련','묶음번호'],
     ...pv.map(v=>{const d=matchMap.get(v);return[d?'지급불능':'전체',d?.insurance||'',v.chart,v.name,v.dateKey,prescriptionParts(v).laLabel,prescriptionParts(v).extraLabel,round2(sumMap(v.la)),round2(sumMap(v.extra)),d?.claim||0,d?.serial||'',d?.bundle||'']})];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(denialDetail),'지급불능_환자별상세');
-  const unmatched=[['보험','환자명','요양개시일','청구액','명일련','묶음번호','원본파일'],...denialMatches.filter(m=>!m.visit).map(m=>[m.denial.insurance,m.denial.name,m.denial.dateKey,m.denial.claim,m.denial.serial,m.denial.bundle,m.denial.fileName])];
+  const unmatched=[['보험','환자명','요양개시일','청구액','명일련','묶음번호','원본파일'],...denialMatches.filter(m=>!m.visit&&inSelectedPeriod(m.denial.dateKey)).map(m=>[m.denial.insurance,m.denial.name,m.denial.dateKey,m.denial.claim,m.denial.serial,m.denial.bundle,m.denial.fileName])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(unmatched),'지급불능_미매칭');
   const monthlyMap=new Map();
   pv.forEach(v=>{if(!monthlyMap.has(v.ym))monthlyMap.set(v.ym,{visits:0,patients:new Set(),laDose:0,extraDose:0,denied:0,deniedPatients:new Set(),claim:0});const o=monthlyMap.get(v.ym),d=matchMap.get(v);o.visits++;o.patients.add(v.patientKey);o.laDose+=sumMap(v.la);o.extraDose+=sumMap(v.extra);if(d){o.denied++;o.deniedPatients.add(v.patientKey);o.claim+=d.claim}});
@@ -936,6 +948,7 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flow),'지급불능환자_처방흐름');
   const prices=[['구분','코드','명칭','단가','단가 출처','수가 확인 기준일'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||'']),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||''])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prices),'단가표');
+  const range=selectedPeriod();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['조회 조건','값'],['시작일',range.start],['종료일',range.end],['날짜 포함 기준','시작일·종료일 모두 포함']]),'조회조건');
   XLSX.writeFile(wb,'의사랑_차단술_부가처방_지급불능_통합통계.xlsx');
 }
 function fmtInt(n){return Number(n||0).toLocaleString()}
