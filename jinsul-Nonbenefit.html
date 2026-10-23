@@ -1274,7 +1274,13 @@ margin-top:0;
 #doctorChart::-webkit-scrollbar-track{background:transparent}
 
 </style>
-</head>
+<style>
+.treatmentDistValue{display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px;line-height:1.4;font-variant-numeric:tabular-nums}
+.treatmentDistRate{font-size:15px!important;font-weight:700;color:var(--j-ink,var(--text))!important}
+.treatmentDistCount{font-size:12px!important;font-weight:500;color:#52728e!important}
+html[data-theme="dark"] .treatmentDistCount,body[data-theme="dark"] .treatmentDistCount{color:#9dbdd7!important}
+#distCountTable td{vertical-align:middle}#distCountTable th{white-space:nowrap}
+</style></head>
 <body>
 
 <div class="jinsulActionBar" aria-label="페이지 도구">
@@ -1471,12 +1477,9 @@ margin-top:0;
 <div class="distGrid">
 <div>
 <div class="tableTitleRow"><h3 id="distCountTitle">기간별 치료횟수 분포</h3><span id="distCountSummary" class="metricSummary"></span></div>
-<div class="scroll"><table id="distCountTable"></table></div>
+<p class="small">비율이 주 지표이며, 괄호 안 숫자는 해당 신환 인원(명)입니다. 비율의 분모는 각 기간의 전체 신환 수입니다.</p><div class="scroll"><table id="distCountTable"></table></div>
 </div>
-<div>
-<h3>기간별 치료횟수 비율</h3>
-<div class="scroll"><table id="distRateTable"></table></div>
-</div>
+
 </div>
 </div>
 </section>
@@ -2082,7 +2085,14 @@ function setDistUnit(unit,btn){DIST_UNIT=unit;btn.closest('.periodToggle').query
 function setIntervalUnit(unit,btn){INTERVAL_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncPeriodSelect('intervalPeriodSelect',unit);renderIntervalDistribution()}
 function filterEpisodesByPeriod(unit,selected,eligibleOnly=false){const key=unitKey(unit);return STORE.episodes.filter(e=>(selected==='__ALL__'||e[key]===selected)&&(!eligibleOnly||(e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격)))))}
 function aggregateTreatmentRows(unit){const key=unitKey(unit),label=unitLabel(unit),groups={};STORE.episodes.forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,신환:list.length};for(let i=1;i<=7;i++){const c=list.filter(e=>Number(e.치료횟수)===i).length;row[i+'회']=c;row[i+'회비율']=list.length?c/list.length*100:0}const c8=list.filter(e=>Number(e.치료횟수)>=8).length;row['8회이상']=c8;row['8회이상비율']=list.length?c8/list.length*100:0;return row})}
-function renderTreatmentDistribution(){const sel=document.getElementById('distPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',list=filterEpisodesByPeriod(DIST_UNIT,selected,false),total=list.length,bins=[];for(let i=1;i<=7;i++)bins.push({label:i+'회',count:list.filter(e=>Number(e.치료횟수)===i).length});bins.push({label:'8회 이상',count:list.filter(e=>Number(e.치료횟수)>=8).length});bins.forEach(x=>x.rate=total?x.count/total*100:0);const max=Math.max(...bins.map(x=>x.count),1),bars=document.getElementById('treatmentCountBars');if(bars)bars.innerHTML=bins.map(x=>`<div class="simpleBarRow"><div class="simpleBarLabel">${x.label}</div><div class="simpleBarTrack"><div class="simpleBarFill" style="width:${x.count?Math.max(2,x.count/max*100):0}%"></div></div><div class="simpleBarValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');const title=document.getElementById('distChartTitle');if(title)title.textContent=`${selected==='__ALL__'?'전체 기간':selected} · 치료횟수 분포`;const rows=aggregateTreatmentRows(DIST_UNIT),label=unitLabel(DIST_UNIT);let countCols=[label,'신환'];for(let i=1;i<=7;i++)countCols.push(i+'회');countCols.push('8회이상');let rateCols=[label,'신환'];for(let i=1;i<=7;i++)rateCols.push(i+'회비율');rateCols.push('8회이상비율');const pct={};rateCols.filter(c=>c.includes('비율')).forEach(c=>pct[c]=fmtP);makeTable('distCountTable',rows,countCols,{});makeTable('distRateTable',rows,rateCols,pct)}
+function treatmentDistributionValue(rate,count){return `<span class="treatmentDistValue"><span class="treatmentDistRate">${fmtP(rate)}</span><small class="treatmentDistCount">(${fmtN(count)})</small></span>`}
+function renderTreatmentDistributionTable(rows,label){
+ const columns=['1회','2회','3회','4회','5회','6회','7회','8회이상'];
+ const head='<thead><tr><th scope="col">'+label+'</th><th scope="col">신환 (명)</th>'+columns.map(c=>'<th scope="col">'+c+'</th>').join('')+'</tr></thead>';
+ const body='<tbody>'+rows.map(r=>'<tr><td>'+r[label]+'</td><td>'+fmtN(r.신환)+'</td>'+columns.map(c=>'<td>'+treatmentDistributionValue(r[c+'비율'],r[c])+'</td>').join('')+'</tr>').join('')+'</tbody>';
+ document.getElementById('distCountTable').innerHTML=head+body;
+}
+function renderTreatmentDistribution(){const sel=document.getElementById('distPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',list=filterEpisodesByPeriod(DIST_UNIT,selected,false),total=list.length,bins=[];for(let i=1;i<=7;i++)bins.push({label:i+'회',count:list.filter(e=>Number(e.치료횟수)===i).length});bins.push({label:'8회 이상',count:list.filter(e=>Number(e.치료횟수)>=8).length});bins.forEach(x=>x.rate=total?x.count/total*100:0);const max=Math.max(...bins.map(x=>x.count),1),bars=document.getElementById('treatmentCountBars');if(bars)bars.innerHTML=bins.map(x=>`<div class="simpleBarRow"><div class="simpleBarLabel">${x.label}</div><div class="simpleBarTrack"><div class="simpleBarFill" style="width:${x.count?Math.max(2,x.count/max*100):0}%"></div></div><div class="simpleBarValue">${treatmentDistributionValue(x.rate,x.count)}</div></div>`).join('');const title=document.getElementById('distChartTitle');if(title)title.textContent=`${selected==='__ALL__'?'전체 기간':selected} · 치료횟수 분포`;renderTreatmentDistributionTable(aggregateTreatmentRows(DIST_UNIT),unitLabel(DIST_UNIT))}
 function aggregateIntervalRows(unit){const key=unitKey(unit),label=unitLabel(unit),groups={};STORE.episodes.filter(e=>e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격))).forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});const bins=[{key:'1일 이내',test:v=>v<=1},{key:'2~3일',test:v=>v>1&&v<=3},{key:'4~7일',test:v=>v>3&&v<=7},{key:'8~14일',test:v=>v>7&&v<=14},{key:'15일 이상',test:v=>v>14}];return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,산출대상:list.length};bins.forEach(b=>{const c=list.filter(e=>b.test(Number(e.평균치료간격))).length;row[b.key]=c});return row})}
 function renderIntervalDistribution(){const sel=document.getElementById('intervalPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',eligible=filterEpisodesByPeriod(INTERVAL_UNIT,selected,true),bins=[{label:'1일 이내',test:v=>v<=1},{label:'2~3일',test:v=>v>1&&v<=3},{label:'4~7일',test:v=>v>3&&v<=7},{label:'8~14일',test:v=>v>7&&v<=14},{label:'15일 이상',test:v=>v>14}],total=eligible.length,counts=bins.map(b=>{const count=eligible.filter(e=>b.test(Number(e.평균치료간격))).length;return{label:b.label,count,rate:total?count/total*100:0}}),maxRate=Math.max(...counts.map(x=>x.rate),1);const bars=document.getElementById('intervalBars');if(bars)bars.innerHTML=counts.map(x=>`<div class="intervalRow"><div class="intervalLabel">${x.label}</div><div class="intervalTrack"><div class="intervalFill" style="width:${x.rate?Math.max(1.5,x.rate/maxRate*100):0}%"></div></div><div class="intervalValue">${fmtN(x.count)}명 · ${fmtP(x.rate)}</div></div>`).join('');const avg=total?eligible.reduce((s,e)=>s+Number(e.평균치료간격),0)/total:0,stats=document.getElementById('intervalStats');if(stats)stats.innerHTML=`<div class="intervalStat"><div class="label">분포 산출 대상</div><div class="value">${fmtN(total)}명</div></div><div class="intervalStat"><div class="label">전체 평균 간격</div><div class="value">${avg.toFixed(1)}일</div></div>`;const rows=aggregateIntervalRows(INTERVAL_UNIT),label=unitLabel(INTERVAL_UNIT);makeTable('intervalDistTable',rows,[label,'산출대상','1일 이내','2~3일','4~7일','8~14일','15일 이상'],{})}
 
