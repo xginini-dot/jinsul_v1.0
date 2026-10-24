@@ -3298,6 +3298,7 @@ body.jinsul-analysis-open{
                     (byRoom[r.room] ??= ([])).push(r);
                 }
                 );
+                for (const label of visitSummaryMap.keys()) byRoom[label] ??= [];
                 const result = [];
                 for (const [label,total] of Object.entries(byRoom)) {
                     const inj = total.filter(r => r.firstDayInj > 0);
@@ -4341,20 +4342,33 @@ function renderInjectionMatchNote(summary){
                     });
                 });
 
-                if (!merged.length) {
+                if (!outpatientRecords.length) {
+                    window.__latestStats = [];
+                    window.__latestByAge = [];
+                    window.__latestDailyStats = [];
+                    window.__latestPatients = [];
+                    window.__latestConversion = null;
+                    $('#chartCard').style.display = 'none';
+                    $('#roomChart').innerHTML = '';
+                    $('#rateChart').innerHTML = '';
+                    $('#dailyOutput').innerHTML = '';
+                    $('#conversionOutput').innerHTML = '';
+                    $('#conversionMethod').innerHTML = '';
+                    $('#conversionDownloadBtn').disabled = true;
                     $('#drCarmCard').style.display = 'none';
                     window.__drVisits = [];
                     window.__weeklyContext = null;
                     $('#weeklyOpenBtn').disabled = true;
                     $('#summary').style.display = 'none';
-                    $('#output').innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0">초진·신환 데이터가 인식되지 않았습니다. 외래 파일의 초/재진구분 열과 파일명 날짜를 확인해주세요.</p>';
+                    $('#output').innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0">선택한 기간에 외래 내원 자료가 없습니다. 조회기간과 업로드한 파일의 날짜를 확인해주세요.</p>';
                     const diagnostic = document.getElementById('fileDiagnostic');
-                    if (diagnostic) diagnostic.innerHTML += '<br><span class="validation-warn">초진·신환 결과 0명: 조회기간 또는 파일명 날짜를 확인해주세요.</span>';
+                    if (diagnostic) diagnostic.innerHTML += '<br><span class="validation-warn">외래 내원 결과 0건: 조회기간 또는 파일명 날짜를 확인해주세요.</span>';
                     $('#byAgeOutput').innerHTML = '';
                     $('#downloadBtn').disabled = true;
                     return;
                 }
 
+                if (!merged.length && diagnostic) diagnostic.innerHTML += '<br>선택 기간의 초진·신환은 0명입니다. 재진·총내원은 해당 기간의 외래 기록으로 집계했습니다.';
                 const visitSummaryMap = buildOverallVisitSummary(outpatientRecords, injectionDates);
                 const stats = computeStats(merged, visitSummaryMap);
                 const byAge = computeAgeBandStats(merged);
