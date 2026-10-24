@@ -1390,6 +1390,8 @@
             #conversionOutput tr.count-row td:first-child { font-weight:900; }
             .validation-ok { color:#79d69b!important; font-weight:900; }
             .validation-warn { color:#ffb86b!important; font-weight:900; }
+            html:not([data-theme="dark"]) .injection-match-note .validation-warn { color:#8a4b19!important; }
+            html:not([data-theme="dark"]) .injection-match-note .validation-ok { color:#25643a!important; }
             body.light .conversion-note, body.light #conversionOutput { background:rgba(255,255,255,.62)!important; border-color:rgba(159,135,100,.28)!important; }
             body.light #conversionOutput tr.rate-row td { background:rgba(159,135,100,.08)!important; }
             @media(max-width:760px){ .conversion-note-grid{grid-template-columns:1fr;} }
@@ -4118,6 +4120,39 @@ body.jinsul-analysis-open{
                 }
             }
 
+function reconcileInjectionVisits(visitDates, sourceDates){
+    const dates=new Map(),byDate=new Map();
+    let outpatientStart='',outpatientEnd='',rawUnique=0,matched=0,outside=0,unmatched=0;
+    for(const visits of visitDates.values())for(const date of visits){
+        if(!outpatientStart||date<outpatientStart)outpatientStart=date;
+        if(!outpatientEnd||date>outpatientEnd)outpatientEnd=date;
+    }
+    for(const [id,source] of sourceDates)for(const date of new Set(source)){
+        rawUnique++;
+        let status;
+        if(visitDates.get(id)?.has(date)){
+            if(!dates.has(id))dates.set(id,new Set());dates.get(id).add(date);matched++;status='외래 일치';
+        }else if(outpatientStart&&(date<outpatientStart||date>outpatientEnd)){
+            outside++;status='외래 자료 기간 밖';
+        }else{unmatched++;status='같은 환자·날짜 내원 없음';}
+        const key=date+'|'+status;
+        if(!byDate.has(key))byDate.set(key,{'날짜':date,'판정':status,'주사건수':0});byDate.get(key)['주사건수']++;
+    }
+    return {dates,summary:{outpatientStart,outpatientEnd,rawUnique,matched,outside,unmatched,
+        byDate:[...byDate.values()].sort((a,b)=>a['날짜'].localeCompare(b['날짜'])||a['판정'].localeCompare(b['판정']))}};
+}
+
+function renderInjectionMatchNote(summary){
+    const n=value=>Number(value||0).toLocaleString('ko-KR');
+    const date=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value:'없음';
+    const cls=summary.outside||summary.unmatched?'validation-warn':'validation-ok';
+    return `<div class="injection-match-note" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);line-height:1.7">`+
+        `<strong>주사·내원 비교 기준</strong><br>`+
+        `외래 자료 기간 ${date(summary.outpatientStart)} ~ ${date(summary.outpatientEnd)} · 주사 고유 ${n(summary.rawUnique)}건 중 외래 일치 ${n(summary.matched)}건 반영<br>`+
+        `<span class="${cls}">외래 자료 기간 밖 ${n(summary.outside)}건 제외 · 기간 내 미매칭 ${n(summary.unmatched)}건${summary.unmatched?' 확인 필요':''}</span><br>`+
+        `같은 환자·날짜의 외래 기록이 확인된 주사일수로 평균을 계산합니다. 기간 내 미매칭이 있으면 누락된 외래 파일·차트번호를 확인해 주세요. 날짜별 내역은 결과 엑셀의 ‘주사_외래매칭확인’ 시트에 포함됩니다.</div>`;
+}
+
             function runAnalysis(fileMap, preserveOverrides = false) {
                 window.__latestFileMap = fileMap;
                 if(!preserveOverrides) window.__initialClassOverrides = {};
@@ -4175,7 +4210,7 @@ body.jinsul-analysis-open{
                     });
                 });
 
-                const injectionDates = new Map();
+                const injectionSourceDates = new Map();
                 const standardizedInjections = [['차트번호','주민등록번호','내원일']];
                 fileMap.injection.forEach(src => {
                     const meta = headerInfo(src.data, src.role);
@@ -4186,15 +4221,21 @@ body.jinsul-analysis-open{
                         // 주사 파일은 파일명 날짜를 사용하지 않고 엑셀 내부 `내원일`만 사용합니다.
                         const date = meta.dateIdx >= 0 ? excelDateToISO(row[meta.dateIdx]) : '';
                         if (!date || !isDateInRange(date, startDate, endDate)) return;
-                        (injectionDates.get(id) || injectionDates.set(id, new Set()).get(id)).add(date);
+                        (injectionSourceDates.get(id) || injectionSourceDates.set(id, new Set()).get(id)).add(date);
                         standardizedInjections.push([id, rrn, date]);
                     });
                 });
 
+                // Compare injections only on observed outpatient patient-days. Preserve raw source totals for reconciliation.
+                const injectionRowsRead = standardizedInjections.length - 1;
+                const injectionMatch = reconcileInjectionVisits(visitDates, injectionSourceDates);
+                const injectionDates = injectionMatch.dates;
+                standardizedInjections.length = 1;
+                for(const [id,dates] of injectionDates)for(const date of dates)standardizedInjections.push([id,patients.get(id)?.rrn||'',date]);
                 const diagnostic = document.getElementById('fileDiagnostic');
                 if (diagnostic) {
                     const outpatientRows = standardizedVisits.length - 1;
-                    const injectionRows = standardizedInjections.length - 1;
+                    const injectionRows = injectionMatch.summary.matched;
                     const roomCounts = {};
                     initialCandidates.forEach(v => roomCounts[v.room] = (roomCounts[v.room] || 0) + 1);
                     const outpatientDateInfo = fileMap.outpatient.map(f => {
@@ -4211,12 +4252,12 @@ body.jinsul-analysis-open{
                         return `${f.name} → 엑셀 내원일 열: ${m.dateIdx >= 0 ? (m.header[m.dateIdx] || '내원일') : '미탐지'} · ${range} · ${dates.length}행`;
                     }).join('<br>');
                     diagnostic.innerHTML = `<strong>파일 인식 완료</strong><br>` +
-                      `외래 내원 ${outpatientRows.toLocaleString()}건 · 초진/신환 ${initialCandidates.size.toLocaleString()}명 · 주사 환자일 ${injectionRows.toLocaleString()}건<br>` +
+                      `외래 내원 ${outpatientRows.toLocaleString()}건 · 초진/신환 ${initialCandidates.size.toLocaleString()}명 · 주사 매칭 환자일 ${injectionRows.toLocaleString()}건 (원본 ${injectionRowsRead.toLocaleString()}행)<br>` +
                       `진료실별 초진: ${Object.entries(roomCounts).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).map(([k,v])=>`${k} ${v}명`).join(' · ') || '없음'}` +
                       `<div class="file-diagnostic-actions"><button type="button" id="toggleFileDiagnosticBtn" class="ghost" onclick="toggleFileDiagnosticDetail()" aria-expanded="false">파일 날짜 인식 보기</button></div>` +
                       `<div id="fileDiagnosticDetail" class="file-diagnostic-detail is-hidden" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;line-height:1.65">` +
                       `<strong>외래 파일 날짜 인식</strong><br>${outpatientDateInfo}<br>` +
-                      `<strong>주사 파일 엑셀 내원일 인식</strong><br>${injectionDateInfo}</div>`;
+                      `<strong>주사 파일 엑셀 내원일 인식</strong><br>${injectionDateInfo}</div>` + renderInjectionMatchNote(injectionMatch.summary);
                 }
 
                 // ===== 복수 초진/신환 날짜를 자동 판정하고, 필요 시 사용자가 직접 초진/90초진/재진으로 보정 =====
@@ -4360,7 +4401,8 @@ body.jinsul-analysis-open{
                     {name:'연령대별_진료실', rows:byAge},
                     {name:'일자별_상세통계', rows:dailyStats},
                     {name:'초진후_최초주사전환', rows:conversion.rows},
-                    {name:'중복_초진신환', rows:duplicateInitialRows}
+                    {name:'중복_초진신환', rows:duplicateInitialRows},
+                    {name:'주사_외래매칭확인', rows:injectionMatch.summary.byDate}
                 ]);
             }
 
