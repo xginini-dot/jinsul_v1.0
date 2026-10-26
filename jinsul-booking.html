@@ -34737,9 +34737,11 @@ const codes=['예약 없음','주사경과만','주사만','주사경과+주사'
 function extract(wb,name){
  // Self-contained: the same parser runs in the background worker and fallback path.
  const norm=v=>String(v??'').normalize('NFKC').toLowerCase().replace(/[\s\u200b\uFEFF_.·ㆍ()[\]{}:/\\-]/g,'');
+ const headerLabels=v=>{const s=String(v??'').normalize('NFKC');return [...new Set([norm(s),norm(s.replace(/\([^)]*\)|\[[^\]]*\]|\{[^}]*\}/g,'')),norm(s.split(/[\r\n([{]/)[0])])];};
  const aliases={id:{차트번호:30,차트:20,환자번호:30,등록번호:30,환자등록번호:30,차트no:20},person:{이름:30,성명:30,환자명:30,환자성명:30},code:{예약코드:40,다음예약코드:40,예약구분:30,예약상태:30,다음예약:20,예약:10},first:{초진:30,신환:30,초진여부:40,신환여부:40,초재진:30,환자구분:20,진료구분:20},block:{block:40,block여부:40,주사여부:30,주사환자:30,신경차단술:25,주사:10},pt:{pt:30,pt여부:30,물리치료:30,물리치료여부:30},date:{진료일:30,진료일자:30,내원일:30,내원일자:30,수납일:20,수납일자:20,날짜:10,일자:10}};
  const fileMonth=name.match(/(?:^|[^\d])(\d{1,2})\s*월/),fileDate=name.match(/(20\d{2})[년.\/_-]\s*(\d{1,2})(?=[월.\/_-]|\D|$)/),compact=name.match(/(?:^|\D)(20\d{2})(0[1-9]|1[0-2])(?:\D|$)/);
- const year=Number(name.match(/20\d{2}/)?.[0]||$('year').value),month=Number(fileMonth?.[1]||fileDate?.[2]||compact?.[2])||null;
+ const shortYear=name.match(/(?:^|[^\d])(\d{2})\s*년(?:도)?/);
+ const year=Number(name.match(/20\d{2}/)?.[0]||(shortYear?2000+Number(shortYear[1]):$('year').value)),month=Number(fileMonth?.[1]||fileDate?.[2]||compact?.[2])||null;
  const dateKey=(y,m,d)=>{const dt=new Date(y,m-1,d);return y>=1900&&y<=2200&&dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d?iso(y,m,d):null};
  function readDate(raw,short=false){
   if(raw instanceof Date)return dateKey(raw.getFullYear(),raw.getMonth()+1,raw.getDate());
@@ -34764,7 +34766,7 @@ function extract(wb,name){
  function findHeader(ws,range){let best=null;
   for(let r=range.s.r;r<=Math.min(range.e.r,range.s.r+59);r++){const fields={},weights={};
    for(let c=range.s.c;c<=Math.min(range.e.c,range.s.c+79);c++){const here=ws[XLSX.utils.encode_cell({r,c})]?.v,above=r>range.s.r?ws[XLSX.utils.encode_cell({r:r-1,c})]?.v:null;
-    const labels=[norm(here),norm(above)+norm(here)];for(const [key,known] of Object.entries(aliases))for(const label of labels){const score=known[label]||0;if(score>(weights[key]||0)){fields[key]=c;weights[key]=score;}}
+    const current=headerLabels(here),labels=[...current,...headerLabels(above).flatMap(a=>current.map(b=>a+b))];for(const [key,known] of Object.entries(aliases))for(const label of labels){const score=known[label]||0;if(score>(weights[key]||0)){fields[key]=c;weights[key]=score;}}
    }
    if(fields.code===undefined||(fields.id===undefined&&fields.person===undefined))continue;
    const score=Object.values(weights).reduce((a,b)=>a+b,0);if(!best||score>best.score)best={row:r,fields,score};
@@ -34785,7 +34787,7 @@ function extract(wb,name){
   for(let r=header.row+1;r<=range.e.r;r++){
    const cell=k=>f[k]===undefined?undefined:ws[XLSX.utils.encode_cell({r,c:f[k]})]?.v;
    const id=cell('id'),person=cell('person'),code=bookingCode(cell('code')),hasId=id!==undefined&&id!==null&&String(id).trim()!=='',hasPerson=person!==undefined&&person!==null&&String(person).trim()!=='';
-   if(aliases.id[norm(id)]||aliases.person[norm(person)]||/^(?:합계|총계|소계|계)$/.test(String(person??'').trim()))continue;
+   if(headerLabels(id).some(s=>aliases.id[s])||headerLabels(person).some(s=>aliases.person[s])||/^(?:합계|총계|소계|계)$/.test(String(person??'').trim()))continue;
    if(code===null&&(!hasId||!hasPerson))continue;
    const rawDate=cell('date'),date=f.date!==undefined&&rawDate!==undefined&&rawDate!==null&&String(rawDate).trim()!==''?readDate(rawDate,true):sheetDate;if(!date){invalidDates++;continue;}
    if(!sheetDays.has(date))sheetDays.set(date,{date,counts:Object.fromEntries(groups.map(([g])=>[g,[0,0,0,0,0,0,0]])),pt:f.pt===undefined?null:0,issues:[],file:name});
@@ -34797,7 +34799,7 @@ function extract(wb,name){
   if(invalidDates)warnings.push(sheet+': 날짜를 읽지 못한 '+invalidDates+'행 제외');
   // Preserve explicit PT summaries in older layouts, otherwise count the PT column.
   if(sheetDays.size===1){let saved=f.pt===undefined?undefined:ws[XLSX.utils.encode_cell({r:header.row-1,c:f.pt})]?.v;
-   for(let r=range.s.r;r<header.row;r++)for(let col=range.s.c;col<=Math.min(range.e.c,79);col++)if(['pt','pt내원','pt인원','pt합계','물리치료인원','물리치료내원수'].includes(norm(ws[XLSX.utils.encode_cell({r,c:col})]?.v))){for(const pos of [{r:r+1,c:col},{r,c:col+1}]){const v=ws[XLSX.utils.encode_cell(pos)]?.v;if(typeof v==='number'&&Number.isFinite(v)&&v>=0){saved=v;break;}}}
+   for(let r=range.s.r;r<header.row;r++)for(let col=range.s.c;col<=Math.min(range.e.c,79);col++)if(['pt','pt만','pt내원','pt인원','pt합계','물리치료인원','물리치료내원수'].includes(norm(ws[XLSX.utils.encode_cell({r,c:col})]?.v))){for(const pos of [{r:r+1,c:col},{r,c:col+1}]){const v=ws[XLSX.utils.encode_cell(pos)]?.v;if(typeof v==='number'&&Number.isFinite(v)&&v>=0){saved=v;break;}}}
    if(typeof saved==='number'&&Number.isFinite(saved)&&saved>=0)sheetDays.values().next().value.pt=saved;
   }
   for(const [date,day] of sheetDays){if(byDate.has(date))warnings.push(date+': 중복 날짜는 마지막 시트로 교체');byDate.set(date,day);}
