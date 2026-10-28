@@ -1476,7 +1476,7 @@ html[data-theme="dark"] .treatmentDistCount,body[data-theme="dark"] .treatmentDi
 </div>
 <div class="distGrid">
 <div>
-<div class="tableTitleRow"><h3 id="distCountTitle">기간별 치료횟수 분포</h3><span id="distCountSummary" class="metricSummary"></span></div>
+<div class="tableTitleRow"><h3 id="distCountTitle">기간별 치료횟수 분포</h3><span id="distCountSummary" class="metricSummary"></span><button class="ghost" type="button" onclick="copyDistributionTable('distCountTable',this)">표 복사</button></div>
 <p class="small">비율이 주 지표이며, 괄호 안 숫자는 해당 신환 인원(명)입니다. 비율의 분모는 각 기간의 전체 신환 수입니다.</p><div class="scroll"><table id="distCountTable"></table></div>
 </div>
 
@@ -1500,7 +1500,7 @@ html[data-theme="dark"] .treatmentDistCount,body[data-theme="dark"] .treatmentDi
 <h3 id="intervalExactTitle">평균 치료간격 일수별 상세</h3>
 <div id="intervalExactBars" class="exactBars"></div>
 </div>
-<div class="tableTitleRow"><h3 id="intervalTableTitle">기간별 평균 치료간격 분포</h3><span id="intervalTableSummary" class="metricSummary"></span></div>
+<div class="tableTitleRow"><h3 id="intervalTableTitle">기간별 평균 치료간격 분포</h3><span id="intervalTableSummary" class="metricSummary"></span><button class="ghost" type="button" onclick="copyDistributionTable('intervalDistTable',this)">표 복사</button></div>
 <p class="small">비율의 분모는 각 기간의 치료간격 산출 대상 인원입니다. 괄호 안은 해당 구간의 인원(명)이며, 복사할 때도 두 줄로 표시됩니다.</p>
 <div class="scroll"><table id="intervalDistTable"></table></div>
 </div></section>
@@ -2086,7 +2086,7 @@ function setDistUnit(unit,btn){DIST_UNIT=unit;btn.closest('.periodToggle').query
 function setIntervalUnit(unit,btn){INTERVAL_UNIT=unit;btn.closest('.periodToggle').querySelectorAll('.periodBtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncPeriodSelect('intervalPeriodSelect',unit);renderIntervalDistribution()}
 function filterEpisodesByPeriod(unit,selected,eligibleOnly=false){const key=unitKey(unit);return STORE.episodes.filter(e=>(selected==='__ALL__'||e[key]===selected)&&(!eligibleOnly||(e.평균치료간격!=null&&Number.isFinite(Number(e.평균치료간격)))))}
 function aggregateTreatmentRows(unit){const key=unitKey(unit),label=unitLabel(unit),groups={};STORE.episodes.forEach(e=>{const p=e[key];if(!p)return;(groups[p]||=[]).push(e)});return Object.keys(groups).sort().map(p=>{const list=groups[p],row={[label]:p,신환:list.length};for(let i=1;i<=7;i++){const c=list.filter(e=>Number(e.치료횟수)===i).length;row[i+'회']=c;row[i+'회비율']=list.length?c/list.length*100:0}const c8=list.filter(e=>Number(e.치료횟수)>=8).length;row['8회이상']=c8;row['8회이상비율']=list.length?c8/list.length*100:0;return row})}
-function treatmentDistributionValue(rate,count){return `<span class="treatmentDistValue"><span class="treatmentDistRate">${fmtP(rate)}</span><br><small class="treatmentDistCount">(${fmtN(count)})</small></span>`}
+function treatmentDistributionValue(rate,count){return `<span class="treatmentDistValue"><span class="treatmentDistRate">${fmtP(rate)}</span><br style="mso-data-placement:same-cell"><small class="treatmentDistCount">(${fmtN(count)})</small></span>`}
 function renderTreatmentDistributionTable(rows,label){
  const columns=['1회','2회','3회','4회','5회','6회','7회','8회이상'];
  const head='<thead><tr><th scope="col">'+label+'</th><th scope="col">신환 (명)</th>'+columns.map(c=>'<th scope="col">'+c+'</th>').join('')+'</tr></thead>';
@@ -2102,6 +2102,35 @@ function renderIntervalDistributionTable(rows,label){
  document.getElementById('intervalDistTable').innerHTML=head+body;
 }
 function renderIntervalDistribution(){const sel=document.getElementById('intervalPeriodSelect');if(!sel)return;const selected=sel.value||'__ALL__',eligible=filterEpisodesByPeriod(INTERVAL_UNIT,selected,true),bins=[{label:'1일 이내',test:v=>v<=1},{label:'2~3일',test:v=>v>1&&v<=3},{label:'4~7일',test:v=>v>3&&v<=7},{label:'8~14일',test:v=>v>7&&v<=14},{label:'15일 이상',test:v=>v>14}],total=eligible.length,counts=bins.map(b=>{const count=eligible.filter(e=>b.test(Number(e.평균치료간격))).length;return{label:b.label,count,rate:total?count/total*100:0}}),maxRate=Math.max(...counts.map(x=>x.rate),1);const bars=document.getElementById('intervalBars');if(bars)bars.innerHTML=counts.map(x=>`<div class="intervalRow"><div class="intervalLabel">${x.label}</div><div class="intervalTrack"><div class="intervalFill" style="width:${x.rate?Math.max(1.5,x.rate/maxRate*100):0}%"></div></div><div class="intervalValue">${treatmentDistributionValue(x.rate,x.count)}</div></div>`).join('');const avg=total?eligible.reduce((s,e)=>s+Number(e.평균치료간격),0)/total:0,stats=document.getElementById('intervalStats');if(stats)stats.innerHTML=`<div class="intervalStat"><div class="label">분포 산출 대상</div><div class="value">${fmtN(total)}명</div></div><div class="intervalStat"><div class="label">전체 평균 간격</div><div class="value">${avg.toFixed(1)}일</div></div>`;const rows=aggregateIntervalRows(INTERVAL_UNIT),label=unitLabel(INTERVAL_UNIT);renderIntervalDistributionTable(rows,label)}
+
+
+function distributionClipboardPayload(rows){
+ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const quote=s=>/[\t\r\n"]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+ const text=rows.map(row=>row.map(cell=>quote(cell.text)).join('\t')).join('\r\n');
+ const body=rows.map(row=>'<tr>'+row.map(cell=>{const lines=cell.text.split('\n'),tag=cell.header?'th':'td',style='mso-number-format:"\\@";white-space:normal;vertical-align:middle;text-align:'+(cell.first?'left':'right')+';padding:8px 10px;border-bottom:1px solid #deded8;'+(cell.header?'background:#f0efea;color:#5c6870;':'');const content=cell.pair?'<span style="font-size:11pt;font-weight:600;color:#202a36">'+escape(lines[0])+'</span><br style="mso-data-placement:same-cell"><span style="font-size:9pt;color:#52728e">'+escape(lines[1])+'</span>':escape(cell.text);return '<'+tag+' x:str style=\''+style+'\'>'+content+'</'+tag+'>';}).join('')+'</tr>').join('');
+ return {text,html:'<table xmlns:x="urn:schemas-microsoft-com:office:excel" style="border-collapse:collapse;font-family:Paperlogy,Arial,sans-serif;font-size:10pt">'+body+'</table>'};
+}
+function distributionClipboardRows(table,range){
+ return [...table.rows].map(row=>[...row.cells].filter(cell=>!range||range.intersectsNode(cell)).map((cell,i)=>{const value=cell.querySelector('.treatmentDistValue');return {text:value?value.querySelector('.treatmentDistRate').textContent.trim()+'\n'+value.querySelector('.treatmentDistCount').textContent.trim():cell.textContent.trim(),pair:!!value,header:cell.tagName==='TH',first:cell.cellIndex===0};})).filter(row=>row.length);
+}
+function writeDistributionCopy(event){
+ const selection=window.getSelection();if(!selection?.rangeCount||selection.isCollapsed||!event.clipboardData)return;
+ const range=selection.getRangeAt(0),node=range.commonAncestorContainer,table=(node.nodeType===1?node:node.parentElement)?.closest?.('table');
+ if(!table||!['distCountTable','intervalDistTable'].includes(table.id))return;
+ const rows=distributionClipboardRows(table,range);if(!rows.length)return;
+ // A single percentage/number selection keeps the browser's normal copy behavior.
+ if(rows.length===1&&rows[0].length===1&&!selection.toString().includes('\n'))return;
+ const payload=distributionClipboardPayload(rows);event.clipboardData.setData('text/html',payload.html);event.clipboardData.setData('text/plain',payload.text);event.preventDefault();
+}
+document.addEventListener('copy',writeDistributionCopy);
+function copyDistributionTable(id,button){
+ const table=document.getElementById(id);if(!table)return;
+ const selection=window.getSelection(),previous=[];for(let i=0;i<selection.rangeCount;i++)previous.push(selection.getRangeAt(i).cloneRange());
+ const range=document.createRange();range.selectNodeContents(table);selection.removeAllRanges();selection.addRange(range);
+ let copied=false;try{copied=document.execCommand('copy');}finally{selection.removeAllRanges();previous.forEach(r=>selection.addRange(r));}
+ button.textContent=copied?'복사 완료':'표를 선택해 Ctrl+C';setTimeout(()=>button.textContent='표 복사',1800);
+}
 
 let DOCTOR_UNIT='all';
 function doctorPeriodKey(){return DOCTOR_UNIT==='month'?'월':DOCTOR_UNIT==='week'?'주':DOCTOR_UNIT==='day'?'일':null}
