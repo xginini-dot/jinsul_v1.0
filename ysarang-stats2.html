@@ -5717,7 +5717,7 @@ function renderInjectionMatchNote(summary){
 })();
 </script>
 
-<div id="weeklyModal" class="dr-overlay" role="dialog" aria-modal="true" aria-label="주간통계 데이터"><div class="dr-modal weekly-modal"><div class="dr-modal-head"><div><h2>📅 주간통계 데이터</h2><p class="hint">일요일~토요일 4주와 최근 4주 합계 · 자동 값은 자료 기준, 흰색 칸은 직접 입력</p></div><div class="weekly-actions"><label>90초진 추정 기준 <select id="weeklyEstimateDays"><option value="30">30일 (리뉴얼 기본)</option><option value="90">90일</option></select></label><label>기준 주 <input type="date" id="weeklyAnchor"></label><button type="button" id="weeklyExport">엑셀 다운로드</button><button type="button" id="weeklyClose">닫기</button></div></div><p class="hint" id="weeklyNote"></p><div id="weeklyOutput"></div></div></div>
+<div id="weeklyModal" class="dr-overlay" role="dialog" aria-modal="true" aria-label="주간통계 데이터"><div class="dr-modal weekly-modal"><div class="dr-modal-head"><div><h2>📅 주간통계 데이터</h2><p class="hint">일요일~토요일 4주와 최근 4주 합계 · 자동 값은 자료 기준, 흰색 칸은 직접 입력</p></div><div class="weekly-actions"><label>90초진 추정 기준 <select id="weeklyEstimateDays"><option value="30">30일 (리뉴얼 기본)</option><option value="90">90일</option></select></label><label>기준 주 <input type="date" id="weeklyAnchor"></label><button type="button" id="weeklyExport">엑셀 다운로드</button><button type="button" id="weeklyClose">닫기</button></div></div><p class="hint" id="weeklyNote"></p><div id="weeklyMonthControls"><button type="button" id="weeklyMonthToggle" aria-expanded="true" aria-controls="weeklyMonthChoices">월별 열 숨기기</button><fieldset id="weeklyMonthChoices"><legend>비교 월 선택</legend></fieldset><span class="hint">월별 값은 현재 조회기간에 포함된 자료 기준입니다.</span></div><div id="weeklyOutput"></div></div></div>
 <style>
 .weekly-modal{width:min(1540px,99vw);max-height:96vh}.weekly-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #weeklyOutput{overflow:auto;max-height:73vh}.weekly-table{width:100%;min-width:900px;border-collapse:separate;border-spacing:0;color:#263144;font-size:13px}
@@ -5727,6 +5727,31 @@ function renderInjectionMatchNote(summary){
 .weekly-table .weekly-total td{background:#f3eee7;font-weight:800}.weekly-table .weekly-total td:first-child{background:#f3eee7}
 .weekly-table input{width:100%;min-width:85px;max-width:135px;text-align:right;padding:8px;border:1px solid #d8c7b2;border-radius:8px;background:#fff;color:#263144;font:inherit}
 .weekly-table .weekly-auto{background:#f2f6f9}.weekly-table .weekly-manual{background:#fff}.weekly-table .weekly-derived{background:#eef3eb}
+
+#weeklyMonthControls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+#weeklyMonthChoices{border:0;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap}
+#weeklyMonthChoices[hidden]{display:none}
+#weeklyMonthChoices legend{float:left;margin-right:12px;padding:8px 0;font-size:13px;font-weight:700}
+#weeklyMonthChoices label{display:flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid #d8dfdb;border-radius:8px;font-size:13px;background:#f5f8f5;color:#263144}
+#weeklyMonthChoices input{accent-color:#497263}
+.weekly-table .weekly-month{background:#eef5ef;color:#254b3e;border-left:1px solid #d8e5dc}
+.weekly-table thead .weekly-month{background:#dceadf}
+
+html:root[data-theme=dark] #weeklyModal .dr-modal{background:#222829!important;color:#edf0eb!important}
+html:root[data-theme=dark] #weeklyModal h2{color:#edf0eb!important}
+html:root[data-theme=dark] #weeklyModal .hint{color:#b8c0b9!important}
+html:root[data-theme=dark] #weeklyModal #weeklyMonthChoices label{background:#2b3732!important;color:#edf0eb!important;border-color:#4b6256!important}
+html:root[data-theme=dark] #weeklyModal #weeklyMonthChoices legend{color:#edf0eb!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table td{background:#222829!important;color:#edf0eb!important;border-color:#414c49!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table th{background:#2c3533!important;color:#edf0eb!important;border-color:#414c49!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table td.weekly-auto{background:#26343c!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table td.weekly-derived{background:#2b3b2f!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table td.weekly-month{background:#293d33!important;color:#d3eddd!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table thead th.weekly-month{background:#355141!important;color:#e2f2e8!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table td.weekly-total{background:#34382f!important;color:#edf0eb!important}
+html:root[data-theme=dark] #weeklyModal .weekly-table input{background:#202727!important;color:#edf0eb!important;border-color:#59675f!important}
+html:root[data-theme=dark] #weeklyModal button,html:root[data-theme=dark] #weeklyModal input[type=date],html:root[data-theme=dark] #weeklyModal select{background:#2e3735!important;color:#edf0eb!important;border-color:#59675f!important;color-scheme:dark}
+
 .weekly-table .weekly-missing{color:#8d8174;font-size:12px}.weekly-table .weekly-room th{background:#e2ebee!important;text-align:left}
 #weeklyOpenBtn:disabled{opacity:.55;cursor:not-allowed}
 </style>
@@ -5804,8 +5829,8 @@ function renderInjectionMatchNote(summary){
     const carm=ctx.fileMap.carm?.length?drParseCarm(ctx.fileMap.carm,ctx.startDate,ctx.endDate).source:new Set();
     const pairRooms=new Map();visits.forEach(v=>{const p=`${v.id}|${v.date}`;if(!pairRooms.has(p))pairRooms.set(p,new Set());pairRooms.get(p).add(v.room)});
     const carmRoom=new Map();carm.forEach(pair=>{const rs=pairRooms.get(pair);if(rs?.size===1)carmRoom.set(pair,[...rs][0])});
-    function calculate(week){
-      const end=plus(week,6),inWeek=d=>d>=week&&d<=end;
+    function calculate(week, end = plus(week, 6)){
+      const inWeek=d=>d>=week&&d<=end;
       const es=initial.filter(e=>inWeek(e.date));
       const rs=visits.filter(r=>inWeek(r.date));
       const uniqueReturns=new Map();rs.filter(r=>r.isRevisit&&!r.isInitial&&!firstKeys.has(`${r.id}|${r.date}`)).forEach(r=>uniqueReturns.set(`${r.id}|${r.date}`,r));
@@ -5860,8 +5885,46 @@ rooms.forEach(room => {
 });
       return {values,roomValues};
     }
-    return {weeks,rooms,results:weeks.map(calculate),ctx,estimate};
+    return {weeks,rooms,results:weeks.map(week => calculate(week)),calculate,ctx,estimate};
   }
+
+  let selectedMonths = null;
+  let monthlyExpanded = true;
+
+  function monthlyColumns(model) {
+    const records = model.ctx.visits ?? model.ctx.outpatientRecords;
+    const available = [...new Set(records.map(record => record.date.slice(0, 7)))].sort();
+    if (selectedMonths === null) selectedMonths = new Set(available.slice(-2));
+    const selected = available.filter(month => selectedMonths.has(month));
+    const toggle = $w('weeklyMonthToggle');
+    toggle.textContent = monthlyExpanded ? '월별 열 숨기기' : '월별 열 펼치기';
+    toggle.setAttribute('aria-expanded', String(monthlyExpanded));
+    $w('weeklyMonthChoices').hidden = !monthlyExpanded;
+    $w('weeklyMonthChoices').innerHTML = '<legend>비교 월 선택</legend>' + available.map(month =>
+      '<label><input type="checkbox" data-weekly-month="' + month + '"' +
+      (selectedMonths.has(month) ? ' checked' : '') + '> ' +
+      month.slice(0, 4) + '년 ' + Number(month.slice(5)) + '월</label>'
+    ).join('');
+    if (!monthlyExpanded) return [];
+    return selected.map(month => {
+      const start = month + '-01';
+      const end = iso(new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 0, 12)));
+      return {month, key: 'month:' + month, data: model.calculate(start, end)};
+    });
+  }
+
+  function periodCell(row, period, room, data, monthly = false) {
+    const [id, label, kind, fmt] = row;
+    const className = monthly ? 'weekly-month' : kind === 'auto' ? 'weekly-auto' : 'weekly-derived';
+    if (kind !== 'manual') {
+      return '<td class="' + className + '">' + format(rowValue(row, period, room, data), fmt) + '</td>';
+    }
+    return '<td class="weekly-manual ' + (monthly ? 'weekly-month' : '') + '"><input type="number" min="0" step="' +
+      (fmt === 'percent' ? '0.1' : '1') + '" inputmode="decimal" data-weekly-row="' + esc(id) +
+      '" data-weekly-week="' + period + '" data-weekly-room="' + esc(room) + '" value="' +
+      esc(edits[key(id, period, room)] ?? '') + '" aria-label="' + esc(room + ' ' + label + ' ' + period) + '"></td>';
+  }
+
   function rowValue(row,week,room,data){
     const [id,,kind,fmt,numerator,denominator]=row;
     if(kind==='auto')return room?data.roomValues[room]?.[id]:data.values[id];
@@ -5872,6 +5935,8 @@ rooms.forEach(room => {
   function format(v,fmt){if(v===null||v===undefined)return '—';return fmt==='percent'?`${Math.round(v)}%`:fmt==='won'?Math.round(v).toLocaleString('ko-KR'):Number(v).toLocaleString('ko-KR')}
   function renderWeekly(){
     const model=buildWeekly();if(!model){$w('weeklyOutput').innerHTML='<p class="hint">먼저 통계를 계산해주세요.</p>';return}
+    const monthly = monthlyColumns(model);
+    model.monthly = monthly;
     window.__weeklyModel=model;
     const {weeks,rooms,results,ctx}=model;
     const allRows=[];
@@ -5879,29 +5944,31 @@ rooms.forEach(room => {
       if(section.room){rooms.forEach(room=>{allRows.push({section:`${section.section} · ${room}`});section.rows.forEach(row=>allRows.push({row,room}))})}
       else{allRows.push({section:section.section});section.rows.forEach(row=>allRows.push({row}))}
     });
-    const head=`<thead><tr><th>항목</th><th>최근 4주</th>${weeks.map(w=>`<th>${esc(w.slice(5))} ~ ${esc(plus(w,6).slice(5))}</th>`).join('')}</tr></thead>`;
+    const head=`<thead><tr><th>항목</th>${monthly.map(column => `<th class="weekly-month">${esc(column.month)}</th>`).join('')}<th>최근 4주</th>${weeks.map(w=>`<th>${esc(w.slice(5))} ~ ${esc(plus(w,6).slice(5))}</th>`).join('')}</tr></thead>`;
     const body=allRows.map(item=>{
-      if(item.section)return `<tr class="weekly-section"><th colspan="6">${esc(item.section)}</th></tr>`;
+      if(item.section)return `<tr class="weekly-section"><th colspan="${6 + monthly.length}">${esc(item.section)}</th></tr>`;
       const {row,room=''}=item,[id,label,kind,fmt]=row;
       const values=weeks.map((w,i)=>rowValue(row,w,room,results[i]));
       const sum=values.some(x=>x!==null&&x!==undefined)?values.reduce((a,b)=>a+(b??0),0):null;
-      const cells=weeks.map((w,i)=>kind==='manual'?`<td class="weekly-manual"><input type="number" min="0" step="${fmt==='percent'?'0.1':'1'}" inputmode="decimal" data-weekly-row="${esc(id)}" data-weekly-week="${w}" data-weekly-room="${esc(room)}" value="${esc(edits[key(id,w,room)]??'')}" aria-label="${esc(room+' '+label+' '+w)}"></td>`:`<td class="${kind==='auto'?'weekly-auto':'weekly-derived'}">${format(values[i],fmt)}</td>`).join('');
+      const cells=weeks.map((week, index) => periodCell(row, week, room, results[index])).join('');
+      const monthCells=monthly.map(column => periodCell(row, column.key, room, column.data, true)).join('');
       const total=kind==='derived'?(()=>{const n=weeks.reduce((s,w)=>s+(numeric(edits[key(row[4],w,room)])||0),0),d=weeks.reduce((s,w)=>s+(numeric(edits[key(row[5],w,room)])||0),0);return d?format(n/d*100,'percent'):'—'})():format(fmt==='percent'&&kind==='manual'&&sum!==null?sum/values.filter(v=>v!==null).length:sum,fmt);
-      return `<tr><td>${esc(label)}</td><td class="weekly-total">${total}</td>${cells}</tr>`;
+      return `<tr><td>${esc(label)}</td>${monthCells}<td class="weekly-total">${total}</td>${cells}</tr>`;
     }).join('');
     $w('weeklyOutput').innerHTML=`<table class="weekly-table">${head}<tbody>${body}</tbody></table>`;
-    $w('weeklyNote').textContent=`90초진은 리뉴얼 차트번호 추정 방식 (${model.estimate.estimateDays}일)입니다. 일평균 초진 ${model.estimate.dailyAverage.toFixed(2)}건 × ${model.estimate.estimateDays}일 = 차트번호 차이 ${model.estimate.chartDistance.toFixed(2)}. 당일 초진 최대 차트번호에서 이 차이를 뺀 번호 이하를 90초진으로 추정하며, 수동 보정 ${model.estimate.manualCount}건을 우선합니다. 실제 90일 경과 판정과 다릅니다.${model.estimate.nonNumeric?' 숫자가 아닌 차트번호 '+model.estimate.nonNumeric+'건은 추정에서 제외해 신환으로 유지합니다.':''} 조회기간 ${ctx.startDate||'전체 시작'} ~ ${ctx.endDate||'전체 종료'}에 포함된 파일 기록으로 계산합니다. 주간 범위가 조회기간 밖이면 해당 주의 자동 값은 부분 집계입니다. C-ARM은 업로드 파일에서 arthro가 이미 제외된 것으로 간주합니다. 최근 4주의 입력 비율은 입력된 주의 평균입니다. 빈 직접 입력칸은 합계에 넣지 않으며, 입력값은 이 브라우저에 저장됩니다.`;
+    $w('weeklyNote').textContent=`90초진은 리뉴얼 차트번호 추정 방식 (${model.estimate.estimateDays}일)입니다. 일평균 초진 ${model.estimate.dailyAverage.toFixed(2)}건 × ${model.estimate.estimateDays}일 = 차트번호 차이 ${model.estimate.chartDistance.toFixed(2)}. 당일 초진 최대 차트번호에서 이 차이를 뺀 번호 이하를 90초진으로 추정하며, 수동 보정 ${model.estimate.manualCount}건을 우선합니다. 실제 90일 경과 판정과 다릅니다.${model.estimate.nonNumeric?' 숫자가 아닌 차트번호 '+model.estimate.nonNumeric+'건은 추정에서 제외해 신환으로 유지합니다.':''} 조회기간 ${ctx.startDate||'전체 시작'} ~ ${ctx.endDate||'전체 종료'}에 포함된 파일 기록으로 계산합니다. 주간 범위가 조회기간 밖이면 해당 주의 자동 값은 부분 집계입니다. C-ARM은 업로드 파일에서 arthro가 이미 제외된 것으로 간주합니다. 월별 열은 선택한 달의 1일~말일 중 조회기간에 포함된 자료만 집계합니다. 월별 직접 입력값은 주간 입력값과 별도로 저장됩니다. 최근 4주의 입력 비율은 입력된 주의 평균입니다. 빈 직접 입력칸은 합계에 넣지 않으며, 입력값은 이 브라우저에 저장됩니다.`;
   }
   function exportWeekly(){
     const model=window.__weeklyModel||buildWeekly();if(!model)return;
     const {weeks,rooms,results}=model;
-    const aoa=[['구분','항목','최근 4주',...weeks.map(w=>`${w} ~ ${plus(w,6)}`)]];
+    const monthly=model.monthly ?? monthlyColumns(model);
+    const aoa=[['구분','항목',...monthly.map(column => column.month),'최근 4주',...weeks.map(w=>`${w} ~ ${plus(w,6)}`)]];
     defs.forEach(section=>{
       const scopes=section.room?rooms:[''];
       scopes.forEach(room=>section.rows.forEach(row=>{
         const vals=weeks.map((w,i)=>rowValue(row,w,room,results[i]));
         const sum=row[2]==='derived'?(()=>{const n=weeks.reduce((s,w)=>s+(numeric(edits[key(row[4],w,room)])||0),0),d=weeks.reduce((s,w)=>s+(numeric(edits[key(row[5],w,room)])||0),0);return d?n/d*100:null})():vals.some(v=>v!==null)?vals.reduce((a,b)=>a+(b||0),0)/(row[2]==='manual'&&row[3]==='percent'?vals.filter(v=>v!==null).length:1):null;
-        aoa.push([section.section+(room?` · ${room}`:''),row[1],sum??'',...vals.map(v=>v??'')]);
+        aoa.push([section.section+(room?` · ${room}`:''),row[1],...monthly.map(column => rowValue(row, column.key, room, column.data) ?? ''),sum??'',...vals.map(v=>v??'')]);
       }))
     });
     aoa.push([],['90초진 산정 방식','리뉴얼 차트번호 추정'],['추정 기준(일)',model.estimate.estimateDays],['일평균 초진',model.estimate.dailyAverage],['차트번호 차이 기준',model.estimate.chartDistance],['수동 보정 우선 적용(건)',model.estimate.manualCount]);
@@ -5911,6 +5978,17 @@ rooms.forEach(room => {
   $w('weeklyOpenBtn').addEventListener('click',()=>{renderWeekly();$w('weeklyModal').classList.add('show')});
   $w('weeklyClose').addEventListener('click',()=>$w('weeklyModal').classList.remove('show'));
   $w('weeklyModal').addEventListener('click',e=>{if(e.target.id==='weeklyModal')e.currentTarget.classList.remove('show')});
+  $w('weeklyMonthToggle').addEventListener('click', () => {
+    monthlyExpanded = !monthlyExpanded;
+    renderWeekly();
+  });
+  $w('weeklyMonthChoices').addEventListener('change', event => {
+    const input = event.target.closest('[data-weekly-month]');
+    if (!input) return;
+    if (input.checked) selectedMonths.add(input.dataset.weeklyMonth);
+    else selectedMonths.delete(input.dataset.weeklyMonth);
+    renderWeekly();
+  });
   $w('weeklyAnchor').addEventListener('change',renderWeekly);
   $w('weeklyEstimateDays').addEventListener('change',renderWeekly);
   $w('weeklyOutput').addEventListener('input',e=>{
