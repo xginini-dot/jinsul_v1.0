@@ -1,1 +1,63 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JINSUL · 로그인</title><link rel="stylesheet" href="/portal.css"><script defer src="/login.js"></script></head><body><main class="auth"><a class="brand" href="/"><span class="jinsul-logo-symbol" aria-hidden="true"><img src="/진설로고.png" alt=""></span>JINSUL</a><section class="panel"><div class="eyebrow">INTERNAL WORKSPACE</div><h1>직원 로그인</h1><p class="muted">부여받은 계정으로 업무 포털에 접속하세요.</p><form id="login"><label for="username">아이디</label><input id="username" name="username" autocomplete="username" required maxlength="40"><label for="password">비밀번호</label><input id="password" name="password" type="password" autocomplete="current-password" required ><button class="primary" type="submit">로그인</button></form><p class="error" id="message" role="alert"></p><small>비밀번호를 잊으셨다면 관리자에게 초기화를 요청하세요.<br>계정별로 설정된 시간 동안 사용하지 않으면 자동으로 로그아웃됩니다. (기본 30분)</small></section></main></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JINSUL · 로그인</title>
+  <link rel="stylesheet" href="/portal.css">
+  <link rel="stylesheet" href="/install.css">
+  <script defer src="/login.js"></script>
+  <script defer src="/install.js"></script>
+</head>
+<body>
+<main class="auth">
+  <a class="brand" href="/"><span class="jinsul-logo-symbol" aria-hidden="true"><img src="/진설로고.png" alt=""></span>JINSUL</a>
+  <section class="panel">
+    <div class="eyebrow">INTERNAL WORKSPACE</div>
+    <h1>직원 로그인</h1>
+    <p class="muted">부여받은 계정으로 업무 포털에 접속하세요.</p>
+    <form id="login">
+      <label for="username">아이디</label>
+      <input id="username" name="username" autocomplete="username" required maxlength="40">
+      <label for="password">비밀번호</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">로그인</button>
+    </form>
+    <p class="error" id="message" role="alert"></p>
+    <small>비밀번호를 잊으셨다면 관리자에게 초기화를 요청하세요.<br>계정별로 설정된 시간 동안 사용하지 않으면 자동으로 로그아웃됩니다. (기본 30분)</small>
+  </section>
+  <section class="install-panel" id="app-install" aria-labelledby="install-heading">
+    <div class="install-brand">
+      <img src="/icons/app-192.png" width="52" height="52" alt="진설 포털 앱 아이콘">
+      <div><h2 id="install-heading">진설 포털 앱 설치</h2><p>바탕화면과 홈 화면에서 바로 시작하세요.</p></div>
+    </div>
+    <div class="install-options" data-install-options>
+      <button type="button" data-install-platform="desktop">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>
+        <span>PC 설치</span>
+      </button>
+      <button type="button" data-install-platform="android">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 4 2 3m8-3-2 3M5 12a7 7 0 0 1 14 0v6H5zM8 18v3m8-3v3M2 12v5m20-5v5"/><path d="M9 10h.01M15 10h.01" stroke-width="3"/></svg>
+        <span>안드로이드 설치</span>
+      </button>
+      <button type="button" data-install-platform="ios">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></svg>
+        <span>아이폰 설치</span>
+      </button>
+    </div>
+    <p class="install-note">아이폰은 Safari의 ‘홈 화면에 추가’로 설치할 수 있습니다.</p>
+    <p class="install-status" id="install-status" role="status" aria-live="polite"></p>
+    <noscript><p class="install-note">PC·안드로이드는 Chrome 또는 Edge의 설치 메뉴, 아이폰은 Safari의 공유 → 홈 화면에 추가를 이용하세요.</p></noscript>
+  </section>
+</main>
+<dialog class="install-dialog" id="install-guide" aria-labelledby="install-guide-title">
+  <header><h2 id="install-guide-title">진설 포털 설치</h2><button type="button" class="install-close" data-close-install aria-label="설치 안내 닫기" autofocus>×</button></header>
+  <div class="install-brand"><img src="/icons/app-192.png" width="52" height="52" alt=""><div><h2>진설 포털</h2><p>설치 후에도 기존 계정으로 로그인하세요.</p></div></div>
+  <ol id="install-steps"></ol>
+  <p class="install-hint">카카오톡 등 메신저에서 열었다면 사이트 주소를 복사해 Safari 또는 Chrome에서 열어 주세요.</p>
+  <div class="install-address-row"><input id="install-address" aria-label="진설 포털 주소" readonly><button type="button" id="install-copy">주소 복사</button></div>
+  <p class="install-status" id="install-copy-status" role="status" aria-live="polite"></p>
+  <footer><button type="button" data-close-install>확인</button></footer>
+</dialog>
+</body>
+</html>
