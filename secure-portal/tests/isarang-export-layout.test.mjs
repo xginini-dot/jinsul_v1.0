@@ -34,12 +34,13 @@ test('opinions and invalid calendar strings cannot replace the filename date',()
 
 test('repeated print headers and receipt-only exports are excluded and missing classifications are visible',()=>{
  const h=makeHarness();const header=['차트번호','주민등록번호','진료실'];
- const sources=[{name:'2026.10.1.xls',fileDate:'2026-10-01',role:'외래 완료환자',data:[header,['T1','','1진료실'],header,['T2','','1진료실']]},
+ const sources=[{name:'2026.10.1.xls',fileDate:'2026-10-01',role:'외래 완료환자',data:[header,['T1','','1진료실'],header,['T2','','1진료실'],['T1','','1진료실']]},
  {name:'2026.10.2.xls',fileDate:'2026-10-02',role:'외래 완료환자',data:[['차트번호','수진자명','카드수납액'],['T3','가상환자',1000]]}];
  const stats=h.run({outpatient:sources,injection:[],carm:[]});
  const total=stats.find(r=>r['구분']==='전체');
  assert.equal(total['총내원수'],2);assert.equal(total['초진환자수'],0);assert.equal(total['재진'],0);
  const note=h.elements.get('fileDiagnostic').innerHTML;
+ assert.match(note,/외래 내원 2건/);
  assert.match(note,/초재진 열 없음: 총내원만 반영/);assert.match(note,/진료실·초재진 열 없음: 집계 제외/);
  assert.equal(h.c.weeklyContext.outpatientRecords.length,2);
 });

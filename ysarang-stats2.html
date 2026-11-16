@@ -4265,7 +4265,7 @@ function renderInjectionMatchNote(summary){
                 for(const [id,dates] of injectionDates)for(const date of dates)standardizedInjections.push([id,patients.get(id)?.rrn||'',date]);
                 const diagnostic = document.getElementById('fileDiagnostic');
                 if (diagnostic) {
-                    const outpatientRows = standardizedVisits.length - 1;
+                    const outpatientRows = outpatientRecords.length;
                     const injectionRows = injectionMatch.summary.matched;
                     const roomCounts = {};
                     initialCandidates.forEach(v => roomCounts[v.room] = (roomCounts[v.room] || 0) + 1);
