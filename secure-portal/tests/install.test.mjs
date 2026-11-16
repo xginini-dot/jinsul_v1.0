@@ -28,7 +28,8 @@ test('manifest and icons support standalone install; worker never stores private
   assert.equal(manifest.scope,'/');
   assert.equal(manifest.display,'standalone');
   for(const icon of manifest.icons){
-    const data=await readFile(new URL('../public'+icon.src,import.meta.url));
+    const iconPath=new URL(icon.src,'https://portal.example').pathname;
+    const data=await readFile(new URL('../public'+iconPath,import.meta.url));
     const [width,height]=icon.sizes.split('x').map(Number);
     assert.equal(data.readUInt32BE(16),width);
     assert.equal(data.readUInt32BE(20),height);
