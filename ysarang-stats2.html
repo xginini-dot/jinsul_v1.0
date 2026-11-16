@@ -2983,51 +2983,26 @@ body.jinsul-analysis-open{
 
             /* ===== 유틸 ===== */
             function excelDateToISO(v) {
-      // Preserve the source calendar day for Excel times and date-shaped values.
-      {
-        if(v instanceof Date && !isNaN(v))return [v.getFullYear(),String(v.getMonth()+1).padStart(2,'0'),String(v.getDate()).padStart(2,'0')].join('-');
-        const text=String(v??'').trim();
-        const parts=text.match(/^(20\d{2})[-/.년\s]*(\d{1,2})[-/.월\s]*(\d{1,2})(?:$|[T\s일])/);
-        if(parts)return parts[1]+'-'+parts[2].padStart(2,'0')+'-'+parts[3].padStart(2,'0');
-        if(typeof v==='number'||/^\d{5}(?:\.\d+)?$/.test(text)){
-          const serial=Number(v);
-          if(Number.isFinite(serial)&&serial>0&&serial<100000){const d=new Date((Math.floor(serial)-25569)*86400000);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
-        }
-      }
-
-                if (v == null || v === '')
-                    return '';
-                if (typeof v === 'string') {
-                    // 2024-01-02, 2024/01/02, 20240102 등 처리
-                    const s = v.trim();
-                    if (!s)
-                        return '';
-                    const m = s.match(/(\d{4})[^\d]?(\d{1,2})[^\d]?(\d{1,2})/);
-                    if (m) {
-                        const y = m[1]
-                          , mo = String(m[2]).padStart(2, '0')
-                          , d = String(m[3]).padStart(2, '0');
-                        return `${y}-${mo}-${d}`;
+                // 자유 입력 소견이나 사람 이름은 날짜로 통과시키지 않습니다.
+                const valid = (y, m, d) => {
+                    const date = new Date(Date.UTC(Number(y), Number(m)-1, Number(d)));
+                    return Number(y)>=1900 && Number(y)<=2199 && date.getUTCFullYear()===Number(y) && date.getUTCMonth()===Number(m)-1 && date.getUTCDate()===Number(d)
+                        ? `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` : '';
+                };
+                if(v instanceof Date)return isNaN(v)?'':valid(v.getFullYear(),v.getMonth()+1,v.getDate());
+                const text=String(v??'').trim();
+                if(!text)return '';
+                const parts=text.match(/^(\d{4})[-/.년\s]+(\d{1,2})[-/.월\s]+(\d{1,2})(?:$|[T\s일])/)
+                    || text.match(/^(\d{4})(\d{2})(\d{2})$/);
+                if(parts)return valid(parts[1],parts[2],parts[3]);
+                if(typeof v==='number'||/^\d{5}(?:\.\d+)?$/.test(text)){
+                    const serial=Number(v);
+                    if(Number.isFinite(serial)&&serial>0&&serial<100000){
+                        const date=new Date((Math.floor(serial)-25569)*86400000);
+                        return valid(date.getUTCFullYear(),date.getUTCMonth()+1,date.getUTCDate());
                     }
-                    return s;
                 }
-                if (typeof v === 'number') {
-                    const utc_days = Math.floor(v - 25569);
-                    const utc_value = utc_days * 86400;
-                    const d = new Date(utc_value * 1000);
-                    const y = d.getUTCFullYear()
-                      , m = String(d.getUTCMonth() + 1).padStart(2, '0')
-                      , dd = String(d.getUTCDate()).padStart(2, '0');
-                    return `${y}-${m}-${dd}`;
-                }
-                if (v instanceof Date) {
-                    const y = v.getFullYear()
-                      , m = String(v.getMonth() + 1).padStart(2, '0')
-                      , d = String(v.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${d}`;
-                }
-
-                return String(v);
+                return '';
             }
 
             function normalizeDateInput(v) {
@@ -4021,6 +3996,7 @@ body.jinsul-analysis-open{
             function normalizedRoom(value) {
                 const t = String(value ?? '').trim();
                 if (!t) return '미지정';
+                if (/접수실/.test(t)) return t;
                 const n = t.match(/\d+/)?.[0];
                 return n ? `${n}진료실` : t;
             }
@@ -4055,6 +4031,7 @@ body.jinsul-analysis-open{
                 let rrnIdx = exactOrIncludes(['주민등록번호','주민번호','생년월일','등록번호']);
                 let patientNameIdx = exactOrIncludes(['수진자명','환자명','성명','이름']);
                 let dateIdx = exactOrIncludes(['내원일','진료일자','진료일','방문일','처방일']);
+                if (dateIdx >= 0 && /소견|메모|비고/.test(low[dateIdx])) dateIdx = -1;
                 let typeIdx = exactOrIncludes(['초/재진구분','초재진구분','초재진','진료구분']);
                 // 진료과 코드보다 실제 진료실 열을 우선합니다. '진료실명'이 있어도
                 // '진료과'의 완전 일치가 먼저 선택되면 09001 같은 코드가 진료실로 집계됩니다.
@@ -4078,7 +4055,33 @@ body.jinsul-analysis-open{
                     if (dateIdx < 0 && low[3]?.includes('내원일')) dateIdx = 3;
                 }
 
-                return { role, hi, header, idIdx, rrnIdx, patientNameIdx, dateIdx, typeIdx, roomIdx, ageIdx };
+                const adjustments = [];
+                if (/외래 완료환자/.test(role)) {
+                    // 일부 의사랑 내보내기는 제목만 이동되고 본문은 원래 열 순서를 유지합니다.
+                    // 명확한 형식이 한 열에 집중된 경우에만 본문 근거로 보정합니다.
+                    const sample = data.slice(hi+1).filter(row => {
+                        const id=String(row[idIdx]??'').trim();
+                        return id && !/^(차트|챠트)번호$/.test(id);
+                    }).slice(0,200);
+                    const inferColumn = (current, matches) => {
+                        if (!sample.length) return current;
+                        const counts = Array.from({length:Math.max(header.length,...sample.map(row=>row.length))},(_,i)=>sample.filter(row=>matches(String(row[i]??'').trim())).length);
+                        const best=Math.max(...counts), candidates=counts.flatMap((n,i)=>n===best?[i]:[]);
+                        return best/sample.length>=0.8 && candidates.length===1 && best>(counts[current]||0) ? candidates[0] : current;
+                    };
+                    if(roomIdx>=0){
+                        const inferred=inferColumn(roomIdx,t=>/^(?:\d+\s*진료실|진료실\s*\d+|제?\s*\d+\s*진료실)$/.test(t));
+                        if(inferred!==roomIdx){roomIdx=inferred;adjustments.push('진료실 본문 위치 보정');}
+                    }
+                    if(rrnIdx>=0){
+                        const inferred=inferColumn(rrnIdx,t=>/^\d{6}-[\d*•●xX]{7}$/.test(t)||/^\d{13}$/.test(t));
+                        if(inferred!==rrnIdx){
+                            if(inferred===patientNameIdx)patientNameIdx=rrnIdx;
+                            rrnIdx=inferred;adjustments.push('주민번호·이름 본문 위치 보정');
+                        }
+                    }
+                }
+                return { role, hi, header, idIdx, rrnIdx, patientNameIdx, dateIdx, typeIdx, roomIdx, ageIdx, adjustments };
             }
 
             async function loadFiles(fileList, role) {
@@ -4194,9 +4197,11 @@ function renderInjectionMatchNote(summary){
                     // 기준연도 변경 후 기간 적용 시에도 업로드한 파일을 다시 읽지 않고 날짜를 갱신합니다.
                     if (src.file) src.fileDate = extractDateFromFilename(src.name, filenameYear);
                     const meta = headerInfo(src.data, src.role);
+                    // 수납대장 등 진료 구분과 진료실이 모두 없는 자료는 외래 통계로 합산하지 않습니다.
+                    if (meta.typeIdx < 0 && meta.roomIdx < 0) return;
                     src.data.slice(meta.hi + 1).forEach(row => {
                         const id = normalizePatientId(meta.idIdx >= 0 ? row[meta.idIdx] : row[0]);
-                        if (!id) return;
+                        if (!id || /^(?:(?:차트|챠트)번호|합계|소계|총계)$/.test(id.replace(/\s+/g,''))) return;
                         const rrn = String(meta.rrnIdx >= 0 ? row[meta.rrnIdx] : '').trim();
                         const patientName = String(meta.patientNameIdx >= 0 ? row[meta.patientNameIdx] : '').trim();
                         // 외래 완료환자 파일에는 진료일 열이 없는 경우가 많으므로
@@ -4242,7 +4247,7 @@ function renderInjectionMatchNote(summary){
                     const meta = headerInfo(src.data, src.role);
                     src.data.slice(meta.hi + 1).forEach(row => {
                         const id = normalizePatientId(meta.idIdx >= 0 ? row[meta.idIdx] : row[0]);
-                        if (!id) return;
+                        if (!id || /^(?:(?:차트|챠트)번호|합계|소계|총계)$/.test(id.replace(/\s+/g,''))) return;
                         const rrn = String(meta.rrnIdx >= 0 ? row[meta.rrnIdx] : '').trim();
                         // 주사 파일은 파일명 날짜를 사용하지 않고 엑셀 내부 `내원일`만 사용합니다.
                         const date = meta.dateIdx >= 0 ? excelDateToISO(row[meta.dateIdx]) : '';
@@ -4267,9 +4272,13 @@ function renderInjectionMatchNote(summary){
                     const outpatientDateInfo = fileMap.outpatient.map(f => {
                         const m = headerInfo(f.data, f.role);
                         const body = f.data.slice(m.hi + 1);
-                        const validIds = body.filter(r => normalizePatientId(m.idIdx >= 0 ? r[m.idIdx] : '')).length;
+                        const validIds = body.filter(r => {
+                            const id=normalizePatientId(m.idIdx >= 0 ? r[m.idIdx] : '');
+                            return id && !/^(?:(?:차트|챠트)번호|합계|소계|총계)$/.test(id.replace(/\s+/g,''));
+                        }).length;
                         const initialRows = body.filter(r => /초진|신환/.test(String(m.typeIdx >= 0 ? r[m.typeIdx] : '').normalize('NFKC').replace(/\s+/g,''))).length;
-                        return `${f.name} → 파일명 날짜 ${f.fileDate || '미인식'} · 데이터 ${validIds}행 · 초진/신환 ${initialRows}행`;
+                        const note=m.typeIdx<0 ? (m.roomIdx<0 ? '진료실·초재진 열 없음: 집계 제외' : '초재진 열 없음: 총내원만 반영, 초진·재진 분류 불가') : '';
+                        return `${f.name} → 파일명 날짜 ${f.fileDate || '미인식'} · 데이터 ${validIds}행 · 초진/신환 ${initialRows}행${m.adjustments.length?' · '+m.adjustments.join(' · '):''}${note?' · <strong class="validation-warn">'+note+'</strong>':''}`;
                     }).join('<br>');
                     const injectionDateInfo = fileMap.injection.map(f => {
                         const m = headerInfo(f.data, f.role);
@@ -4277,7 +4286,9 @@ function renderInjectionMatchNote(summary){
                         const range = dates.length ? `${dates[0]} ~ ${dates[dates.length-1]}` : '내원일 미인식';
                         return `${f.name} → 엑셀 내원일 열: ${m.dateIdx >= 0 ? (m.header[m.dateIdx] || '내원일') : '미탐지'} · ${range} · ${dates.length}행`;
                     }).join('<br>');
+                    const incompleteFiles=fileMap.outpatient.filter(f=>headerInfo(f.data,f.role).typeIdx<0).length;
                     diagnostic.innerHTML = `<strong>파일 인식 완료</strong><br>` +
+                      (incompleteFiles?`<strong class="validation-warn">외래 ${incompleteFiles}개 파일에 초재진 구분 열이 없습니다. 파일 날짜 인식에서 제한 사항을 확인해 주세요.</strong><br>`:'') +
                       `외래 내원 ${outpatientRows.toLocaleString()}건 · 초진/신환 ${initialCandidates.size.toLocaleString()}명 · 주사 매칭 환자일 ${injectionRows.toLocaleString()}건 (원본 ${injectionRowsRead.toLocaleString()}행)<br>` +
                       `진료실별 초진: ${Object.entries(roomCounts).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).map(([k,v])=>`${k} ${v}명`).join(' · ') || '없음'}` +
                       `<div class="file-diagnostic-actions"><button type="button" id="toggleFileDiagnosticBtn" class="ghost" onclick="toggleFileDiagnosticDetail()" aria-expanded="false">파일 날짜 인식 보기</button></div>` +
