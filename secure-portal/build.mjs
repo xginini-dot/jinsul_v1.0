@@ -19,7 +19,7 @@ const assetVersion=assetHash.digest('hex').slice(0,16);
 const reusableAssets=new Set([...assetNames,'xlsx.full.min.js']);
 function versionAssets(html){
  const head=documentTags(html).find(tag=>tag.name==='head'&&!tag.closing);
- if(head)html=html.slice(0,head.end)+'<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#75664e"><meta name="apple-mobile-web-app-title" content="진설 포털"><link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=rounded-20261116">'+html.slice(head.end);
+ if(head)html=html.slice(0,head.end)+'<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#75664e"><meta name="apple-mobile-web-app-title" content="진설 포털"><link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png?v=outlined-20261116">'+html.slice(head.end);
  const edits=[];
  for(const tag of documentTags(html).filter(t=>!t.closing&&(t.name==='script'||t.name==='link'))){
   const attr=/\b(?:src|href)\s*=\s*(["'])(.*?)\1/i.exec(tag.text);
