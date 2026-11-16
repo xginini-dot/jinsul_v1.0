@@ -2700,7 +2700,7 @@ body.jinsul-analysis-open{
 @media(max-width:900px){.dr-gap-charts{grid-template-columns:1fr}}
 </style>
 <style>
-#uploadCard .date-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+#uploadCard .date-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #uploadCard .date-actions{margin-top:14px;gap:10px}
 #uploadCard .date-actions button{min-height:44px}
 @media(max-width:700px){#uploadCard .date-grid{grid-template-columns:1fr!important}#uploadCard .date-actions{justify-content:stretch}#uploadCard .date-actions button{flex:1 1 130px}}
@@ -2770,6 +2770,11 @@ body.jinsul-analysis-open{
                         <div class="field-box">
                             <label>조회 종료일</label>
                             <input type="date" id="endDate"/>
+                        </div>
+                        <div class="field-box">
+                            <label for="filenameYear">날짜 약어 기준연도</label>
+                            <input type="number" id="filenameYear" min="2000" max="2099" step="1" inputmode="numeric"/>
+                            <small class="hint">9.15.xls · 10.1.xlsx처럼 연도가 없는 외래 파일명에 적용합니다.</small>
                         </div>
                     </div>
                     <div class="right date-actions">
@@ -3938,16 +3943,19 @@ body.jinsul-analysis-open{
                 return XLSX.utils.sheet_to_json(pickedSheet, { header:1, raw:true, defval:'', blankrows:false });
             }
 
-            function extractDateFromFilename(filename) {
+            function extractDateFromFilename(filename, referenceYear = new Date().getFullYear()) {
                 // 브라우저/운영체제별 유니코드 조합 차이와 공백을 모두 정규화합니다.
                 const base = String(filename || '')
                     .normalize('NFKC')
-                    .replace(/\.(xlsx|xls)$/i, '')
-                    .replace(/[\u00A0\u2000-\u200B\uFEFF]/g, ' ');
+                    .replace(/[\u00A0\u2000-\u200B\uFEFF]/g, ' ')
+                    .replace(/\.(xlsx|xls)\s*$/i, '')
+                    .trim();
 
                 const toISO = (y, m, d) => {
                     const yy = Number(y), mm = Number(m), dd = Number(d);
-                    if (yy < 2000 || yy > 2099 || mm < 1 || mm > 12 || dd < 1 || dd > 31) return '';
+                    if (![yy, mm, dd].every(Number.isInteger) || yy < 2000 || yy > 2099 || mm < 1 || mm > 12 || dd < 1 || dd > 31) return '';
+                    const date = new Date(Date.UTC(yy, mm - 1, dd));
+                    if (date.getUTCMonth() !== mm - 1 || date.getUTCDate() !== dd) return '';
                     return `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
                 };
 
@@ -3969,6 +3977,11 @@ body.jinsul-analysis-open{
                 // 3순위: YYYYMMDD
                 m = base.match(/(20\d{2})(\d{2})(\d{2})/);
                 if (m) return toISO(m[1], m[2], m[3]);
+
+                // 월·일 약어는 파일명 전체가 날짜일 때만 허용합니다. 기간명이나 일반 숫자는 제외합니다.
+                m = base.match(/^(\d{1,2})\s*[.\/_-]\s*(\d{1,2})(?:\s*\(\d+\))?$/)
+                    || base.match(/^(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:\s*\(\d+\))?$/);
+                if (m) return toISO(referenceYear, m[1], m[2]);
                 return '';
             }
 
@@ -4071,7 +4084,7 @@ body.jinsul-analysis-open{
                 for (let i=0; i<files.length; i++) {
                     const file=files[i];
                     $('#runBtn').textContent = `읽는 중 ${i+1}/${files.length}…`;
-                    out.push({ file, name: file.name, fileDate: extractDateFromFilename(file.name), data: await readXlsx(file), role });
+                    out.push({ file, name: file.name, fileDate: extractDateFromFilename(file.name, Number($('#filenameYear').value)), data: await readXlsx(file), role });
                     // 파일 사이에 렌더링 기회를 주어 대량 업로드 중 화면 멈춤을 줄입니다.
                     await yieldToBrowser();
                 }
@@ -4090,6 +4103,12 @@ body.jinsul-analysis-open{
             function validateSelectedPeriod(){
                 const {startDate,endDate}=getSelectedDateRange();
                 if(startDate&&endDate&&startDate>endDate){alert('조회 시작일이 종료일보다 늦습니다. 기간을 확인해주세요.');return false}
+                const filenameYear = Number($('#filenameYear').value);
+                if (!Number.isInteger(filenameYear) || filenameYear < 2000 || filenameYear > 2099) {
+                    alert('날짜 약어 기준연도를 2000~2099년으로 입력해주세요.');
+                    $('#filenameYear').focus();
+                    return false;
+                }
                 return true;
             }
             async function processFiles() {
@@ -4158,6 +4177,7 @@ function renderInjectionMatchNote(summary){
                 window.__latestFileMap = fileMap;
                 if(!preserveOverrides) window.__initialClassOverrides = {};
                 const {startDate, endDate} = getSelectedDateRange();
+                const filenameYear = Number(document.getElementById('filenameYear')?.value) || new Date().getFullYear();
                 const patients = new Map();
                 const visitDates = new Map();
                 const initialCandidates = new Map();
@@ -4168,6 +4188,8 @@ function renderInjectionMatchNote(summary){
                 const standardizedInitial = [['차트번호','주민등록번호','내원일','초/재진구분','진료실','나이']];
 
                 fileMap.outpatient.forEach(src => {
+                    // 기준연도 변경 후 기간 적용 시에도 업로드한 파일을 다시 읽지 않고 날짜를 갱신합니다.
+                    if (src.file) src.fileDate = extractDateFromFilename(src.name, filenameYear);
                     const meta = headerInfo(src.data, src.role);
                     src.data.slice(meta.hi + 1).forEach(row => {
                         const id = normalizePatientId(meta.idIdx >= 0 ? row[meta.idIdx] : row[0]);
@@ -4175,7 +4197,7 @@ function renderInjectionMatchNote(summary){
                         const rrn = String(meta.rrnIdx >= 0 ? row[meta.rrnIdx] : '').trim();
                         const patientName = String(meta.patientNameIdx >= 0 ? row[meta.patientNameIdx] : '').trim();
                         // 외래 완료환자 파일에는 진료일 열이 없는 경우가 많으므로
-                        // 파일명의 `진료일자_YYYY-MM-DD`를 해당 파일 전체 행의 내원일로 사용합니다.
+                        // 기존 전체 날짜 또는 선택한 기준연도로 해석한 월·일 약어를 사용합니다.
                         const internalDate = meta.dateIdx >= 0 ? excelDateToISO(row[meta.dateIdx]) : '';
                         const date = internalDate || src.fileDate;
                         if (!date || !isDateInRange(date, startDate, endDate)) return;
@@ -4549,6 +4571,7 @@ function renderInjectionMatchNote(summary){
             }
 
             // 이벤트
+            $('#filenameYear').value = String(new Date().getFullYear());
             async function applyCurrentPeriod(){
                 if(!validateSelectedPeriod())return;
                 if(!window.__latestFileMap){await processFiles();return}
@@ -4561,6 +4584,9 @@ function renderInjectionMatchNote(summary){
             }
             $('#runBtn').addEventListener('click', processFiles);
             $('#applyDateBtn').addEventListener('click',applyCurrentPeriod);
+            $('#filenameYear').addEventListener('change', () => {
+                if (window.__latestFileMap) applyCurrentPeriod();
+            });
             // 파일을 바꾸면 이전 자료가 남지 않도록 다음 기간 적용 시 새 파일을 읽습니다.
             [['outpatientFiles','outpatientFilesName'],['injectionFiles','injectionFilesName'],['carmFiles','carmFilesName']].forEach(([inputId,nameId])=>{
                 $('#'+inputId).addEventListener('change',()=>{
