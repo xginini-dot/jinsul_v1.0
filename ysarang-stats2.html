@@ -4056,7 +4056,10 @@ body.jinsul-analysis-open{
                 let patientNameIdx = exactOrIncludes(['수진자명','환자명','성명','이름']);
                 let dateIdx = exactOrIncludes(['내원일','진료일자','진료일','방문일','처방일']);
                 let typeIdx = exactOrIncludes(['초/재진구분','초재진구분','초재진','진료구분']);
-                let roomIdx = exactOrIncludes(['진료실','진료방','진료과']);
+                // 진료과 코드보다 실제 진료실 열을 우선합니다. '진료실명'이 있어도
+                // '진료과'의 완전 일치가 먼저 선택되면 09001 같은 코드가 진료실로 집계됩니다.
+                let roomIdx = exactOrIncludes(['진료실','진료실명','진료실번호','진료방','진료방명']);
+                if (roomIdx < 0) roomIdx = exactOrIncludes(['진료과']);
                 let ageIdx = exactOrIncludes(['나이','연령']);
 
                 // 의사랑 외래 완료환자 기본 서식의 안전한 위치 보정
