@@ -1,36 +1,39 @@
-#newPatientAgeDialog{--age-bg:var(--j-panel,#fcfbf8);--age-ink:var(--j-ink,#292e32);--age-line:var(--j-line,#dedfd8);--age-soft:var(--j-soft,#f1f0eb);--age-muted:var(--j-muted,#626964);position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(1120px,calc(100% - 32px));max-width:1120px;max-height:calc(100dvh - 32px);padding:26px;border:1px solid var(--age-line);border-radius:14px;background:var(--age-bg)!important;color:var(--age-ink)!important;overflow:auto;font:14px/1.6 Paperlogy,'Malgun Gothic',sans-serif}
+#newPatientAgeDialog{--age-bg:var(--j-panel,#fcfbf8);--age-ink:var(--j-ink,#292e32);--age-line:var(--j-line,#dedfd8);--age-soft:var(--j-soft,#f1f0eb);--age-muted:var(--j-muted,#626964);position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(1560px,calc(100vw - 24px));max-width:1560px;max-height:calc(100dvh - 24px);padding:14px 16px;border:1px solid var(--age-line);border-radius:12px;background:var(--age-bg)!important;color:var(--age-ink)!important;overflow:visible;font:12px/1.4 Paperlogy,'Malgun Gothic',sans-serif}
+#newPatientAgeDialog[open]{display:flex;flex-direction:column}
 #newPatientAgeDialog::backdrop{background:#111a20a3}
-#newPatientAgeDialog header{display:flex!important;flex-direction:row!important;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1px solid var(--age-line);padding:0 0 16px!important;margin:0!important;max-width:none!important;min-height:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;text-align:left!important}
+#newPatientAgeDialog header{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--age-line);padding:0 0 8px!important;margin:0!important;max-width:none!important;min-height:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;text-align:left!important}
 #newPatientAgeDialog header::before,#newPatientAgeDialog header::after{content:none!important;display:none!important}
 #newPatientAgeDialog header>div{min-width:0;text-align:left!important}
-#newPatientAgeDialog h2{margin:0;font-size:22px;color:var(--age-ink)!important;line-height:1.4}
-#newPatientAgeDialog header p{color:var(--age-muted);margin:6px 0 0;font-size:13px}
-#newPatientAgeDialog button,#newPatientAgeDialog select{color:var(--age-ink)!important;background:var(--age-bg)!important;border:1px solid var(--age-line)!important;border-radius:8px;font:inherit;min-height:42px;padding:8px 12px;box-shadow:none!important;white-space:nowrap;cursor:pointer}
+#newPatientAgeDialog h2{margin:0;font-size:18px;color:var(--age-ink)!important;line-height:1.25}
+#newPatientAgeDialog header p{color:var(--age-muted);margin:3px 0 0;font-size:11px;line-height:1.3}
+#newPatientAgeDialog button,#newPatientAgeDialog select{color:var(--age-ink)!important;background:var(--age-bg)!important;border:1px solid var(--age-line)!important;border-radius:6px;font:inherit;font-size:12px!important;min-height:30px!important;padding:5px 10px!important;box-shadow:none!important;white-space:nowrap;cursor:pointer}
 #newPatientAgeDialog button:disabled{opacity:.5;cursor:default}
 #newPatientAgeDialog :focus-visible{outline:3px solid #3b83b9;outline-offset:2px}
-#newPatientAgeDialog .new-age-controls{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;padding:20px 0 12px}
-#newPatientAgeDialog label{display:grid;gap:6px;margin:0;font-size:12px;color:var(--age-muted);font-weight:600}
-#newPatientAgeDialog select{width:auto;max-width:100%;font-size:13px}
-#newPatientAgeSummary{padding:14px 16px;background:var(--age-soft);border:1px solid var(--age-line);border-radius:8px;font-size:15px;font-weight:600;line-height:1.8;margin:4px 0 18px;word-break:keep-all}
-#newPatientAgeOutput{overflow:auto;max-height:55dvh;border:1px solid var(--age-line);border-radius:8px}
-#newPatientAgeDialog .new-age-scroll-hint{display:none;font-size:11px;color:var(--age-muted);margin:0 0 10px}
-#newPatientAgeDialog table{width:100%;min-width:1020px;border-collapse:collapse;table-layout:auto!important;font-size:13px;color:var(--age-ink)!important}
-#newPatientAgeDialog[data-expanded=true]{width:min(1480px,calc(100% - 32px));max-width:1480px}
-#newPatientAgeDialog table.new-age-expanded{min-width:1320px}
-#newPatientAgeDialog .new-age-distribution-controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:4px 0 16px}
-#newPatientAgeDialog .new-age-distribution-controls label{display:inline-flex;align-items:center;gap:8px;color:var(--age-ink);font-size:13px;cursor:pointer}
-#newPatientAgeDialog .new-age-distribution-controls input{width:18px!important;height:18px!important;min-height:0!important;max-width:18px!important;margin:0;padding:0;accent-color:var(--j-brand,#75664e);cursor:pointer}
-#newPatientAgeDialog .new-age-distribution-controls span{font-size:12px;color:var(--age-muted)}
-#newPatientAgeDialog .new-age-distribution strong{display:block;font-size:14px;font-weight:700;line-height:1.5}
-#newPatientAgeDialog .new-age-distribution small{display:block;font-size:11px;line-height:1.5;color:var(--age-muted)!important;margin-top:4px;font-weight:400}
+#newPatientAgeDialog .new-age-controls{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(190px,1fr) minmax(170px,1fr) auto;gap:12px;align-items:end;padding:8px 0}
+#newPatientAgeDialog label{display:grid;gap:3px;margin:0;font-size:11px;color:var(--age-muted);font-weight:600}
+#newPatientAgeDialog select{width:100%;max-width:100%;min-width:0;font-size:12px}
+#newPatientAgeSummary{padding:7px 10px;background:var(--age-soft);border:1px solid var(--age-line);border-radius:6px;font-size:12px;font-weight:600;line-height:1.4;margin:0 0 8px;word-break:keep-all}
+#newPatientAgeOutput{flex:0 0 auto;overflow:visible;max-height:none;border:1px solid var(--age-line);border-radius:6px}
+#newPatientAgeDialog .new-age-scroll-hint{display:none!important}
+#newPatientAgeDialog table,#newPatientAgeDialog table.new-age-expanded{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed!important;font-size:12px;color:var(--age-ink)!important;transform-origin:top left}
+#newPatientAgeDialog[data-expanded=true]{width:min(1560px,calc(100vw - 24px));max-width:1560px}
+#newPatientAgeDialog .new-age-distribution-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 7px}
+#newPatientAgeDialog .new-age-distribution-controls label{display:inline-flex;align-items:center;gap:6px;color:var(--age-ink);font-size:12px;cursor:pointer}
+#newPatientAgeDialog .new-age-distribution-controls input{width:16px!important;height:16px!important;min-height:0!important;max-width:16px!important;margin:0;padding:0;accent-color:var(--j-brand,#75664e);cursor:pointer}
+#newPatientAgeDialog .new-age-distribution-controls span{font-size:11px;color:var(--age-muted)}
+#newPatientAgeDialog .new-age-distribution strong{display:block;font-size:13px;font-weight:700;line-height:1.2}
+#newPatientAgeDialog .new-age-distribution small{display:block;font-size:10px;line-height:1.2;color:var(--age-muted)!important;margin-top:2px;font-weight:400}
 #newPatientAgeDialog :is(th,td).new-age-combined{background:var(--age-soft)!important;border-left:2px solid var(--age-line)!important}
-#newPatientAgeDialog tr>:first-child{position:sticky;left:0;z-index:1}
-#newPatientAgeDialog thead tr>:first-child{z-index:3}
-#newPatientAgeDialog caption{text-align:left;caption-side:top;padding:12px;background:var(--age-bg);color:var(--age-muted);font-size:12px}
-#newPatientAgeDialog th,#newPatientAgeDialog td{padding:12px 14px;text-align:right;white-space:nowrap;border:0!important;border-bottom:1px solid var(--age-line)!important;color:var(--age-ink)!important;background:var(--age-bg)!important;line-height:1.5}
-#newPatientAgeDialog tr>:first-child{text-align:left}
-#newPatientAgeDialog thead th{background:var(--age-soft)!important;position:sticky;top:0;font-weight:700}
+#newPatientAgeDialog caption{text-align:left;caption-side:top;padding:5px 8px;background:var(--age-bg);color:var(--age-muted);font-size:10px;line-height:1.3}
+#newPatientAgeDialog th,#newPatientAgeDialog td{padding:clamp(3px,1vh - 3px,7px) 5px;text-align:right;white-space:nowrap;border:0!important;border-bottom:1px solid var(--age-line)!important;color:var(--age-ink)!important;background:var(--age-bg)!important;line-height:1.2}
+#newPatientAgeDialog tr>:first-child{text-align:left;position:static;width:9%}
+#newPatientAgeDialog thead th{background:var(--age-soft)!important;position:static;font-size:11px;font-weight:700;white-space:normal}
+#newPatientAgeDialog thead th:nth-child(2){width:6%}#newPatientAgeDialog thead th:nth-child(3){width:8%}
+#newPatientAgeDialog thead th.new-age-combined{width:9%}#newPatientAgeDialog thead th:last-child{width:8%}
 #newPatientAgeDialog tbody th{font-weight:500}
 #newPatientAgeDialog tfoot :is(th,td){font-weight:700;background:var(--age-soft)!important}
-#newPatientAgeNote{font-size:12px;color:var(--age-muted);line-height:1.9;margin:16px 0 0;white-space:pre-line;word-break:keep-all}
-@media(max-width:650px){#newPatientAgeDialog{width:calc(100% - 20px);padding:18px;max-height:calc(100dvh - 20px)}#newPatientAgeDialog h2{font-size:18px}#newPatientAgeDialog .new-age-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}#newPatientAgeDialog label:nth-child(2){grid-column:1/-1;grid-row:2}#newPatientAgeDialog select{width:100%;min-width:0}#newPatientAgeSummary{font-size:13px;padding:12px}#newPatientAgeExport{width:100%}#newPatientAgeDialog header p{font-size:12px}#newPatientAgeDialog .new-age-scroll-hint{display:block}}
+#newPatientAgeMethod{flex:0 0 auto;position:relative;margin:7px 0 0;font-size:11px;color:var(--age-muted)}
+#newPatientAgeMethod summary{display:list-item;cursor:pointer;width:max-content;max-width:100%;padding:2px 0;color:var(--age-muted)}
+#newPatientAgeNote{position:absolute;bottom:calc(100% + 4px);left:0;right:0;z-index:5;max-height:45dvh;overflow:auto;box-sizing:border-box;font-size:12px;color:var(--age-ink);line-height:1.8;margin:0;padding:14px 16px;border:1px solid var(--age-line);border-radius:8px;background:var(--age-bg);box-shadow:0 8px 28px #0002;white-space:pre-line;word-break:keep-all}
+@media(max-height:720px){#newPatientAgeDialog{padding:10px 12px}#newPatientAgeDialog header p{display:none}#newPatientAgeDialog h2{font-size:16px}#newPatientAgeDialog .new-age-controls{padding:6px 0}#newPatientAgeDialog th,#newPatientAgeDialog td{padding:3px 4px}#newPatientAgeDialog .new-age-distribution strong{font-size:12px}#newPatientAgeDialog .new-age-distribution small{font-size:9px;margin-top:1px}}
+@media(max-width:650px){#newPatientAgeDialog,#newPatientAgeDialog[data-expanded=true]{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:10px}#newPatientAgeDialog h2{font-size:15px}#newPatientAgeDialog header p{display:none}#newPatientAgeDialog .new-age-controls{grid-template-columns:1fr 1fr;gap:6px}#newPatientAgeDialog label:nth-child(2){grid-column:1/-1;grid-row:2}#newPatientAgeDialog .new-age-distribution-controls{gap:6px;margin-bottom:6px}#newPatientAgeDialog .new-age-distribution-controls label{font-size:11px}#newPatientAgeDialog .new-age-distribution-controls span{display:none}#newPatientAgeSummary{font-size:11px;padding:6px 8px;margin-bottom:6px}#newPatientAgeExport{width:100%}#newPatientAgeDialog button,#newPatientAgeDialog select{padding:4px 7px!important;min-height:28px!important}}

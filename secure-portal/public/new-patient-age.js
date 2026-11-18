@@ -111,6 +111,26 @@
   const get = key => document.getElementById(key);
   const text = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const number = value => value === null ? '—' : Number(value).toLocaleString('ko-KR');
+  function fitReport() {
+    if (!dialog?.open) return;
+    const output = get('newPatientAgeOutput');
+    const table = output.querySelector('table');
+    if (!table) return;
+    table.style.zoom = '1';
+    const width = output.clientWidth;
+    const minimumWidth = width < 700 ? get('newPatientAgeExpanded').checked ? 980 : 800 : width;
+    table.style.width = Math.ceil(Math.max(width, minimumWidth)) + 'px';
+    const styles = getComputedStyle(dialog);
+    const otherHeight = [...dialog.children].filter(element => element !== output).reduce((sum, element) => {
+      const style = getComputedStyle(element);
+      return sum + element.getBoundingClientRect().height + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+    }, 0);
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const availableHeight = Math.max(80, viewportHeight - 26 - (parseFloat(styles.paddingTop) || 0) - (parseFloat(styles.paddingBottom) || 0) - otherHeight);
+    const scale = Math.min(1, width / table.scrollWidth, availableHeight / table.getBoundingClientRect().height);
+    table.style.zoom = String(scale);
+    output.dataset.fitScale = String(scale);
+  }
   window.newPatientAgePrepare = input => {
     data = input ? normalize(input) : null;
     selected = '';
@@ -159,12 +179,14 @@
       model.hasVisits ? `초진일은 초진 기록을 근거로 1회 포함합니다.${model.missingInitialDates ? ` 총내원 자료에서 초진 당일이 확인되지 않은 환자 ${model.missingInitialDates}명은 초진일 1회를 추가했습니다.` : ''} 업로드하지 않은 날짜의 추가 내원은 계산할 수 없습니다.` : '총내원 파일이 없거나 내원일·환자 식별 열을 확인하지 못해 환자수만 표시합니다. 내원 횟수는 총내원 파일 업로드 후 조회하세요.'
     ].filter(Boolean);
     get('newPatientAgeNote').textContent = notes.join('\n');
+    fitReport();
   }
   function open(event) {
     if (!data) return;
     opener = event.currentTarget;
     render();
     dialog.showModal();
+    fitReport();
   }
   function exportResult() {
     if (!model || !window.XLSX) return;
@@ -198,6 +220,13 @@
     dialog.setAttribute('aria-labelledby', 'newPatientAgeTitle');
     dialog.innerHTML = `<header><div><h2 id="newPatientAgeTitle">주간·월간 신환 연령별 내원</h2><p>해당 주·월의 초진 환자가 같은 주·월에 내원한 횟수</p></div><button type="button" id="newPatientAgeClose" aria-label="연령별 내원 창 닫기" autofocus>닫기</button></header><div class="new-age-controls"><label>조회 단위<select id="newPatientAgeMode"><option value="week">주간 (일~토)</option><option value="month">월간</option></select></label><label>조회 기간<select id="newPatientAgePeriod"></select></label><label>초진 포함 기준<select id="newPatientAgeScope"><option value="new">신환(초진)만</option><option value="all">초진 전체 (90초진 포함)</option></select></label><button type="button" id="newPatientAgeExport">엑셀 다운로드</button></div><p id="newPatientAgeSummary" role="status" aria-live="polite"></p><div id="newPatientAgeOutput" tabindex="0" aria-label="연령별 내원 통계 표"></div><p id="newPatientAgeNote"></p>`;
     document.body.appendChild(dialog);
+    const method = document.createElement('details');
+    method.id = 'newPatientAgeMethod';
+    method.innerHTML = '<summary>집계 기준 · 안내</summary>';
+    get('newPatientAgeNote').replaceWith(method);
+    const note = document.createElement('p');
+    note.id = 'newPatientAgeNote';
+    method.appendChild(note);
     get('newPatientAgeSummary').insertAdjacentHTML('beforebegin', '<div class="new-age-distribution-controls"><label><input type="checkbox" id="newPatientAgeExpanded">1~8회 상세보기 (8회 이상)</label><span>기본: 1~4회 · 5회 이상</span></div>');
     get('newPatientAgeOutput').insertAdjacentHTML('beforebegin', '<p class="new-age-scroll-hint">표를 좌우로 밀면 평균과 내원 횟수별 환자수를 볼 수 있습니다.</p>');
     get('newPatientAgeClose').addEventListener('click', () => dialog.close());
@@ -211,6 +240,9 @@
       get(inputId)?.addEventListener('change', () => window.newPatientAgePrepare(null));
     }
     get('clearBtn')?.addEventListener('click', () => window.newPatientAgePrepare(null));
+    window.addEventListener('resize', fitReport);
+    window.visualViewport?.addEventListener('resize', fitReport);
+    document.fonts?.ready.then(fitReport);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
