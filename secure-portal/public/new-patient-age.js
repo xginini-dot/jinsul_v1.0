@@ -56,7 +56,7 @@
       const patient = patients.get(visit.id);
       if (patient && visit.date >= patient.date && visit.date >= start && visit.date <= end) dates.get(visit.id).add(visit.date);
     }
-    const rows = bands.map(band => ({band, patients: 0, visits: data.hasVisits ? 0 : null, average: null, once: 0, twice: 0, three: 0, fourPlus: 0}));
+    const rows = bands.map(band => ({band, patients: 0, visits: data.hasVisits ? 0 : null, average: null, once: 0, twice: 0, three: 0, fourPlus: 0, distribution: Array(8).fill(0)}));
     let missingInitialDates = 0;
     for (const patient of patients.values()) {
       const row = rows[ageBand(patient.age)];
@@ -67,18 +67,46 @@
       // The initial record itself is evidence of this visit, even if omitted from the total-visit export.
       days.add(patient.date);
       row.visits += days.size;
+      row.distribution[Math.min(days.size, 8) - 1]++;
       row[days.size === 1 ? 'once' : days.size === 2 ? 'twice' : days.size === 3 ? 'three' : 'fourPlus']++;
     }
-    const total = {band: '전체', patients: 0, visits: data.hasVisits ? 0 : null, average: null, once: 0, twice: 0, three: 0, fourPlus: 0};
+    const total = {band: '전체', patients: 0, visits: data.hasVisits ? 0 : null, average: null, once: 0, twice: 0, three: 0, fourPlus: 0, distribution: Array(8).fill(0)};
     for (const row of rows) {
       row.average = data.hasVisits && row.patients ? row.visits / row.patients : null;
       for (const field of ['patients', 'once', 'twice', 'three', 'fourPlus']) total[field] += row[field];
       if (data.hasVisits) total.visits += row.visits;
+      row.distribution.forEach((count, index) => total.distribution[index] += count);
     }
     total.average = data.hasVisits && total.patients ? total.visits / total.patients : null;
     return {key, mode, includeNinety, start, end, range, rows, total, missingInitialDates, hasVisits: !!data.hasVisits};
   }
-  window.JinsulNewPatientAge = {normalize, periods, buildModel, ageBand, periodRange};
+  function distributionColumns(row, expanded = false) {
+    const counts = expanded ? row.distribution : [...row.distribution.slice(0, 4), row.distribution.slice(4).reduce((sum, count) => sum + count, 0)];
+    return counts.map((count, index) => ({
+      label: index === counts.length - 1 ? `${index + 1}회 이상` : `${index + 1}회`,
+      count: row.visits === null ? null : count,
+      rate: row.visits !== null && row.patients ? count / row.patients * 100 : null
+    }));
+  }
+  function combined(row) {
+    const count = row.distribution[0] + row.distribution[1];
+    return {count: row.visits === null ? null : count, rate: row.visits !== null && row.patients ? count / row.patients * 100 : null};
+  }
+  function renderTable(current, expanded = false) {
+    const headings = distributionColumns(current.total, expanded).map(column => column.label);
+    const distributionCell = (value, combinedColumn = false) => `<td class="new-age-distribution${combinedColumn ? ' new-age-combined' : ''}"><strong>${value.rate === null ? current.hasVisits ? '해당 없음' : '—' : value.rate.toFixed(1) + '%'}</strong><small>${value.count === null ? '자료 없음' : number(value.count) + '명'}</small></td>`;
+    const cells = row => `<td>${number(row.patients)}</td><td>${number(row.visits)}</td>${distributionColumns(row, expanded).map(column => distributionCell(column)).join('')}${distributionCell(combined(row), true)}<td>${row.average === null ? '—' : row.average.toFixed(2) + '회'}</td>`;
+    return `<table${expanded ? ' class="new-age-expanded"' : ''}><caption>초진일이 ${text(current.start)} ~ ${text(current.end)}인 환자의 같은 기간 내 내원 통계</caption><thead><tr><th scope="col">연령대</th><th scope="col">환자수<br>(명)</th><th scope="col">총 내원횟수<br>(회)</th>${headings.map(heading => `<th scope="col">${heading}</th>`).join('')}<th scope="col" class="new-age-combined">1·2회 합산</th><th scope="col">1인당 평균<br>내원횟수</th></tr></thead><tbody>${current.rows.map(row => `<tr><th scope="row">${row.band}</th>${cells(row)}</tr>`).join('')}</tbody><tfoot><tr><th scope="row">전체</th>${cells(current.total)}</tr></tfoot></table>`;
+  }
+  function exportRows(current, expanded = false) {
+    const columns = distributionColumns(current.total, expanded);
+    const roundRate = value => value === null ? '' : Number(value.toFixed(1));
+    return [
+      ['연령대', '환자수', '총 내원횟수', ...columns.flatMap(column => [column.label + ' 비율(%)', column.label + ' 환자수']), '1·2회 합산 비율(%)', '1·2회 합산 환자수', '1인당 평균 내원횟수'],
+      ...[...current.rows, current.total].map(row => [row.band, row.patients, row.visits ?? '', ...distributionColumns(row, expanded).flatMap(column => [roundRate(column.rate), column.count ?? '']), roundRate(combined(row).rate), combined(row).count ?? '', row.average === null ? '' : Number(row.average.toFixed(2))])
+    ];
+  }
+  window.JinsulNewPatientAge = {normalize, periods, buildModel, ageBand, periodRange, distributionColumns, renderTable, exportRows};
   let data = null, dialog, button, opener, selected = '', model;
   const get = key => document.getElementById(key);
   const text = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
@@ -118,14 +146,14 @@
       return;
     }
     model = buildModel(data, selected, mode, get('newPatientAgeScope').value === 'all');
-    const fields = ['patients', 'visits', 'average', 'once', 'twice', 'three', 'fourPlus'];
-    const headings = ['환자수', '총 내원횟수', '1인당 평균', '1회 내원', '2회 내원', '3회 내원', '4회 이상'];
-    const cells = row => fields.map(field => `<td>${field !== 'patients' && !model.hasVisits ? '—' : field === 'average' ? row.average === null ? '—' : row.average.toFixed(2) + '회' : number(row[field])}</td>`).join('');
-    get('newPatientAgeOutput').innerHTML = `<table><caption>초진일이 ${text(model.start)} ~ ${text(model.end)}인 환자의 같은 기간 내 내원 통계</caption><thead><tr><th scope="col">연령대</th>${headings.map(heading => `<th scope="col">${heading}</th>`).join('')}</tr></thead><tbody>${model.rows.map(row => `<tr><th scope="row">${row.band}</th>${cells(row)}</tr>`).join('')}</tbody><tfoot><tr><th scope="row">전체</th>${cells(model.total)}</tr></tfoot></table>`;
+    const expanded = get('newPatientAgeExpanded').checked;
+    dialog.dataset.expanded = String(expanded);
+    get('newPatientAgeOutput').innerHTML = renderTable(model, expanded);
     get('newPatientAgeSummary').textContent = `초진 환자 ${number(model.total.patients)}명 · 총 내원 ${number(model.total.visits)}${model.hasVisits ? '회' : ''} · 1인당 평균 ${model.total.average === null ? '—' : model.total.average.toFixed(2) + '회'}`;
     const notes = [
       `집계기간 ${model.start} ~ ${model.end}. ${mode === 'week' ? '주간은 일요일~토요일' : '월간은 매월 1일~말일'}이며, 업로드 조회기간과 겹치는 자료만 반영합니다.`,
       '해당 기간에 초진한 환자의 초진일 이후 같은 기간 내 내원만 계산합니다. 같은 환자의 같은 날짜는 진료실·처방·중복 파일 수와 관계없이 1회입니다. 초진 기록에서 읽은 연령을 사용하고, 연령이 없거나 유효하지 않으면 ‘연령 미상’에 포함합니다.',
+      `각 비율의 분모는 해당 연령대의 초진 환자수입니다. 비율 아래에 인원수를 표시하며, ‘1·2회 합산’은 1회 또는 2회 내원한 환자의 합계입니다. ${expanded ? '1~7회와 8회 이상' : '1~4회와 5회 이상'}으로 구분합니다.`,
       get('newPatientAgeScope').value === 'all' ? '초진 및 90초진을 포함합니다. 같은 기간에 초진 기록이 여러 번 있어도 환자수는 1명입니다.' : '신환(초진)만 포함하며, 90초진과 재진으로 분류된 기록은 대상에서 제외합니다.',
       data.classificationNote || '',
       model.hasVisits ? `초진일은 초진 기록을 근거로 1회 포함합니다.${model.missingInitialDates ? ` 총내원 자료에서 초진 당일이 확인되지 않은 환자 ${model.missingInitialDates}명은 초진일 1회를 추가했습니다.` : ''} 업로드하지 않은 날짜의 추가 내원은 계산할 수 없습니다.` : '총내원 파일이 없거나 내원일·환자 식별 열을 확인하지 못해 환자수만 표시합니다. 내원 횟수는 총내원 파일 업로드 후 조회하세요.'
@@ -140,7 +168,8 @@
   }
   function exportResult() {
     if (!model || !window.XLSX) return;
-    const rows = [['연령대', '환자수', '총 내원횟수', '1인당 평균 내원횟수', '1회 내원 환자수', '2회 내원 환자수', '3회 내원 환자수', '4회 이상 내원 환자수'], ...[...model.rows, model.total].map(row => [row.band, row.patients, model.hasVisits ? row.visits : '', row.average === null ? '' : Number(row.average.toFixed(2)), ...['once', 'twice', 'three', 'fourPlus'].map(field => model.hasVisits ? row[field] : '')])];
+    const expanded = get('newPatientAgeExpanded').checked;
+    const rows = exportRows(model, expanded);
     const workbook = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(workbook, window.XLSX.utils.aoa_to_sheet(rows), '신환_연령별_내원');
     window.XLSX.utils.book_append_sheet(workbook, window.XLSX.utils.aoa_to_sheet([['항목', '내용'], ['프로그램', data.sourceLabel], ['구분', model.mode === 'week' ? '주간' : '월간'], ['조회기간', model.start + ' ~ ' + model.end], ['초진 포함 기준', get('newPatientAgeScope').selectedOptions[0].textContent], ['계산 기준', get('newPatientAgeNote').textContent]]), '집계기준');
@@ -169,12 +198,14 @@
     dialog.setAttribute('aria-labelledby', 'newPatientAgeTitle');
     dialog.innerHTML = `<header><div><h2 id="newPatientAgeTitle">주간·월간 신환 연령별 내원</h2><p>해당 주·월의 초진 환자가 같은 주·월에 내원한 횟수</p></div><button type="button" id="newPatientAgeClose" aria-label="연령별 내원 창 닫기" autofocus>닫기</button></header><div class="new-age-controls"><label>조회 단위<select id="newPatientAgeMode"><option value="week">주간 (일~토)</option><option value="month">월간</option></select></label><label>조회 기간<select id="newPatientAgePeriod"></select></label><label>초진 포함 기준<select id="newPatientAgeScope"><option value="new">신환(초진)만</option><option value="all">초진 전체 (90초진 포함)</option></select></label><button type="button" id="newPatientAgeExport">엑셀 다운로드</button></div><p id="newPatientAgeSummary" role="status" aria-live="polite"></p><div id="newPatientAgeOutput" tabindex="0" aria-label="연령별 내원 통계 표"></div><p id="newPatientAgeNote"></p>`;
     document.body.appendChild(dialog);
+    get('newPatientAgeSummary').insertAdjacentHTML('beforebegin', '<div class="new-age-distribution-controls"><label><input type="checkbox" id="newPatientAgeExpanded">1~8회 상세보기 (8회 이상)</label><span>기본: 1~4회 · 5회 이상</span></div>');
     get('newPatientAgeOutput').insertAdjacentHTML('beforebegin', '<p class="new-age-scroll-hint">표를 좌우로 밀면 평균과 내원 횟수별 환자수를 볼 수 있습니다.</p>');
     get('newPatientAgeClose').addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => opener?.focus());
     get('newPatientAgeMode').addEventListener('change', () => {selected = ''; render();});
     get('newPatientAgePeriod').addEventListener('change', event => {selected = event.target.value; render();});
     get('newPatientAgeScope').addEventListener('change', render);
+    get('newPatientAgeExpanded').addEventListener('change', render);
     get('newPatientAgeExport').addEventListener('click', exportResult);
     for (const inputId of ['fileInput', 'clinicFiles', 'bFile', 'vFile', 'outpatientFiles', 'injectionFiles', 'carmFiles']) {
       get(inputId)?.addEventListener('change', () => window.newPatientAgePrepare(null));
