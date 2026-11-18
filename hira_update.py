@@ -3,7 +3,6 @@ import json
 import os
 import re
 import sys
-import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -16,6 +15,10 @@ ENDPOINT = 'https://apis.data.go.kr/B551182/mdfeeCrtrInfoService/getDiagnossMdfe
 
 class FeeError(Exception):
     pass
+
+
+class FeeUnavailable(FeeError):
+    """A valid response did not establish a usable fee for this exact code."""
 
 
 def parse_response(body):
@@ -48,15 +51,15 @@ def choose_fee(items, code, as_of):
         if effective == item['adtStaDd'] and effective <= as_of:
             eligible.append(item)
     if not eligible:
-        raise FeeError('No exact base-code fee applicable to the current date')
+        raise FeeUnavailable('No exact base-code fee applicable to the current date')
     latest = max(x['adtStaDd'] for x in eligible)
     records = [x for x in eligible if x['adtStaDd'] == latest]
     if len({(x['unprc1'], x['korNm'], x['payTpCd']) for x in records}) != 1:
-        raise FeeError('Ambiguous base-code records')
+        raise FeeUnavailable('Ambiguous base-code records')
     item = records[0]
     raw = item['unprc1'].replace(',', '')
-    if not re.fullmatch(r'\d+', raw) or not 0 < int(raw) < 10**10 or '비급여' in item['payTpCd']:
-        raise FeeError('No usable covered clinic price')
+    if not re.fullmatch(r'\d+', raw) or not 0 < int(raw) < 10**10 or '비급여' in item['payTpCd'] or not item['korNm'].rstrip('/').strip():
+        raise FeeUnavailable('No usable covered clinic price')
     return {'code': code, 'name': item['korNm'].rstrip('/'),
             'price': int(raw), 'effective': latest, 'pay': item['payTpCd']}
 
@@ -82,16 +85,25 @@ def fetch_fee(code, key, as_of, request=None):
     raise FeeError('Pagination limit exceeded')
 
 
-def refresh(codes, key, destination, fetcher=fetch_fee):
+def refresh(codes, key, destination, fetcher=fetch_fee, additional_codes=()):
     now = datetime.now(timezone(timedelta(hours=9)))
     fees = []
-    for code in codes:
-        fees.append(fetcher(code, key, now.strftime('%Y%m%d')))
-        print(f'{code}: OK')
-    # All codes must succeed. A failure above leaves the previous complete file untouched.
+    unavailable = []
+    for code in [*codes, *additional_codes]:
+        try:
+            fees.append(fetcher(code, key, now.strftime('%Y%m%d')))
+        except FeeUnavailable as error:
+            if code in codes:
+                raise
+            unavailable.append(code)
+            print(f'{code}: {error}')
+        else:
+            print(f'{code}: OK')
+    # Request failures leave the last validated table untouched.
     data = {'schemaVersion': 1, 'source': 'HIRA', 'institution': '의원',
             'sourceUrl': 'https://www.data.go.kr/data/15021028/openapi.do',
-            'updatedAt': now.isoformat(timespec='seconds'), 'fees': fees}
+            'updatedAt': now.isoformat(timespec='seconds'), 'fees': fees,
+            'unavailableCodes': unavailable}
     destination.parent.mkdir(parents=True, exist_ok=True)
     temp = destination.with_suffix('.tmp')
     temp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
@@ -137,7 +149,13 @@ def main():
                 or any(not isinstance(code, str) or not code.strip() for code in codes)
                 or len(codes) != len(set(codes))):
             raise ValueError('Invalid code list')
-        refresh(codes, key, ROOT / 'hira-prices.json')
+        additional_codes = json.loads((ROOT / 'hira-block-codes.json').read_text(encoding='utf-8'))
+        if (not isinstance(additional_codes, list)
+                or any(not isinstance(code, str) or not re.fullmatch(r'LA\d{3}', code)
+                       for code in additional_codes)
+                or len(set([*codes, *additional_codes])) != len(codes) + len(additional_codes)):
+            raise ValueError('Invalid additional nerve block codes')
+        refresh(codes, key, ROOT / 'hira-prices.json', additional_codes=additional_codes)
     except FeeError as error:
         if (str(error) == 'HIRA network request failed'
                 and usable_previous_table(ROOT / 'hira-prices.json', codes)):

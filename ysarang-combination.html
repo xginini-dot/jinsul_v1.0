@@ -252,6 +252,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
       <div class="kpi"><div class="t">조합 방문</div><div class="v" id="kCombo">0</div></div>
       <div class="kpi"><div class="t">인식 LA코드 수</div><div class="v" id="kCodes">0</div></div>
     </div>
+    <details id="missingLaFees" class="select-box hidden" style="margin:14px 0">
+      <summary id="missingLaSummary"></summary>
+      <p class="hint">단가가 확인되면 금액을 다시 계산합니다. 건수·비율·투여량은 그대로 확인할 수 있습니다.</p>
+      <div class="tableWrap"><table id="missingLaTable"></table></div>
+      <div class="actions"><button type="button" class="btn" id="openLaPricesBtn">단가 설정 보기</button></div>
+    </details>
     <div class="tabs">
       <button class="tab active" data-group="old" data-tab="code">코드 조합 기준</button>
       <button class="tab" data-group="old" data-tab="dose">총투여량 포함 기준</button>
@@ -331,7 +337,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
 <div class="combo-filter" style="margin-top:12px">
 <div class="field"><label for="hiraKey">일반 인증키</label><input id="hiraKey" type="password" autocomplete="off" placeholder="인증키를 붙여넣으세요"></div>
 <div class="field"><label for="hiraDate">수가 확인 기준일</label><input id="hiraDate" type="date"></div>
-<div class="field"><label for="hiraScope">조회 코드</label><select id="hiraScope"><option value="ALL">LA + 부가처방 전체</option><option value="LA">LA 코드만</option><option value="EXTRA">부가처방만</option></select></div></div>
+<div class="field"><label for="hiraScope">조회 코드</label><select id="hiraScope"><option value="ALL">LA + 부가처방 전체</option><option value="LA">LA 코드만</option><option value="EXTRA">부가처방만</option><option value="MISSING">조회기간 미확인 LA 코드</option></select></div></div>
 <div class="actions"><button class="btn primary" id="hiraFetchBtn" type="button">의원단가 조회</button><button class="btn" id="hiraApplyBtn" type="button" disabled>선택 단가 적용</button></div>
 <div class="hint">인증키는 저장하지 않으며 조회 후 입력란을 비웁니다. 심평원에는 인증키와 처방 코드만 전송하며 환자자료는 전송하지 않습니다. 조회만으로 금액은 바뀌지 않습니다.</div>
 <div id="hiraStatus" class="hint" role="status" aria-live="polite" style="margin:12px 0"></div><div id="hiraPreview"></div></section></details>
@@ -389,10 +395,19 @@ const DEFAULT_EXTRA_INFO={
 const LA_INFO=JSON.parse(JSON.stringify(DEFAULT_LA_INFO));
 const EXTRA_INFO=JSON.parse(JSON.stringify(DEFAULT_EXTRA_INFO));
 let PRICE_META={};
+let sharedFees=null;
+function registerLaCode(code, name=''){
+  if(!/^LA\d{3}$/.test(code))return;
+  LA_INFO[code] ??= {name:code,price:0};
+  if(name)LA_INFO[code].name=name;
+}
 try{
   const saved=JSON.parse(localStorage.getItem('jinsul-la-extra-prices')||'{}');
   PRICE_META=saved.META&&typeof saved.META==='object'?saved.META:{};
-  Object.entries(saved.LA||{}).forEach(([c,p])=>{if(LA_INFO[c])LA_INFO[c].price=Number(p)||0});
+  Object.entries(saved.LA||{}).forEach(([c,p])=>{
+    if(PRICE_META[c]?.source==='manual')registerLaCode(c);
+    if(Object.hasOwn(LA_INFO,c))LA_INFO[c].price=Number(p)||0;
+  });
   Object.entries(saved.EXTRA||{}).forEach(([c,p])=>{if(EXTRA_INFO[c])EXTRA_INFO[c].price=Number(p)||0});
 }catch(e){}
 const fileInput=document.getElementById('fileInput');
@@ -654,13 +669,47 @@ function recalc(){
   if(!period.valid){dateStatus.textContent='시작일이 종료일보다 늦습니다. 날짜를 확인해주세요.';renderEmpty();return}
   dateStatus.textContent='조회기간: '+(period.start||'전체 시작')+' ~ '+(period.end||'전체 종료')+' (시작일·종료일 포함)';
   const pv=periodVisits();
+  renderMissingLaFees(pv);
   renderBase(pv);
   renderCross(pv);
   renderDenial();
   const codes=[...new Set(rawRows.filter(r=>inSelectedPeriod(r.dateKey)).map(r=>r.code))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
   codeListEl.textContent=codes.length?codes.join(', '):'-';
 }
-function laAmount(v){let n=0;for(const [c,d] of v.la)n+=(LA_INFO[c]?.price||0)*d;return n}
+function missingLaRows(period){
+  const usage=new Map();
+  for(const visit of period){
+    for(const [code,dose] of visit.la){
+      if(LA_INFO[code]?.price>0)continue;
+      if(!usage.has(code))usage.set(code,{code,count:0,dose:0});
+      const row=usage.get(code);
+      row.count++;
+      row.dose+=dose;
+    }
+  }
+  return [...usage.values()].sort((a,b)=>b.count-a.count||a.code.localeCompare(b.code));
+}
+function renderMissingLaFees(period){
+  const rows=missingLaRows(period);
+  document.getElementById('missingLaFees').classList.toggle('hidden', !rows.length);
+  document.getElementById('missingLaSummary').textContent=`현재 조회기간의 미확인 단가 ${rows.length}종`;
+  document.getElementById('missingLaTable').innerHTML='<thead><tr><th>코드</th><th>방문 건수</th><th>총투여량</th></tr></thead><tbody>'+
+    rows.map(row=>`<tr><td>${row.code}</td><td>${fmtInt(row.count)}</td><td>${fmtDose(row.dose)}</td></tr>`).join('')+'</tbody>';
+  let addedCode=false;
+  for(const {code} of rows){
+    if(!LA_INFO[code]){registerLaCode(code);addedCode=true;}
+  }
+  if(addedCode){renderPriceEditor(true);renderPriceTable();}
+}
+function laAmount(visit){
+  let amount=0;
+  for(const [code,dose] of visit.la){
+    const price=LA_INFO[code]?.price;
+    if(!(price>0))return NaN;
+    amount+=price*dose;
+  }
+  return amount;
+}
 function extraAmount(v){let n=0;for(const [c,d] of v.extra)n+=(EXTRA_INFO[c]?.price||0)*d;return n}
 function sumMap(m){return [...m.values()].reduce((a,b)=>a+b,0)}
 function laKey(v){return [...v.la.keys()].sort().join(' + ')}
@@ -868,8 +917,10 @@ function renderDenialInsight(pv,matchByVisit){
   '<h3>조합별 위험 신호</h3><div class="tableWrap"><table><thead><tr><th>판정</th><th class="left">LA코드 조합 · 투여량</th><th class="left">부가처방 조합 · 투여량</th><th>전체건</th><th>불능건</th><th>불능률</th><th>전체 대비</th><th class="left">권장 확인</th></tr></thead><tbody>'+ (comboRows.length?comboRows.map(r=>`<tr><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td>${prescriptionCells(r)}<td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td>${base?(r.rate/base).toFixed(2)+'배':'-'}</td><td class="left">${r.g[0]==='높은 주의'?'시술 간격·동일부위 반복·부가처방 필요성 및 차팅을 우선 점검':r.g[0]==='관찰 필요'?'다음 달까지 추세 관찰 및 지급불능 사례 차트 대조':'표본 확대 후 판단'}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">분석할 지급불능 조합이 없습니다.</td></tr>')+'</tbody></table></div>'+
   '<h3 style="margin-top:20px">개별 코드 포함 여부</h3><div class="tableWrap"><table><thead><tr><th>코드</th><th>포함 처방건</th><th>지급불능건</th><th>지급불능률</th><th>판정</th></tr></thead><tbody>'+codeRows.map(r=>`<tr><td><b>${r.key}</b></td><td>${r.total}</td><td>${r.denied}</td><td class="${denialRateClass(r.rate)}">${r.rate.toFixed(1)}%</td><td><span class="risk-badge ${r.g[1]}">${r.g[0]}</span></td></tr>`).join('')+'</tbody></table></div>';
 }
-function renderPriceEditor(){
+function renderPriceEditor(keepDrafts=false){
+  const drafts=keepDrafts?new Map([...document.querySelectorAll('#priceEditGrid input')].map(input=>[input.dataset.priceCode,input.value])):null;
   document.getElementById('priceEditGrid').innerHTML=[['LA','LA 코드 단가',LA_INFO],['EXTRA','추가처방 단가',EXTRA_INFO]].map(([type,title,info])=>`<h3 ${type==='EXTRA'?'id="extraPriceHeading"':''}>${title}</h3><div class="price-edit-grid">${Object.entries(info).map(([c,o])=>`<div class="price-edit-item"><b>${c}</b><span title="${esc(o.name)}">${esc(o.name)}</span><input aria-label="${c} 단가 (원)" type="number" min="0" step="1" data-price-type="${type}" data-price-code="${c}" value="${o.price}"></div>`).join('')}</div>`).join('');
+  if(drafts)document.querySelectorAll('#priceEditGrid input').forEach(input=>{if(drafts.has(input.dataset.priceCode))input.value=drafts.get(input.dataset.priceCode);});
 }
 function renderExtraPriceCards(){
   document.getElementById('extraPriceGrid').innerHTML=Object.entries(EXTRA_INFO).map(([c,o])=>`<div class="price-card"><b>${c} <strong>${o.price?fmtWon(o.price):'별도 단가 미설정'}</strong></b><span>${esc(o.name)}</span></div>`).join('');
@@ -877,7 +928,7 @@ function renderExtraPriceCards(){
 function renderPriceTable(){
   renderExtraPriceCards();
   document.getElementById('priceTable').innerHTML=`<thead><tr><th>구분</th><th>코드</th><th class="left">명칭</th><th>현재 적용 단가</th><th class="left">단가 출처</th></tr></thead><tbody>`+
-  Object.entries(LA_INFO).map(([c,o])=>`<tr><td>LA</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td><td class="left">${esc(hiraSourceLabel(c))}</td></tr>`).join('')+
+  Object.entries(LA_INFO).map(([c,o])=>`<tr><td>LA</td><td><b>${c}</b></td><td class="left">${esc(o.name)}</td><td class="money">${o.price>0?fmtWon(o.price):'단가 미확인'}</td><td class="left">${esc(hiraSourceLabel(c))}</td></tr>`).join('')+
   Object.entries(EXTRA_INFO).map(([c,o])=>`<tr><td>추가처방</td><td><b>${c}</b></td><td class="left">${o.name}</td><td class="money">${fmtWon(o.price)}</td><td class="left">${esc(hiraSourceLabel(c))}</td></tr>`).join('')+`</tbody>`;
 }
 function saveEditedPrices(){
@@ -890,13 +941,14 @@ function saveEditedPrices(){
   renderPriceTable();recalc();statusEl.textContent=message;document.getElementById('priceSaveStatus').textContent=message;
 }
 function restoreDefaultPrices(){
-  PRICE_META=Object.fromEntries([...Object.keys(LA_INFO),...Object.keys(EXTRA_INFO)].map(c=>[c,{source:'manual'}]));
+  for(const code of [...Object.keys(DEFAULT_LA_INFO),...Object.keys(DEFAULT_EXTRA_INFO)])PRICE_META[code]={source:'manual'};
   Object.entries(DEFAULT_LA_INFO).forEach(([c,o])=>LA_INFO[c].price=o.price);
   Object.entries(DEFAULT_EXTRA_INFO).forEach(([c,o])=>EXTRA_INFO[c].price=o.price);
   persistPrices();renderPriceEditor();renderPriceTable();recalc();
   statusEl.textContent='파일 초기 단가로 복원했습니다. 심평원 최신 수가로 갱신한 것은 아닙니다.';document.getElementById('priceSaveStatus').textContent=statusEl.textContent;
 }
 function renderEmpty(){
+  document.getElementById('missingLaFees').classList.add('hidden');
   codeTable.innerHTML=doseTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
   comboList.innerHTML='<div class="empty">엑셀 업로드 후 LA × 추가처방 조합이 표시됩니다.</div>';
   ['kTotal','kSingle','kCombo','kCodes','xTotal','xMatched','xPatients'].forEach(id=>document.getElementById(id).textContent='0');
@@ -920,10 +972,10 @@ function exportExcel(){
   if(!visits.length){alert('먼저 엑셀을 업로드해주세요.');return}
   const wb=XLSX.utils.book_new();
   const base1=[['순위','구분','LA코드 단독/조합','건수','비율(%)','총 LA 투여량','총 LA 금액'],
-    ...filterBase(currentBaseStats.codeRows).map((r,i)=>[i+1,r.type,r.key,r.count,round2(r.pct),round2(r.totalDose),Math.round(r.totalAmount)])];
+    ...filterBase(currentBaseStats.codeRows).map((r,i)=>[i+1,r.type,r.key,r.count,round2(r.pct),round2(r.totalDose),excelAmount(r.totalAmount)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(base1),'LA조합통계');
   const visitData=[['차트번호','환자명','시행일','LA 조합','추가처방 조합','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
-    ...currentComboVisits.map(v=>[v.chart,v.name,v.dateKey,laKey(v),extraKey(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),Math.round(laAmount(v)),Math.round(extraAmount(v)),Math.round(laAmount(v)+extraAmount(v))])];
+    ...currentComboVisits.map(v=>[v.chart,v.name,v.dateKey,laKey(v),extraKey(v),round2(sumMap(v.la)),round2(sumMap(v.extra)),excelAmount(laAmount(v)),Math.round(extraAmount(v)),excelAmount(laAmount(v)+extraAmount(v))])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(visitData),'LA추가처방_방문별');
   const pm=new Map();
   currentComboVisits.forEach(v=>{
@@ -931,7 +983,7 @@ function exportExcel(){
     const p=pm.get(v.patientKey);p.count++;p.dates.push(v.dateKey);p.laDose+=sumMap(v.la);p.exDose+=sumMap(v.extra);p.laAmt+=laAmount(v);p.exAmt+=extraAmount(v);
   });
   const pd=[['차트번호','환자명','해당 조건 횟수','시행일','LA 총투여량','추가처방 총투여량','LA 금액','추가처방 금액','합계 금액'],
-    ...[...pm.values()].map(p=>[p.chart,p.name,p.count,p.dates.sort().join(', '),round2(p.laDose),round2(p.exDose),Math.round(p.laAmt),Math.round(p.exAmt),Math.round(p.laAmt+p.exAmt)])];
+    ...[...pm.values()].map(p=>[p.chart,p.name,p.count,p.dates.sort().join(', '),round2(p.laDose),round2(p.exDose),excelAmount(p.laAmt),Math.round(p.exAmt),excelAmount(p.laAmt+p.exAmt)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pd),'환자별상세');
   const pv=periodVisits(),matchMap=new Map(denialMatches.filter(m=>m.visit&&pv.includes(m.visit)).map(m=>[m.visit,m.denial]));
   const denialDetail=[['상태','보험','차트번호','환자명','시행일','LA코드 조합 · 투여량','부가처방 조합 · 투여량','차단술 총투여량','부가처방 총투여량','청구액','명일련','묶음번호'],
@@ -948,19 +1000,24 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(flow),'지급불능환자_처방흐름');
   const prices=[['구분','코드','명칭','단가','단가 출처','수가 확인 기준일'],...Object.entries(LA_INFO).map(([c,o])=>['LA',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||'']),...Object.entries(EXTRA_INFO).map(([c,o])=>['추가처방',c,o.name,o.price,hiraSourceLabel(c),PRICE_META[c]?.asOf||''])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(prices),'단가표');
+  const missing=missingLaRows(pv);
+  if(missing.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
+    ['코드','방문 건수','총투여량'], ...missing.map(row=>[row.code,row.count,round2(row.dose)])
+  ]),'미확인_LA단가');
   const range=selectedPeriod();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['조회 조건','값'],['시작일',range.start],['종료일',range.end],['날짜 포함 기준','시작일·종료일 모두 포함']]),'조회조건');
   XLSX.writeFile(wb,'의사랑_차단술_부가처방_지급불능_통합통계.xlsx');
 }
 function fmtInt(n){return Number(n||0).toLocaleString()}
 function fmtDose(n){return round2(n).toLocaleString(undefined,{maximumFractionDigits:2})}
-function fmtWon(n){return Math.round(n||0).toLocaleString()+'원'}
+function excelAmount(n){return Number.isFinite(n)?Math.round(n):'단가 미확인'}
+function fmtWon(n){return Number.isNaN(n)?'단가 미확인':Math.round(n||0).toLocaleString()+'원'}
 function round2(n){return Math.round((Number(n)||0)*100)/100}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 // HIRA diagnosis fee API: https://www.data.go.kr/data/15021028/openapi.do
 // Only the exact base code and the clinic price (unprc1) may be applied.
 let hiraPreview=[];
 function hiraToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function hiraSourceLabel(code){const m=PRICE_META[code];return ['HIRA','HIRA_SHARED'].includes(m?.source)?`심평원 의원 · 적용시작 ${m.effective} · 조회 ${m.checked}`:m?.source==='manual'?'수동 입력':'파일 초기값 (공식 조회 전)'}
+function hiraSourceLabel(code){const m=PRICE_META[code];return ['HIRA','HIRA_SHARED'].includes(m?.source)?`심평원 의원 · 적용시작 ${m.effective} · 조회 ${m.checked}`:m?.source==='manual'?'수동 입력':sharedFees?.unavailableCodes?.includes(code)?'심평원 의원단가 미확인':!LA_INFO[code]?.price&&/^LA\d{3}$/.test(code)?'단가 확인 필요':'파일 초기값 (공식 조회 전)'}
 function persistPrices(){
   try{localStorage.setItem('jinsul-la-extra-prices',JSON.stringify({LA:Object.fromEntries(Object.entries(LA_INFO).map(([c,o])=>[c,o.price])),EXTRA:Object.fromEntries(Object.entries(EXTRA_INFO).map(([c,o])=>[c,o.price])),META:PRICE_META}));return true}catch(e){return false}
 }
@@ -1025,7 +1082,9 @@ async function loadHiraPrices(){
   document.querySelectorAll('#priceEditGrid input').forEach(x=>x.disabled=true);
   hiraPreview=[];renderHiraPreview();
   const scope=document.getElementById('hiraScope').value;
-  const codes=[...(scope!=='EXTRA'?Object.keys(LA_INFO):[]),...(scope!=='LA'?Object.keys(EXTRA_INFO):[])];
+  const codes=scope==='MISSING'?missingLaRows(periodVisits()).map(row=>row.code):
+    [...(scope!=='EXTRA'?Object.keys(LA_INFO):[]),...(scope!=='LA'?Object.keys(EXTRA_INFO):[])];
+  if(!codes.length)state.textContent='현재 조회기간에 단가를 확인할 LA 코드가 없습니다.';
   try{
     for(const code of codes){
       state.textContent=`심평원 의원단가 조회 중 ${hiraPreview.length+1}/${codes.length} · ${code}`;
@@ -1037,7 +1096,7 @@ async function loadHiraPrices(){
       if(/인증키|활용승인|한도|연결 실패|너무 많음/.test(row.status))break;
     }
     const ready=hiraPreview.filter(r=>r.ready).length;
-    state.textContent=`조회 완료: ${ready}개 적용 가능 / ${hiraPreview.length}개 확인 (요청 ${codes.length}개). 아직 금액은 변경되지 않았습니다. 결과를 확인하고 선택 단가 적용을 누르세요.`;
+    if(codes.length)state.textContent=`조회 완료: ${ready}개 적용 가능 / ${hiraPreview.length}개 확인 (요청 ${codes.length}개). 결과를 확인하고 선택 단가 적용을 누르세요.`;
   }finally{
     keyInput.value='';key='';
     ids.forEach(id=>document.getElementById(id).disabled=false);
@@ -1064,15 +1123,17 @@ document.getElementById('hiraFetchBtn').addEventListener('click',loadHiraPrices)
 document.getElementById('hiraApplyBtn').addEventListener('click',applyHiraPrices);
 
 // SHARED_FEES_START
-let sharedFees=null;
 function validateSharedFees(data){
-  const expected=[...Object.keys(LA_INFO),...Object.keys(EXTRA_INFO)].sort();
+  const required=[...Object.keys(DEFAULT_LA_INFO),...Object.keys(DEFAULT_EXTRA_INFO)];
   if(data?.schemaVersion!==1||data.source!=='HIRA'||data.institution!=='의원'||!Array.isArray(data.fees)||!Number.isFinite(Date.parse(data.updatedAt)))throw Error('수가표 형식 확인 필요');
   if(Date.parse(data.updatedAt)>Date.now()+86400000)throw Error('수가표 조회일 확인 필요');
-  const actual=data.fees.map(r=>r.code).sort();
-  if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error('수가표에 코드가 누락되거나 중복됨');
+  const priced=data.fees.map(r=>r.code);
+  const unavailable=data.unavailableCodes??[];
+  if(!Array.isArray(unavailable)||unavailable.some(code=>typeof code!=='string'||!/^LA\d{3}$/.test(code)))throw Error('미확인 코드 형식 확인 필요');
+  const actual=new Set([...priced,...unavailable]);
+  if(actual.size!==priced.length+unavailable.length||required.some(code=>!priced.includes(code)))throw Error('수가표에 코드가 누락되거나 중복됨');
   for(const row of data.fees){
-    if(!Number.isSafeInteger(row.price)||row.price<=0||!/^\d{8}$/.test(row.effective)||row.effective>hiraToday().replaceAll('-','')||typeof row.name!=='string')throw Error('수가표 단가·적용일 확인 필요');
+    if(typeof row.code!=='string'||(!required.includes(row.code)&&!/^LA\d{3}$/.test(row.code))||!Number.isSafeInteger(row.price)||row.price<=0||!/^\d{8}$/.test(row.effective)||row.effective>hiraToday().replaceAll('-','')||typeof row.name!=='string'||!row.name.trim()||String(row.pay??'').includes('비급여'))throw Error('수가표 단가·적용일 확인 필요');
   }
   return data;
 }
@@ -1085,8 +1146,16 @@ function applySharedFees(data,resetManual=false){
     const code=inp.dataset.priceCode,current=(LA_INFO[code]||EXTRA_INFO[code])?.price;
     if(inp.value.trim()===''||Number(inp.value)!==current)drafts.set(code,inp.value);
   });
+  for(const code of data.unavailableCodes??[]){
+    registerLaCode(code);
+    if(PRICE_META[code]?.source==='HIRA_SHARED'){
+      LA_INFO[code].price=0;
+      delete PRICE_META[code];
+    }
+  }
   let manual=0;
   for(const row of data.fees){
+    registerLaCode(row.code,row.name);
     if(!resetManual&&(PRICE_META[row.code]?.source==='manual'||drafts.has(row.code))){manual++;continue}
     (LA_INFO[row.code]||EXTRA_INFO[row.code]).price=row.price;
     PRICE_META[row.code]={source:'HIRA_SHARED',effective:row.effective,checked:data.updatedAt.slice(0,10),asOf:data.updatedAt.slice(0,10),name:row.name};
@@ -1098,7 +1167,8 @@ function applySharedFees(data,resetManual=false){
   document.querySelectorAll('#priceEditGrid input').forEach(inp=>{if(drafts.has(inp.dataset.priceCode))inp.value=drafts.get(inp.dataset.priceCode)});
   renderPriceTable();recalc();
   const stale=Date.now()-Date.parse(data.updatedAt)>3*86400000;
-  document.getElementById('sharedFeeStatus').textContent=`공통 수가표 ${data.fees.length}종 · 마지막 정상 조회 ${data.updatedAt.slice(0,10)} · 개인 수정 ${manual}종 유지.${stale?' 갱신이 3일 이상 지연되었습니다. 기준일을 확인해 주세요.':''}${stored?'':' 브라우저 저장이 차단되어 현재 화면에만 적용됩니다.'}`;
+  const unavailableCount=data.unavailableCodes?.length??0;
+  document.getElementById('sharedFeeStatus').textContent=`공통 수가표 ${data.fees.length}종 · 마지막 정상 조회 ${data.updatedAt.slice(0,10)} · 개인 수정 ${manual}종 유지.${unavailableCount?` 의원단가 미확인 ${unavailableCount}종은 아래 단가표에서 확인할 수 있습니다.`:''}${stale?' 갱신이 3일 이상 지연되었습니다. 기준일을 확인해 주세요.':''}${stored?'':' 브라우저 저장이 차단되어 현재 화면에만 적용됩니다.'}`;
   document.getElementById('useSharedPricesBtn').disabled=false;
 }
 async function loadSharedFees(){
@@ -1117,7 +1187,7 @@ async function loadSharedFees(){
 // Protect older manually saved prices that predate the provenance field.
 for(const [code,info] of [...Object.entries(LA_INFO),...Object.entries(EXTRA_INFO)]){
   const original=DEFAULT_LA_INFO[code]||DEFAULT_EXTRA_INFO[code];
-  if(!PRICE_META[code]&&info.price!==original.price)PRICE_META[code]={source:'manual'};
+  if(original&&!PRICE_META[code]&&info.price!==original.price)PRICE_META[code]={source:'manual'};
 }
 const feeCandidates=[];
 try{const seed=document.getElementById('shared-fee-seed').textContent;if(seed.trim())feeCandidates.push(validateSharedFees(JSON.parse(seed)))}catch(e){}
@@ -1126,6 +1196,12 @@ feeCandidates.sort((a,b)=>Date.parse(b.updatedAt)-Date.parse(a.updatedAt));
 if(feeCandidates.length)applySharedFees(feeCandidates[0]);
 document.getElementById('refreshSharedFeesBtn').addEventListener('click',loadSharedFees);
 document.getElementById('useSharedPricesBtn').addEventListener('click',()=>{if(sharedFees)applySharedFees(sharedFees,true)});
+document.getElementById('openLaPricesBtn').addEventListener('click',()=>{
+  const editor=document.getElementById('priceEditor');
+  editor.classList.remove('hidden');
+  document.getElementById('priceToggleBtn').textContent='단가표 접기 ▲';
+  editor.scrollIntoView({block:'start'});
+});
 loadSharedFees();
 // SHARED_FEES_END
 

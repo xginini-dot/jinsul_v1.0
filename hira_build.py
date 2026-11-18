@@ -9,8 +9,12 @@ ROOT = Path(__file__).resolve().parent
 def build():
     data = json.loads((ROOT / 'hira-prices.json').read_text(encoding='utf-8'))
     expected = set(json.loads((ROOT / 'hira-codes.json').read_text(encoding='utf-8')))
-    assert {r['code'] for r in data['fees']} == expected
-    assert len(data['fees']) == len(expected)
+    additional = set(json.loads((ROOT / 'hira-block-codes.json').read_text(encoding='utf-8')))
+    priced = [r['code'] for r in data['fees']]
+    unavailable = data.get('unavailableCodes', [])
+    assert len(set(priced + unavailable)) == len(priced) + len(unavailable)
+    assert expected <= set(priced) <= expected | additional
+    assert set(unavailable) <= additional
     assert data['source'] == 'HIRA' and data['institution'] == '의원'
     assert all(type(r['price']) is int and r['price'] > 0 for r in data['fees'])
     seed = json.dumps(data, ensure_ascii=False).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')

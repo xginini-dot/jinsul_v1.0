@@ -16,6 +16,30 @@ def item(**changes):
 
 
 class FeeTests(unittest.TestCase):
+    def test_additional_block_codes_refresh_without_requiring_unpublished_fees(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'fees.json'
+            def fetch(code, key, date):
+                if code == 'LA371':
+                    raise updater.FeeUnavailable('No covered clinic price')
+                return {'code': code, 'price': 31010}
+            data = updater.refresh(['LA241'], 'TEST-KEY', path, fetcher=fetch,
+                                   additional_codes=['LA245', 'LA341', 'LA276', 'LA371'])
+            self.assertEqual([row['code'] for row in data['fees']], ['LA241', 'LA245', 'LA341', 'LA276'])
+            self.assertEqual(json.loads(path.read_text(encoding='utf-8'))['unavailableCodes'], ['LA371'])
+
+    def test_additional_code_request_failure_preserves_last_table(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'fees.json'
+            path.write_text('previous good data', encoding='utf-8')
+            def fetch(code, key, date):
+                if code == 'LA245':
+                    raise updater.FeeError('HIRA network request failed')
+                return {'code': code}
+            with self.assertRaises(updater.FeeError):
+                updater.refresh(['LA241'], 'TEST-KEY', path, fetcher=fetch, additional_codes=['LA245'])
+            self.assertEqual(path.read_text(encoding='utf-8'), 'previous good data')
+
     def test_base_code_not_surcharge(self):
         result = updater.choose_fee([item(mdfeeCd='LA241010', unprc1='46520'), item()], 'LA241', '20260917')
         self.assertEqual(result['price'], 31010)
