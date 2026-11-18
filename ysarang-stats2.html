@@ -2704,7 +2704,8 @@ body.jinsul-analysis-open{
 #uploadCard .date-actions{margin-top:14px;gap:10px}
 #uploadCard .date-actions button{min-height:44px}
 @media(max-width:700px){#uploadCard .date-grid{grid-template-columns:1fr!important}#uploadCard .date-actions{justify-content:stretch}#uploadCard .date-actions button{flex:1 1 130px}}
-</style></head>
+</style><link rel="stylesheet" href="/new-patient-age.css"><script defer src="/new-patient-age.js"></script>
+</head>
     <body>
         <div class="jinsul-floating-actions no-print" aria-label="화면 이동 및 테마 전환">
             <button type="button" class="jinsul-float-btn" onclick="goBack()" title="이전 페이지로 이동">← 뒤로가기</button>
@@ -4393,6 +4394,7 @@ function renderInjectionMatchNote(summary){
                     $('#conversionDownloadBtn').disabled = true;
                     $('#drCarmCard').style.display = 'none';
                     window.__drVisits = [];
+                    window.newPatientAgePrepare?.(null);
                     window.__weeklyContext = null;
                     $('#weeklyOpenBtn').disabled = true;
                     $('#summary').style.display = 'none';
@@ -4432,6 +4434,7 @@ function renderInjectionMatchNote(summary){
                 $('#output').innerHTML = renderSummaryTable(stats);
                 renderDoctorCarm(fileMap, outpatientRecords, injectionDates, startDate, endDate);
                 window.weeklyPrepare({fileMap, outpatientRecords, injectionDates, allInitialEvents, startDate, endDate});
+                window.newPatientAgePrepare?.({sourceLabel:'의사랑외래',events:allInitialEvents.map(e=>({...e,kind:e.finalClass})),visits:outpatientRecords,startDate,endDate,hasVisits:true,classificationNote:'외래 분석 화면의 초진·90초진·재진 최종 판정(직접 보정 포함)을 사용합니다. 주간 보고서의 차트번호 추정 분류와는 별개입니다.'});
                 $('#dailyOutput').innerHTML = renderDailyTable(dailyStats);
 
                 const conversion = computeFirstInjectionConversion(merged, standardizedInjections, standardizedVisits, startDate, endDate);
@@ -4605,6 +4608,7 @@ function renderInjectionMatchNote(summary){
             [['outpatientFiles','outpatientFilesName'],['injectionFiles','injectionFilesName'],['carmFiles','carmFilesName']].forEach(([inputId,nameId])=>{
                 $('#'+inputId).addEventListener('change',()=>{
                     window.__latestFileMap=null;
+                    window.newPatientAgePrepare?.(null);
                     window.__weeklyContext=null;
                     $('#weeklyOpenBtn').disabled=true;
                     if(inputId==='carmFiles')$('#'+nameId).textContent=[...$('#'+inputId).files].map(f=>f.name).join(', ')||'선택된 파일 없음';

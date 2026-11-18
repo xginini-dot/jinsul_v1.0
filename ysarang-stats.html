@@ -1372,7 +1372,8 @@
             body.light #conversionOutput tr.rate-row td { background:rgba(159,135,100,.08)!important; }
             @media(max-width:760px){ .conversion-note-grid{grid-template-columns:1fr;} }
         </style>
-    </head>
+    <link rel="stylesheet" href="/new-patient-age.css"><script defer src="/new-patient-age.js"></script>
+</head>
     <body>
         <div class="jinsul-floating-actions no-print" aria-label="화면 이동 및 테마 전환">
             <button type="button" class="jinsul-float-btn" onclick="goBack()" title="이전 페이지로 이동">← 뒤로가기</button>
@@ -2289,10 +2290,46 @@
                 }
             }
 
+            function prepareLegacyNewPatientAge(fileMap, startDate, endDate) {
+                if (!window.newPatientAgePrepare) return;
+                const events = [], visits = [];
+                let unclassified = false;
+                for (const source of fileMap.clinic || []) {
+                    const meta = detectSheetColumns(source.data, '초진 파일');
+                    const headers = meta.header.map(value => String(value || '').replace(/\s+/g, '').toLowerCase());
+                    const ageIdx = headers.findIndex(value => /^(만?나이|연령|age)(\(.*\))?$/.test(value));
+                    const typeIdx = headers.findIndex(value => /^(초.?재.*|초진구분|내원구분|진료구분|구분)$/.test(value));
+                    const dateIdx = meta.dateIdx >= 0 ? meta.dateIdx : findHeaderIndex(headers, ['초진일', '내원일', '진료일', '방문일', '일자']);
+                    if (typeIdx < 0) unclassified = true;
+                    for (const row of source.data.slice(meta.headerIndex + 1)) {
+                        const id = meta.idIdx >= 0 ? normalizePersonValue(row[meta.idIdx]) : '';
+                        const date = dateIdx >= 0 ? excelDateToISO(row[dateIdx]) : '';
+                        if (!id || !date || !isDateInRange(date, startDate, endDate)) continue;
+                        const rrn = meta.rrnIdx >= 0 ? String(row[meta.rrnIdx] || '').trim() : '';
+                        const rawAge = ageIdx >= 0 ? String(row[ageIdx] ?? '').trim() : '';
+                        let age = /^\d{1,3}(?:세)?$/.test(rawAge) ? Number(rawAge.replace('세', '')) : null;
+                        if (age === null && rrn) age = rrn.includes('-') ? calculateAge(rrn) : parseAgeFromBirthish(rrn);
+                        const type = typeIdx >= 0 ? String(row[typeIdx] || '').normalize('NFKC').replace(/\s+/g, '') : '';
+                        const kind = /90/.test(type) && /초진/.test(type) ? '90초진' : /재진/.test(type) && !/초진|신환/.test(type) ? '재진' : '초진';
+                        events.push({id, date, age, kind, rrn});
+                    }
+                }
+                const index = buildPatientDateIndex(fileMap.v || [], '총내원 파일', startDate, endDate);
+                for (const [id, dates] of index.byId) for (const date of dates) visits.push({id, date});
+                for (const patient of events) {
+                    if (index.byId.has(normalizePersonValue(patient.id))) continue;
+                    for (const date of datesForPatient(index, patient)) visits.push({id: patient.id, date});
+                }
+                window.newPatientAgePrepare({sourceLabel: '의사랑기존', events, visits, startDate, endDate,
+                    hasVisits: !!fileMap.v?.length && index.meta.dateIdx >= 0 && (index.meta.idIdx >= 0 || index.meta.rrnIdx >= 0),
+                    classificationNote: unclassified ? '의사랑 기존 버전은 업로드한 초진 파일이 대상입니다. 초재진 구분 열이 없는 초진 파일은 신환과 90초진을 분리할 수 없으므로 파일에 포함된 초진 환자를 함께 반영합니다.' : '업로드한 초진 파일의 초재진 구분을 사용합니다.'});
+            }
+
             function runAnalysis(fileMap) {
                 const seen = new Set();
                 const clinicRows = [];
                 const {startDate, endDate} = getSelectedDateRange();
+                prepareLegacyNewPatientAge(fileMap, startDate, endDate);
 
                 // ===== 초진(진료실별) 파싱: 헤더 자동 탐지 =====
                 fileMap.clinic.forEach(room => {

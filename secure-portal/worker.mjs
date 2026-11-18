@@ -162,7 +162,7 @@ export async function handle(request,env) {
  if((path==='/admin.html'||path==='/admin.js')&&user.role!=='admin')return json({error:'관리자 권한이 필요합니다.'},403);
  const app=apps.find(a=>'/'+a.file===path);
  if(app&&user.role!=='admin'&&!JSON.parse(user.permissions).includes(app.group))return json({error:'해당 업무의 접근 권한이 없습니다.'},403);
- const support=['/','/index.html','/account.html','/account.js','/admin.html','/admin.js','/session.js','/portal.js','/portal.css','/shell.js','/shell.css','/design.css','/theme.js','/xlsx.full.min.js','/hira-prices.json','/hira-codes.json','/catalog.json','/build-info.json','/진설로고.png'];
+ const support=['/new-patient-age.js','/new-patient-age.css','/','/index.html','/account.html','/account.js','/admin.html','/admin.js','/session.js','/portal.js','/portal.css','/shell.js','/shell.css','/design.css','/theme.js','/xlsx.full.min.js','/hira-prices.json','/hira-codes.json','/catalog.json','/build-info.json','/진설로고.png'];
  if(!app&&!support.includes(path))return json({error:'페이지를 찾을 수 없습니다.'},404);
  if(path==='/catalog.json')return json(await userMenu(env,user));
  if(path==='/'){const assetURL=new URL(request.url);assetURL.pathname='/index.html';return env.ASSETS.fetch(new Request(assetURL,request));}
@@ -175,7 +175,7 @@ export default {
   const secured=new Response(response.body,response);
   const assetPath=new URL(request.url).pathname;
   const reusable=/^\/(?:fonts\/|fonts\.css$|진설로고\.png$)/.test(assetPath);
-  const shared=/^\/(?:session|portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
+  const shared=/^\/(?:new-patient-age|session|portal|shell|design|theme|admin|account|login|setup)\.(?:js|css)$/.test(assetPath)||assetPath==='/xlsx.full.min.js';
   const successful=secured.ok||secured.status===304;
   secured.headers.set('Cache-Control',successful&&reusable?'public, max-age=86400':successful&&shared?(/^[a-f0-9]{16}$/.test(new URL(request.url).searchParams.get('v')||'')?'private, max-age=86400, immutable':'private, max-age=0, must-revalidate'):'no-store');
   secured.headers.set('X-Content-Type-Options','nosniff');

@@ -1,0 +1,25 @@
+#newPatientAgeDialog{--age-bg:var(--j-panel,#fcfbf8);--age-ink:var(--j-ink,#292e32);--age-line:var(--j-line,#dedfd8);--age-soft:var(--j-soft,#f1f0eb);--age-muted:var(--j-muted,#626964);position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(1120px,calc(100% - 32px));max-width:1120px;max-height:calc(100dvh - 32px);padding:26px;border:1px solid var(--age-line);border-radius:14px;background:var(--age-bg)!important;color:var(--age-ink)!important;overflow:auto;font:14px/1.6 Paperlogy,'Malgun Gothic',sans-serif}
+#newPatientAgeDialog::backdrop{background:#111a20a3}
+#newPatientAgeDialog header{display:flex!important;flex-direction:row!important;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1px solid var(--age-line);padding:0 0 16px!important;margin:0!important;max-width:none!important;min-height:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;text-align:left!important}
+#newPatientAgeDialog header::before,#newPatientAgeDialog header::after{content:none!important;display:none!important}
+#newPatientAgeDialog header>div{min-width:0;text-align:left!important}
+#newPatientAgeDialog h2{margin:0;font-size:22px;color:var(--age-ink)!important;line-height:1.4}
+#newPatientAgeDialog header p{color:var(--age-muted);margin:6px 0 0;font-size:13px}
+#newPatientAgeDialog button,#newPatientAgeDialog select{color:var(--age-ink)!important;background:var(--age-bg)!important;border:1px solid var(--age-line)!important;border-radius:8px;font:inherit;min-height:42px;padding:8px 12px;box-shadow:none!important;white-space:nowrap;cursor:pointer}
+#newPatientAgeDialog button:disabled{opacity:.5;cursor:default}
+#newPatientAgeDialog :focus-visible{outline:3px solid #3b83b9;outline-offset:2px}
+#newPatientAgeDialog .new-age-controls{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;padding:20px 0 12px}
+#newPatientAgeDialog label{display:grid;gap:6px;margin:0;font-size:12px;color:var(--age-muted);font-weight:600}
+#newPatientAgeDialog select{width:auto;max-width:100%;font-size:13px}
+#newPatientAgeSummary{padding:14px 16px;background:var(--age-soft);border:1px solid var(--age-line);border-radius:8px;font-size:15px;font-weight:600;line-height:1.8;margin:4px 0 18px;word-break:keep-all}
+#newPatientAgeOutput{overflow:auto;max-height:55dvh;border:1px solid var(--age-line);border-radius:8px}
+#newPatientAgeDialog .new-age-scroll-hint{display:none;font-size:11px;color:var(--age-muted);margin:0 0 10px}
+#newPatientAgeDialog table{width:100%;min-width:820px;border-collapse:collapse;table-layout:auto!important;font-size:13px;color:var(--age-ink)!important}
+#newPatientAgeDialog caption{text-align:left;caption-side:top;padding:12px;background:var(--age-bg);color:var(--age-muted);font-size:12px}
+#newPatientAgeDialog th,#newPatientAgeDialog td{padding:12px 14px;text-align:right;white-space:nowrap;border:0!important;border-bottom:1px solid var(--age-line)!important;color:var(--age-ink)!important;background:var(--age-bg)!important;line-height:1.5}
+#newPatientAgeDialog tr>:first-child{text-align:left}
+#newPatientAgeDialog thead th{background:var(--age-soft)!important;position:sticky;top:0;font-weight:700}
+#newPatientAgeDialog tbody th{font-weight:500}
+#newPatientAgeDialog tfoot :is(th,td){font-weight:700;background:var(--age-soft)!important}
+#newPatientAgeNote{font-size:12px;color:var(--age-muted);line-height:1.9;margin:16px 0 0;white-space:pre-line;word-break:keep-all}
+@media(max-width:650px){#newPatientAgeDialog{width:calc(100% - 20px);padding:18px;max-height:calc(100dvh - 20px)}#newPatientAgeDialog h2{font-size:18px}#newPatientAgeDialog .new-age-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}#newPatientAgeDialog label:nth-child(2){grid-column:1/-1;grid-row:2}#newPatientAgeDialog select{width:100%;min-width:0}#newPatientAgeSummary{font-size:13px;padding:12px}#newPatientAgeExport{width:100%}#newPatientAgeDialog header p{font-size:12px}#newPatientAgeDialog .new-age-scroll-hint{display:block}}

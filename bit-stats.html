@@ -1402,6 +1402,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
 @media(max-width:900px){#carmOutput th,#carmOutput td{padding:7px 1px!important;letter-spacing:-.5px}}
 @media print{#carmOutput table{min-width:0!important;width:100%!important}#carmOutput th,#carmOutput td{font-size:8px!important}}
 </style>
+<link rel="stylesheet" href="/new-patient-age.css"><script defer src="/new-patient-age.js"></script>
 </head>
 <body>
   <div class="jinsulFloatingActions" aria-label="페이지 이동 및 테마 전환">
@@ -2148,6 +2149,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     const headerIdx=findHeaderIndex(data);
     if(headerIdx===-1){
       document.getElementById('warning').innerText='❗ 유효한 헤더를 찾을 수 없습니다.';
+      window.newPatientAgePrepare?.(null);
       state.df=null; state.col=null; state.oneshotRows=[];
       document.getElementById('oneshotBtn').disabled=true;
       document.getElementById('oneshotDlBtn').disabled=true;
@@ -3595,6 +3597,7 @@ body:not(.light-mode) .ov-svg-axis,body:not(.light-mode) .ov-svg-axis-title{fill
     });
     map.forEach((v,key)=>v.carm=v.inj&&!!state.carmData?.visits.has(key));
     window.weeklyPrepare({visits:[...map.values()],startDate,endDate,hasCarm:!!state.carmData,hasInjection:!!col['마취'],hasAge:!!col['연령']});
+    window.newPatientAgePrepare?.({sourceLabel:'비트',events:[...map.values()].map(r=>({...r,kind:r.type})),visits:[...map.values()],startDate,endDate,hasVisits:!!col['내원일']&&!!col['차트'],classificationNote:'비트 외래 파일의 초재진 구분과 중복 초진 보정 결과를 사용합니다.'});
   }
 
   function carmRoom(v){const m=String(v??'').replace(/\s/g,'').match(/(\d+)진료실/);return m?`${+m[1]}진료실`:String(v??'').trim()}
