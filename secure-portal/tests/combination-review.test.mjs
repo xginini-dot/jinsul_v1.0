@@ -108,9 +108,42 @@ test('all-period actual results and their Excel export keep outside dates and un
 });
 
 test('review panels start collapsed',()=>{
-  for(const id of ['allAdjustPanel','reviewPanel','payoutPanel']){
+  for(const id of ['ratePanel','allAdjustPanel','reviewPanel','payoutPanel']){
     const start=html.match(new RegExp(`<details[^>]*id="${id}"[^>]*>`))?.[0];
     assert.ok(start);
     assert.doesNotMatch(start,/\sopen(?:[\s=>]|$)/);
   }
+});
+
+test('uses unique prescribed codes for rates, same-code history for intervals and explicit recognition for status',()=>{
+  const {context,run,review}=boot();
+  const first=visit('2026-11-01');
+  const otherCode=visit('2026-11-05');
+  otherCode.la=new Map([['LA357',1]]);
+  const adjusted=visit('2026-11-08','100',2);
+  adjusted.la.set('LA357',1);
+  context.testVisits=[first,otherCode,adjusted];
+  const result=review.readBook([{name:'코드별 심사결과',rows:[
+    ['수진자명','요양개시일','수가코드','심사결과'],
+    ['가상환자','2026-11-05','LA357','전액 인정'],
+    ['가상환자','2026-11-01','LA358','미인정']
+  ]}],'건강보험.xlsx');
+  assert.equal(result.accepted.length,1);
+  assert.equal(result.payouts.length,0);
+  const row={name:'가상환자',dateKey:'2026-11-08',code:'LA358',amount:10000,insurance:'건강보험'};
+  context.data={claims:[],details:[row,{...row,amount:20000},{...row,code:'LA245'}],summary:[],accepted:result.accepted};
+  context.ratePanel.open=true;
+  const report=run('visits=testVisits; reviewData=data; LA_INFO.LA358.price=30000; renderRates(); getRates()');
+  assert.deepEqual({...report.total},{total:4,adjusted:1,accepted:1,denied:0,unknown:2});
+  assert.equal(report.adjustedVisits,1);
+  assert.equal(report.visitCount,3);
+  assert.equal(report.median,7);
+  assert.equal(report.unlinked,1);
+  assert.equal(report.gaps.get('정확히 7일').adjusted,1);
+  assert.equal(report.codes.get('LA358').total,2);
+  assert.equal(run('rateDetailCells(getRates().visible[0]).at(-1)'),50);
+  assert.match(context.rateSummary.innerHTML,/25\.00%/);
+  context.rateView.value='accepted';
+  assert.equal(run('getRates().visible[0].visit.dateKey'),'2026-11-05');
+  assert.equal(run('reviewData.details=[]; getRates().hasDetails'),false);
 });
