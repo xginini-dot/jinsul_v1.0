@@ -64,6 +64,27 @@ test('ambiguous visit or ambiguous claim date remains visible without a guessed 
   assert.ok(rows.find(row=>row.details.length&&!row.dateKey)?.unmatched);
 });
 
+test('uses the claim’s LA codes to distinguish same-name patients seen on the same date',()=>{
+  const {review}=boot();
+  const date='2026-11-14';
+  const {claims}=review.readBook([claimSheet('심사조정건조회','1',date)],'건강보험.xlsx');
+  const {details}=review.readBook([codesSheet],'건강보험.xlsx');
+  const actual=visit(date);
+  actual.la.set('LA272',1);
+  const other=visit(date,'200');
+  other.la=new Map([['LA357',1]]);
+  const secondCode={...details[0],code:'LA272',rawCode:'LA27200Z',line:'2'};
+  const compare=(visits,lines)=>review.compare({claims,details:lines},[],visits,new Map());
+  const linked=compare([other,actual],[...details,secondCode]).find(row=>row.claims.length);
+  assert.equal(linked.visit,actual);
+  assert.equal(linked.details.length,2);
+  other.la.set('LA358',2);
+  assert.equal(compare([other,actual],[...details,secondCode]).find(row=>row.claims.length).visit,actual);
+  assert.equal(compare([other,actual],details).find(row=>row.claims.length).visit,undefined);
+  actual.la.delete('LA358');
+  assert.equal(compare([other,actual],[...details,secondCode]).find(row=>row.claims.length).visit,undefined);
+});
+
 test('14-day estimate keeps its anchor after short visits and uses history before the date filter',()=>{
   const {context,run}=boot();
   const input=[visit('2026-11-01'),visit('2026-11-08','100',1.5),visit('2026-11-15'),visit('2026-11-18','200')];
@@ -169,4 +190,24 @@ test('adjustment tabs keep one adjusted visit per combination and show the patie
   assert.match(context.rateFlowList.innerHTML,/3,000원/);
   context.rateSearch.value='LA358 + KK090';
   assert.equal(run('adjustmentBreakdown(getRates()).combo.length'),1);
+});
+
+test('code-only adjustment combinations combine doses and count each patient once',()=>{
+  const {context,run}=boot();
+  const first=visit('2026-10-01'), second=visit('2026-10-08','100',1.5), third=visit('2026-10-15','200',2);
+  first.extra=new Map([['KK090',1]]);
+  second.extra=new Map([['KK090',2]]);
+  third.extra=new Map([['KK061',1]]);
+  context.testVisits=[first,second,third];
+  context.testDetails=[first,second].map(visit=>({name:visit.name,dateKey:visit.dateKey,code:'LA358',amount:1000}));
+  context.ratePanel.open=true;
+  const rows=run('visits=testVisits; reviewData.details=testDetails; renderRates(); adjustmentBreakdown(getRates())');
+  assert.deepEqual(Array.from(rows.comboCodes[0]),['LA358','KK090',2,2,100,1,2000]);
+  assert.equal(rows.comboCodes.length,2);
+  assert.equal(rows.combo.length,3);
+  assert.match(context.rateDetail.innerHTML,/<th>LA 코드 조합<\/th>/);
+  assert.doesNotMatch(context.rateDetail.innerHTML,/<th>LA 총투여량<\/th>/);
+  context.rateComboBasis.value='dose';
+  run('renderRates()');
+  assert.match(context.rateDetail.innerHTML,/<th>LA 총투여량<\/th>/);
 });
