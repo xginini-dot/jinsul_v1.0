@@ -62,6 +62,15 @@ body:before{
 .review-section>summary:hover{background:var(--panel2)}
 .review-body{padding:4px clamp(16px,2vw,28px) 24px}
 .review-body>p:first-child{margin-top:0}
+.adjustment-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.adjustment-table td.wrap-cell{white-space:normal;min-width:130px;text-align:left;overflow-wrap:anywhere}
+.adjustment-flow .flow-head{flex-wrap:wrap}
+.adjustment-flow .flow-line{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));overflow:visible}
+.adjustment-flow .flow-item{min-width:0}
+.adjustment-flow .flow-item.adjusted{border-left:4px solid #b47b48}
+.adjustment-flow .flow-item.accepted{border-left:4px solid #577b68}
+.adjustment-flow .flow-date{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.adjustment-flow .adjusted-code{margin-top:5px;font-weight:800}
 .hero{background:linear-gradient(135deg,rgba(17,24,39,.96),rgba(26,26,26,.88) 58%,rgba(63,52,36,.72));border-color:rgba(189,169,139,.45)}
 html[data-theme="light"] .hero{background:linear-gradient(135deg,#fff,#fffaf2 58%,#f3eadc)}
 .top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
@@ -208,24 +217,35 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
   </div>
   <div id="denialPage" class="page-view">
     <details class="card review-section" id="ratePanel">
-      <summary>조정률 · 시행 간격 · 인정 확인</summary>
+      <summary>처방별 심사조정 분석</summary>
       <div class="review-body">
         <p class="hint">업로드한 처방 전 기간을 집계합니다. 같은 환자·같은 날·같은 LA 기본코드는 1건으로 세며, 조정 비율에는 연결된 실제 조정만 반영합니다.</p>
         <div class="summary" id="rateSummary" aria-live="polite"></div>
         <p class="hint" id="rateScope"></p>
-        <h3>코드별 조정률</h3>
-        <div class="tableWrap"><table id="rateCodes"></table></div>
-        <h3 style="margin-top:18px">시행 간격별 실제 결과</h3>
-        <p class="hint">같은 환자의 직전 동일 LA 코드 시행일부터 계산합니다.</p>
-        <div class="tableWrap"><table id="rateGaps"></table></div>
-        <h3 style="margin-top:18px">환자별 결과</h3>
-        <p class="hint">추정 조정액 비중의 분모는 해당 코드 투여량 × 적용 단가입니다.</p>
         <div class="filters">
-          <div class="field"><label for="rateSearch">수진자 · 차트번호 · 코드 검색</label><input id="rateSearch" placeholder="예: LA358"></div>
-          <div class="field"><label for="rateView">결과 보기</label><select id="rateView"><option value="adjusted">조정 확인</option><option value="accepted">인정 확인</option><option value="denied">지급불능</option><option value="unknown">결과 미확인</option><option value="all">전체</option></select></div>
+          <div class="field"><label for="rateSearch">수진자 · 차트번호 · 처방 코드 검색</label><input id="rateSearch" placeholder="예: LA358, KK090"></div>
+          <div class="field hidden" id="rateViewField"><label for="rateView">결과 보기</label><select id="rateView"><option value="adjusted">조정 확인</option><option value="accepted">인정 확인</option><option value="denied">지급불능</option><option value="unknown">결과 미확인</option><option value="all">전체</option></select></div>
         </div>
-        <div class="actions"><button type="button" class="btn" id="rateDownload">조정률·간격 엑셀 다운로드</button></div>
-        <div class="tableWrap"><table id="rateDetail"></table></div>
+        <div class="adjustment-tabs" role="group" aria-label="심사조정 집계 보기">
+          <button type="button" class="tab active" data-rate-tab="combo" aria-pressed="true">처방 조합별</button>
+          <button type="button" class="tab" data-rate-tab="detail" aria-pressed="false">환자별 상세</button>
+          <button type="button" class="tab" data-rate-tab="month" aria-pressed="false">월별 비교</button>
+          <button type="button" class="tab" data-rate-tab="flow" aria-pressed="false">조정 환자 처방 흐름</button>
+          <button type="button" class="tab" data-rate-tab="gap" aria-pressed="false">코드별 · 간격별</button>
+          <button type="button" class="tab" data-rate-tab="reason" aria-pressed="false">조정 사유별</button>
+          <button type="button" class="tab" data-rate-tab="unlinked" aria-pressed="false">미연결 조정</button>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn hidden" id="rateCopyFlows">전체 환자 흐름 보고용 복사</button>
+          <button type="button" class="btn" id="rateDownload">심사조정 분석 엑셀 다운로드</button>
+        </div>
+        <p class="hint" id="rateTabNote"></p>
+        <div class="tableWrap adjustment-table" id="rateTableWrap"><table id="rateDetail"></table></div>
+        <div id="rateFlowList" class="adjustment-flow hidden"></div>
+        <div id="rateIntervals" class="adjustment-table hidden">
+          <h3>코드별 조정률</h3><div class="tableWrap"><table id="rateCodes"></table></div>
+          <h3 style="margin-top:18px">시행 간격별 실제 결과</h3><div class="tableWrap"><table id="rateGaps"></table></div>
+        </div>
         <div class="actions hidden" id="ratePager">
           <button type="button" class="btn" id="ratePrev">이전</button>
           <span id="ratePageText" class="hint" aria-live="polite"></span>
@@ -658,13 +678,20 @@ const denialComboTable=document.getElementById('denialComboTable'),denialDetailT
 const denialMonthlyTable=document.getElementById('denialMonthlyTable'),denialFlowList=document.getElementById('denialFlowList'),denialInsight=document.getElementById('denialInsight');
 let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[],denialRows=[],denialMatches=[],flowCopyData=[];
 let reviewData={claims:[],details:[],summary:[],accepted:[]}, reviewUpload=0, reviewPage=0, allAdjustPage=0, ratePage=0;
+let rateTab='combo',rateFlowCopy=[];
 const REVIEW_HEADERS=['시행일 / 요양개시일','차트번호','수진자','보험','차단술 코드 · 수량','LA 총투여량','실제 결과','LA 조정 코드','LA 조정액','명세서 조정액','지급불능 청구액','전회 대상 시행 간격(일)','모의 기준일과 간격(일)','간격 모의계산','예상 조정액','조정 내역 · 사유'];
 const REVIEW_DOSE_HEADERS=['LA코드','환자 수','처방 방문','총투여량','환자당 투여량','방문당 투여량','실제 LA 조정 상세 행','실제 LA 조정액','간격 미달 예상 방문'];
 const ALL_ADJUST_HEADERS=['요양개시일','보험','수진자','명일련','묶음번호','LA 조정 코드','LA 조정액','명세서 조정액','조정 내역 · 사유'];
 const REVIEW_CODE_HEADERS=['LA 기본코드','조정 상세 행·요약 건수','조정금액'];
 const RATE_COUNT_HEADERS=['처방 건수','조정 확인','조정률 (%)','인정 확인','지급불능 방문의 코드','결과 미확인'];
-const RATE_DETAIL_HEADERS=['시행일','차트번호','수진자','LA코드','투여량','직전 동일 코드 시행일','시행 간격(일)','심사결과','실제 LA 조정액','처방 추정액','추정 조정액 비중 (%)'];
+const RATE_DETAIL_HEADERS=['시행일','차트번호','수진자','LA코드','투여량','직전 동일 코드 시행일','시행 간격(일)','심사결과','실제 LA 조정액','처방 추정액','추정 조정액 비중 (%)','조정 사유'];
 const RATE_LABELS={adjusted:'조정 확인',accepted:'인정 확인',denied:'지급불능 방문',unknown:'결과 미확인'};
+const ADJUSTMENT_HEADERS={
+  combo:['LA 조합 · 투여량','부가처방 · 투여량','전체 방문','조정 방문','조정률 (%)','조정 환자','LA 총투여량','LA 조정액'],
+  month:['시행 월','전체 방문','조정 방문','조정률 (%)','조정 환자','LA 총투여량','연결 LA 조정액','미연결 조정 상세'],
+  reason:['조정 사유 코드','조정 사유','LA 코드','조정 상세 행','미연결 상세 행','조정액'],
+  unlinked:['요양개시일','보험','수진자','명일련','조정 코드','조정액','조정 사유','연결 상태']
+};
 (function(){
   const saved=localStorage.getItem('jinsul-theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
@@ -711,6 +738,15 @@ for(const [id,render] of [['ratePanel',renderRates],['allAdjustPanel',renderAllA
   panel.addEventListener('toggle',()=>{if(panel.open)render();});
 }
 ['rateView','rateSearch'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ratePage=0;renderRates();}));
+document.querySelectorAll('[data-rate-tab]').forEach(button=>button.addEventListener('click',()=>{
+  selectRateTab(button.dataset.rateTab);
+  renderRates();
+}));
+document.getElementById('rateCopyFlows').addEventListener('click',()=>{if(rateFlowCopy.length)copyText(rateFlowCopy.join('\n\n'),'전체 조정 환자 흐름');});
+document.getElementById('rateFlowList').addEventListener('click',event=>{
+  const button=event.target.closest('[data-adjust-copy]');
+  if(button&&rateFlowCopy[button.dataset.adjustCopy])copyText(rateFlowCopy[button.dataset.adjustCopy],'조정 환자 흐름');
+});
 document.getElementById('ratePrev').addEventListener('click',()=>{ratePage--;renderRates();});
 document.getElementById('rateNext').addEventListener('click',()=>{ratePage++;renderRates();});
 document.getElementById('rateDownload').addEventListener('click',exportRates);
@@ -737,7 +773,7 @@ document.getElementById('resetBtn').onclick=resetAll;
 document.getElementById('exportBtn').onclick=exportExcel;
 document.getElementById('selectAllBtn').onclick=()=>{document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=true);recalc()};
 document.getElementById('clearSelectBtn').onclick=()=>{document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);recalc()};
-document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
+document.querySelectorAll('.tab[data-group]').forEach(btn=>btn.onclick=()=>{
   const group=btn.dataset.group;
   document.querySelectorAll(`.tab[data-group="${group}"]`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -1118,7 +1154,7 @@ function comboBlock(r,i,total){
   </div>`;
 }
 function prescriptionParts(v){
-  const label=map=>[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + ');
+  const label=map=>[...(map||[])].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([c,d])=>`${c} ${fmtDose(d)}`).join(' + ');
   return {laLabel:label(v.la)||'없음',extraLabel:label(v.extra)||'없음'};
 }
 function prescriptionCells(parts){return `<td class="left">${esc(parts.laLabel)}</td><td class="left">${esc(parts.extraLabel)}</td>`}
@@ -1140,16 +1176,20 @@ function adjustmentRates(data,payouts,prescriptions,prices){
   const history=new Map(),codes=new Map(),rows=[];
   const empty=()=>({total:0,adjusted:0,accepted:0,denied:0,unknown:0});
   const total=empty(),gaps=new Map(['1~6일','정확히 7일','8~13일','14일 이상','이전 기록 없음'].map(label=>[label,empty()]));
+  const adjustmentLines=[];
   let unlinked=0,adjustedVisits=0;
   for(const row of [...linked].reverse()){
     const {visit,details}=row;
-    const dollars=new Map();
+    const detailsByCode=new Map();
     for(const detail of details){
-      if(!visit?.la.has(detail.code)){unlinked++;continue;}
-      dollars.set(detail.code,(dollars.get(detail.code)||0)+detail.amount);
+      const matched=!!visit?.la.has(detail.code);
+      adjustmentLines.push({...detail,dateKey:row.dateKey,matched,visit});
+      if(!matched){unlinked++;continue;}
+      if(!detailsByCode.has(detail.code))detailsByCode.set(detail.code,[]);
+      detailsByCode.get(detail.code).push(detail);
     }
     if(!visit)continue;
-    if(dollars.size)adjustedVisits++;
+    if(detailsByCode.size)adjustedVisits++;
     const visitKey=matchingKey(visit.name,visit.dateKey);
     for(const [code,dose] of visit.la){
       const historyKey=JSON.stringify([visit.patientKey,code]);
@@ -1157,20 +1197,22 @@ function adjustmentRates(data,payouts,prescriptions,prices){
       const gap=previous?(Date.parse(visit.dateKey)-Date.parse(previous))/86400000:null;
       history.set(historyKey,visit.dateKey);
       const checked=normalizeName(visit.name)&&countsByNameDate.get(visitKey)===1&&accepted.has(JSON.stringify([visitKey,code]));
-      const state=dollars.has(code)?'adjusted':row.payouts.length?'denied':checked?'accepted':'unknown';
-      const amount=dollars.get(code)??null;
+      const sources=detailsByCode.get(code)||[];
+      const state=sources.length?'adjusted':row.payouts.length?'denied':checked?'accepted':'unknown';
+      const amount=sources.length?sources.reduce((sum,item)=>sum+item.amount,0):null;
+      const reason=[...new Set(sources.map(item=>item.reason).filter(Boolean))].join(' / ');
       const price=prices[code]?.price;
       const expected=price>0&&dose>0?price*dose:null;
       const gapLabel=gap===null?'이전 기록 없음':gap<7?'1~6일':gap===7?'정확히 7일':gap<14?'8~13일':'14일 이상';
       if(!codes.has(code))codes.set(code,empty());
       for(const stats of [total,codes.get(code),gaps.get(gapLabel)]){stats.total++;stats[state]++;}
-      rows.push({visit,code,dose,previous,gap,state,amount,expected});
+      rows.push({visit,code,dose,previous,gap,gapLabel,state,amount,expected,reason});
     }
   }
   const adjustedGaps=rows.filter(r=>r.state==='adjusted'&&r.gap!==null).map(r=>r.gap).sort((a,b)=>a-b);
   const middle=Math.floor(adjustedGaps.length/2);
   const median=adjustedGaps.length?(adjustedGaps[middle]+adjustedGaps[Math.floor((adjustedGaps.length-1)/2)])/2:null;
-  return {total,codes,gaps,rows:rows.reverse(),unlinked,median,adjustedVisits,visitCount:prescriptions.length,hasDetails:data.details.length>0};
+  return {total,codes,gaps,rows:rows.reverse(),adjustmentLines,unlinked,median,adjustedVisits,visitCount:prescriptions.length,hasDetails:data.details.length>0};
 }
 function ratePercent(count,total){return total?round2(count/total*100):null}
 function rateCountCells(stats,hasDetails){
@@ -1179,28 +1221,128 @@ function rateCountCells(stats,hasDetails){
 function rateDetailCells(row){
   const {visit,code,dose,previous,gap,state,amount,expected}=row;
   return [visit.dateKey,visit.chart,visit.name,code,round2(dose),previous,gap,RATE_LABELS[state],amount,expected,
-    amount!==null&&expected?ratePercent(amount,expected):null];
+    amount!==null&&expected?ratePercent(amount,expected):null,row.reason];
 }
 function getRates(){
   const report=adjustmentRates(reviewData,denialRows,visits,LA_INFO);
   const filter=document.getElementById('rateView').value||'adjusted';
   const q=normalizeName(document.getElementById('rateSearch').value);
+  const terms=q.split(/[,+]/).filter(Boolean);
+  const matchesText=text=>terms.every(term=>normalizeName(text).includes(term));
+  const matchesVisit=v=>matchesText([v.name,v.chart,...v.la.keys(),...(v.extra?.keys()||[])].join(' '));
   const visible=report.rows.filter(r=>(filter==='all'||r.state===filter)&&
-    (!q||normalizeName([r.visit.name,r.visit.chart,r.code].join(' ')).includes(q)));
+    (q.match(/^LA\d{3}$/)?r.code===q:matchesVisit(r.visit)));
   const codeRows=[...report.codes].sort(([a],[b])=>a.localeCompare(b)).map(([label,counts])=>[label,...rateCountCells(counts,report.hasDetails)]);
   const gapRows=[...report.gaps].map(([label,counts])=>[label,...rateCountCells(counts,report.hasDetails)]);
-  return {...report,visible,codeRows,gapRows};
+  return {...report,visible,codeRows,gapRows,matchesText,matchesVisit};
+}
+function selectRateTab(mode){
+  rateTab=mode;
+  ratePage=0;
+  document.querySelectorAll('[data-rate-tab]').forEach(button=>{
+    const active=button.dataset.rateTab===mode;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+function adjustmentBreakdown(report){
+  const visitsByRecord=new Map();
+  for(const row of report.rows){
+    if(!visitsByRecord.has(row.visit))visitsByRecord.set(row.visit,[]);
+    visitsByRecord.get(row.visit).push(row);
+  }
+  const groups=new Map(),months=new Map(),patients=new Map();
+  function tally(map,key){
+    if(!map.has(key))map.set(key,{visits:0,adjusted:0,patients:new Set(),dose:0,amount:0,unlinked:0});
+    return map.get(key);
+  }
+  for(const [visit,records] of visitsByRecord){
+    if(!report.matchesVisit(visit))continue;
+    const {laLabel,extraLabel}=prescriptionParts(visit);
+    const adjusted=records.filter(r=>r.state==='adjusted');
+    const month=visit.dateKey.slice(0,7);
+    for(const total of [tally(groups,JSON.stringify([laLabel,extraLabel])),tally(months,month)]){
+      total.visits++;
+      total.dose+=sumMap(visit.la);
+      if(adjusted.length){
+        total.adjusted++;
+        total.patients.add(visit.patientKey);
+        total.amount+=adjusted.reduce((sum,r)=>sum+r.amount,0);
+      }
+    }
+    if(adjusted.length&&!patients.has(visit.patientKey))patients.set(visit.patientKey,{visit,items:[]});
+  }
+  for(const [visit,records] of visitsByRecord){
+    patients.get(visit.patientKey)?.items.push({visit,records});
+  }
+  const lines=report.adjustmentLines.filter(item=>
+    (item.visit&&report.matchesVisit(item.visit))||report.matchesText([item.name,item.serial,item.code,item.reason].join(' ')));
+  const reasons=new Map(),unlinked=[];
+  for(const item of lines){
+    const key=JSON.stringify([item.reasonCode||'',item.reason||'사유 미기재',item.code]);
+    const row=tally(reasons,key);
+    row.visits++;
+    row.amount+=item.amount;
+    if(!item.matched){
+      row.unlinked++;
+      if(item.dateKey)tally(months,item.dateKey.slice(0,7)).unlinked++;
+      unlinked.push([item.dateKey||'날짜 미연결',item.insurance,item.name,item.serial,item.rawCode,item.amount,item.reason,
+        item.visit?'동일 날짜에 해당 LA 코드 없음':item.dateKey?'해당 처방 연결 안 됨':'요양개시일 미연결']);
+    }
+  }
+  const visitCells=o=>[o.visits,report.hasDetails?o.adjusted:null,report.hasDetails?ratePercent(o.adjusted,o.visits):null,
+    o.patients.size,round2(o.dose),o.adjusted?o.amount:null];
+  return {
+    combo:[...groups].sort(([a,x],[b,y])=>y.adjusted-x.adjusted||y.visits-x.visits||a.localeCompare(b)).map(([key,o])=>[...JSON.parse(key),...visitCells(o)]),
+    month:[...months].sort(([a],[b])=>a.localeCompare(b)).map(([key,o])=>[key,...visitCells(o),o.unlinked]),
+    reason:[...reasons].sort(([,a],[,b])=>b.amount-a.amount||b.visits-a.visits).map(([key,o])=>[...JSON.parse(key),o.visits,o.unlinked,o.amount]),
+    unlinked:unlinked.reverse(),
+    flows:[...patients.values()].sort((a,b)=>a.visit.name.localeCompare(b.visit.name,'ko')).map(p=>({...p,items:p.items.reverse()}))
+  };
+}
+function adjustmentFlowText(patient){
+  const {visit,items}=patient;
+  return [`${visit.name} (${visit.chart||'차트번호 없음'}) · 처방 방문 ${items.length}건`,...items.map(({visit,records})=>{
+    const {laLabel,extraLabel}=prescriptionParts(visit);
+    const results=records.map(r=>`${r.code} ${RATE_LABELS[r.state]}`+
+      (r.amount!==null?' '+fmtWon(r.amount):'')+(r.gap!==null?' · 직전 동일 코드 '+r.gap+'일':''));
+    return `${visit.dateKey} | LA ${laLabel} | 부가 ${extraLabel} | ${results.join(' / ')}`;
+  })].join('\n');
+}
+function adjustmentFlowCard(patient,index){
+  const {visit,items}=patient;
+  const adjusted=items.filter(item=>item.records.some(r=>r.state==='adjusted')).length;
+  const amount=items.reduce((sum,item)=>sum+item.records.reduce((n,r)=>n+(r.amount??0),0),0);
+  const cards=items.map(({visit,records})=>{
+    const {laLabel,extraLabel}=prescriptionParts(visit);
+    const adjusted=records.filter(r=>r.state==='adjusted'),accepted=records.filter(r=>r.state==='accepted');
+    const states=[adjusted.length?'조정 확인':'',accepted.length?'인정 확인':'',records.some(r=>r.state==='denied')?'지급불능':''].filter(Boolean);
+    const confirmed=records.filter(r=>r.state!=='unknown');
+    return `<div class="flow-item ${adjusted.length?'adjusted':accepted.length?'accepted':states.includes('지급불능')?'denied':''}">
+      <div class="flow-date"><span>${visit.dateKey}</span><span class="pill">${states.join(' · ')||'결과 미확인'}</span></div>
+      <div class="flow-rx"><div><span class="hint">차단술</span> ${esc(laLabel)}</div><div><span class="hint">부가처방</span> ${esc(extraLabel)}</div></div>
+      ${confirmed.map(r=>`<div class="hint adjusted-code">${r.code} · ${RATE_LABELS[r.state]}${r.amount!==null?' '+fmtWon(r.amount):''}${r.gap!==null?' · 동일 코드 '+r.gap+'일':''}</div>`).join('')}
+    </div>`;
+  }).join('');
+  return `<div class="flow-card"><div class="flow-head">
+    <div><b>${esc(visit.name)}</b> <span class="pill">${esc(visit.chart||'차트번호 없음')}</span></div>
+    <div class="hint">처방 ${fmtInt(items.length)}건 · 조정 방문 ${fmtInt(adjusted)}건 · LA 조정액 ${fmtWon(amount)}</div>
+    <button class="btn gray" type="button" data-adjust-copy="${index}">이 환자 보고용 복사</button>
+    </div><div class="flow-line">${cards}</div></div>`;
 }
 function renderRates(){
   const get=id=>document.getElementById(id);
   if(!get('ratePanel').open||!get('denialPage').classList.contains('active'))return;
-  const report=getRates(), {total,hasDetails,visible,median,unlinked}=report;
+  const report=getRates(), {total,hasDetails,median,unlinked}=report;
+  const breakdown=adjustmentBreakdown(report);
   const percent=hasDetails?ratePercent(total.adjusted,total.total):null;
   const visitPercent=hasDetails?ratePercent(report.adjustedVisits,report.visitCount):null;
   const cards=[
-    ['전체 차단술 코드 시행',fmtInt(total.total)+'건'],
-    ['조정 확인 · 코드 시행 기준',percent===null?'—':percent.toFixed(2)+'%'],
-    ['조정 확인 · 방문 기준',visitPercent===null?'—':visitPercent.toFixed(2)+'%'],
+    ['전체 처방 방문',fmtInt(report.visitCount)+'건'],
+    ['조정 확인 방문',hasDetails?fmtInt(report.adjustedVisits)+'건':'—'],
+    ['방문 기준 조정률',visitPercent===null?'—':visitPercent.toFixed(2)+'%'],
+    ['코드 시행 기준 조정률',percent===null?'—':percent.toFixed(2)+'%'],
+    ['연결 LA 조정액',report.adjustedVisits?fmtWon(report.adjustmentLines.filter(line=>line.matched).reduce((sum,line)=>sum+line.amount,0)):'—'],
     ['조정 건의 시행 간격 중앙값',median===null?'—':median+'일'],
     ['인정 확인',fmtInt(total.accepted)]
   ];
@@ -1213,35 +1355,74 @@ function renderRates(){
   ].join(' · ');
   function table(id,headers,rows,message,format){
     get(id).innerHTML='<thead><tr>'+headers.map(label=>`<th>${label}</th>`).join('')+'</tr></thead><tbody>'+
-      (rows.length?rows.map(row=>'<tr>'+row.map((value,i)=>`<td>${value===null||value===''?'—':format(value,i)}</td>`).join('')+'</tr>').join(''):
+      (rows.length?rows.map(row=>'<tr>'+row.map((value,i)=>`<td${typeof value==='string'&&value.length>18?' class="wrap-cell"':''}>${value===null||value===''?'—':format(value,i)}</td>`).join('')+'</tr>').join(''):
       `<tr><td colspan="${headers.length}" class="empty">${message}</td></tr>`)+'</tbody>';
   }
   const counts=(value,i)=>i===3?value.toFixed(2)+'%':i===0?esc(value):fmtInt(value);
-  table('rateCodes',['코드',...RATE_COUNT_HEADERS],report.codeRows,'차단술 처방을 올려주세요.',counts);
-  table('rateGaps',['직전 동일 코드와의 간격',...RATE_COUNT_HEADERS],total.total?report.gapRows:[],'비교할 시행 기록이 없습니다.',counts);
-  const pageSize=100,pages=Math.max(1,Math.ceil(visible.length/pageSize));
+  const notes={
+    combo:'LA와 부가처방의 코드·투여량이 같은 방문을 묶었습니다. 조정률은 해당 조합의 전체 방문 대비 조정이 연결된 방문의 비율입니다.',
+    detail:'한 환자의 같은 날 LA 코드별 결과입니다. 추정 조정액 비중은 실제 LA 조정액 ÷ (투여량 × 적용 단가)입니다.',
+    month:'시행월별 처방 방문·조정률입니다. 처방과 연결되지 않은 상세 행은 별도 열에 표시합니다.',
+    flow:'조정이 연결된 환자의 전체 업로드 처방을 날짜순으로 표시합니다. 코드별 조정액과 직전 동일 코드와의 간격을 확인할 수 있습니다.',
+    gap:'전체 코드 시행을 기준으로 집계합니다. 간격은 같은 환자의 직전 동일 코드 시행일부터 계산합니다.',
+    reason:'코드별 조정 상세의 원본 사유별 집계입니다. 처방과 연결되지 않은 행도 포함합니다.',
+    unlinked:'날짜 또는 해당 LA 처방과 연결되지 않은 상세입니다. 처방 조정률에서는 제외됩니다.'
+  };
+  get('rateTabNote').textContent=notes[rateTab];
+  const flow=rateTab==='flow',interval=rateTab==='gap';
+  get('rateViewField').classList.toggle('hidden',rateTab!=='detail');
+  get('rateFlowList').classList.toggle('hidden',!flow);
+  get('rateCopyFlows').classList.toggle('hidden',!flow);
+  get('rateIntervals').classList.toggle('hidden',!interval);
+  get('rateTableWrap').classList.toggle('hidden',flow||interval);
+  const visible=rateTab==='detail'?report.visible:breakdown[flow?'flows':rateTab]||[];
+  const pageSize=flow?12:100,pages=Math.max(1,Math.ceil(visible.length/pageSize));
   ratePage=Math.max(0,Math.min(ratePage,pages-1));
-  table('rateDetail',RATE_DETAIL_HEADERS,visible.slice(ratePage*pageSize,(ratePage+1)*pageSize).map(rateDetailCells),
-    get('rateView').value==='accepted'?'업로드 자료에서 연결된 코드별 인정 결과가 없습니다.':'현재 조건에 해당하는 기록이 없습니다.',
-    (value,i)=>i===10?value.toFixed(2)+'%':[8,9].includes(i)?fmtWon(value):esc(value));
+  const page=visible.slice(ratePage*pageSize,(ratePage+1)*pageSize);
+  rateFlowCopy=flow?visible.map(adjustmentFlowText):[];
+  if(flow){
+    get('rateCopyFlows').disabled=!visible.length;
+    get('rateFlowList').innerHTML=page.length?page.map((patient,i)=>adjustmentFlowCard(patient,ratePage*pageSize+i)).join(''):
+      '<div class="empty">조정과 연결된 환자 처방이 없습니다.</div>';
+  }else if(interval){
+    table('rateCodes',['코드',...RATE_COUNT_HEADERS],report.codeRows,'차단술 처방을 올려주세요.',counts);
+    table('rateGaps',['직전 동일 코드와의 간격',...RATE_COUNT_HEADERS],total.total?report.gapRows:[],'비교할 시행 기록이 없습니다.',counts);
+  }else{
+    const format=(value,i)=>{
+      if(rateTab==='detail'&&i===7)return `<span class="pill ${value==='조정 확인'?'combo':''}">${esc(value)}</span>`;
+      const percentage={combo:4,month:3,detail:10}[rateTab],money={combo:[7],month:[6],detail:[8,9],reason:[5],unlinked:[5]}[rateTab];
+      if(i===percentage)return `<span class="${denialRateClass(value)}">${value.toFixed(2)}%</span>`;
+      if(money.includes(i))return fmtWon(value);
+      return typeof value==='number'?value.toLocaleString():esc(value);
+    };
+    const detail=rateTab==='detail';
+    table('rateDetail',detail?RATE_DETAIL_HEADERS:ADJUSTMENT_HEADERS[rateTab],detail?page.map(rateDetailCells):page,
+      detail&&get('rateView').value==='accepted'?'업로드 자료에서 연결된 코드별 인정 결과가 없습니다.':'현재 조건에 해당하는 기록이 없습니다.',format);
+  }
   get('ratePrev').disabled=ratePage===0;
   get('rateNext').disabled=ratePage+1>=pages;
   get('ratePager').classList.toggle('hidden',pages<2);
-  get('ratePageText').textContent=`${ratePage+1} / ${pages} 페이지 · 전체 ${fmtInt(visible.length)}행`;
-  get('rateDownload').disabled=!total.total;
+  get('ratePageText').textContent=`${ratePage+1} / ${pages} 페이지 · 전체 ${fmtInt(visible.length)}${flow?'명':'행'}`;
+  get('rateDownload').disabled=!total.total&&!report.adjustmentLines.length;
 }
 function exportRates(){
   const report=getRates();
-  if(!report.total.total)return;
+  if(!report.total.total&&!report.adjustmentLines.length)return;
+  const breakdown=adjustmentBreakdown(report);
   const wb=XLSX.utils.book_new();
   const add=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),name);
   add('전체_코드별_조정률',[['코드',...RATE_COUNT_HEADERS],['전체',...rateCountCells(report.total,report.hasDetails)],...report.codeRows]);
   add('시행간격별_결과',[['직전 동일 코드와의 간격',...RATE_COUNT_HEADERS],...report.gapRows]);
   add('환자별_결과',[RATE_DETAIL_HEADERS,...report.visible.map(rateDetailCells)]);
+  for(const [tab,name] of Object.entries({combo:'처방조합별_조정',month:'월별_조정',reason:'조정사유별',unlinked:'미연결_조정'})){
+    if(breakdown[tab].length)add(name,[ADJUSTMENT_HEADERS[tab],...breakdown[tab]]);
+  }
+  if(breakdown.flows.length)add('조정환자_처방흐름',[RATE_DETAIL_HEADERS,
+    ...breakdown.flows.flatMap(patient=>patient.items.flatMap(item=>item.records.map(rateDetailCells)))]);
   add('집계_기준',[['항목','값'],['기간','업로드한 처방 전체 기간'],['집계 단위','환자·시행일·LA 기본코드당 1건'],
     ['전체 처방 방문',report.visitCount],['조정 확인 방문',report.adjustedVisits],['방문 기준 조정률 (%)',report.hasDetails?ratePercent(report.adjustedVisits,report.visitCount):null],
     ['처방 미연결 조정 상세',report.unlinked],['조정 간격 중앙값 (일)',report.median],['추정 조정액 비중','LA 실제 조정액 / (적용 단가 × 투여량)']]);
-  XLSX.writeFile(wb,'신경차단술_조정률_시행간격.xlsx');
+  XLSX.writeFile(wb,'신경차단술_심사조정_상세분석.xlsx');
 }
 function reviewCodeTotals(insurance){
   const totals=new Map();
@@ -1578,8 +1759,10 @@ function resetAll(){
   for(const [id,value] of Object.entries({allAdjustSearch:'',allAdjustInsurance:'all',reviewSearch:'',reviewInsurance:'all',reviewView:'all',reviewCodes:'LA357, LA358, LA359',reviewDays:'14'}))document.getElementById(id).value=value;
   document.getElementById('rateView').value='adjusted';
   document.getElementById('rateSearch').value='';
+  selectRateTab('combo');
+  rateFlowCopy=[];
   for(const id of ['ratePanel','allAdjustPanel','reviewPanel','payoutPanel'])document.getElementById(id).open=false;
-  for(const id of ['rateSummary','rateCodes','rateGaps','rateDetail','allAdjustSummary','allAdjustTable','reviewSummary','reviewTable','reviewDoseTable','reviewCodeTable'])document.getElementById(id).replaceChildren();
+  for(const id of ['rateSummary','rateCodes','rateGaps','rateDetail','rateFlowList','allAdjustSummary','allAdjustTable','reviewSummary','reviewTable','reviewDoseTable','reviewCodeTable'])document.getElementById(id).replaceChildren();
   statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();
 }
 function exportExcel(){

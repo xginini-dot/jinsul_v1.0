@@ -141,9 +141,32 @@ test('uses unique prescribed codes for rates, same-code history for intervals an
   assert.equal(report.unlinked,1);
   assert.equal(report.gaps.get('정확히 7일').adjusted,1);
   assert.equal(report.codes.get('LA358').total,2);
-  assert.equal(run('rateDetailCells(getRates().visible[0]).at(-1)'),50);
+  assert.equal(run('rateDetailCells(getRates().visible[0])[10]'),50);
   assert.match(context.rateSummary.innerHTML,/25\.00%/);
   context.rateView.value='accepted';
   assert.equal(run('getRates().visible[0].visit.dateKey'),'2026-11-05');
   assert.equal(run('reviewData.details=[]; getRates().hasDetails'),false);
+});
+
+test('adjustment tabs keep one adjusted visit per combination and show the patient’s other prescriptions',()=>{
+  const {context,run}=boot();
+  const first=visit('2026-10-31'),second=visit('2026-11-07'),third=visit('2026-11-14','200');
+  first.extra=second.extra=third.extra=new Map([['KK090',1]]);
+  context.testVisits=[first,second,third];
+  const reason={name:'가상환자',dateKey:second.dateKey,code:'LA358',rawCode:'LA358',amount:1000,insurance:'건강보험',reasonCode:'A',reason:'범위 초과'};
+  context.data={claims:[],details:[reason,{...reason,amount:2000},{...reason,dateKey:'',amount:3000}],summary:[],accepted:[]};
+  context.ratePanel.open=true;
+  const rows=run('visits=testVisits; reviewData=data; adjustmentBreakdown(getRates())');
+  assert.deepEqual(Array.from(rows.combo[0]),['LA358 1','KK090 1',3,1,33.33,1,3,3000]);
+  assert.equal(rows.month[1][2],1);
+  assert.equal(rows.reason[0][3],3);
+  assert.equal(rows.reason[0][4],1);
+  assert.equal(rows.unlinked[0][7],'요양개시일 미연결');
+  assert.deepEqual(Array.from(rows.flows[0].items,item=>item.visit.dateKey),['2026-10-31','2026-11-07']);
+  assert.match(run('adjustmentFlowText(adjustmentBreakdown(getRates()).flows[0])'),/직전 동일 코드 7일/);
+  run("selectRateTab('flow'); renderRates()");
+  assert.match(context.rateFlowList.innerHTML,/결과 미확인/);
+  assert.match(context.rateFlowList.innerHTML,/3,000원/);
+  context.rateSearch.value='LA358 + KK090';
+  assert.equal(run('adjustmentBreakdown(getRates()).combo.length'),1);
 });
