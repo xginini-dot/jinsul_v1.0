@@ -53,6 +53,15 @@ body:before{
 }
 .card:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(189,169,139,.13),transparent 42%);pointer-events:none}
 .card>*{position:relative;z-index:1}
+#denialPage>.review-section.card{padding:0!important}
+.review-section>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px clamp(16px,2vw,28px);cursor:pointer;list-style:none;font-size:clamp(16px,2vw,22px);font-weight:800;color:var(--text)}
+.review-section>summary::-webkit-details-marker{display:none}
+.review-section>summary::after{content:"";width:9px;height:9px;flex:none;margin-right:3px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);opacity:.65}
+.review-section[open]>summary::after{transform:rotate(225deg)}
+.review-section>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.review-section>summary:hover{background:var(--panel2)}
+.review-body{padding:4px clamp(16px,2vw,28px) 24px}
+.review-body>p:first-child{margin-top:0}
 .hero{background:linear-gradient(135deg,rgba(17,24,39,.96),rgba(26,26,26,.88) 58%,rgba(63,52,36,.72));border-color:rgba(189,169,139,.45)}
 html[data-theme="light"] .hero{background:linear-gradient(135deg,#fff,#fffaf2 58%,#f3eadc)}
 .top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
@@ -198,9 +207,32 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
     <button class="page-tab" data-page="denialPage">③ 심사조정 · 지급불능 · 간격</button>
   </div>
   <div id="denialPage" class="page-view">
-    <div class="card" id="reviewPanel">
-      <div class="sectionTitle"><div><h2>심사결과와 차단술 간격 비교</h2>
-      <p class="hint">같은 진료일의 처방량, 실제 심사결과와 간격 모의계산을 함께 확인합니다.</p></div></div>
+    <details class="card review-section" id="allAdjustPanel">
+      <summary>전체 기간 실제 심사조정</summary>
+      <div class="review-body">
+        <p class="hint">위 조회기간과 관계없이 업로드한 심사조정 자료 전체를 표시합니다. 요양개시일이 연결되지 않은 LA 상세도 확인할 수 있습니다.</p>
+        <div class="summary" id="allAdjustSummary" aria-live="polite"></div>
+        <div class="filters">
+          <div class="field"><label for="allAdjustSearch">수진자 · 명일련 · 조정 코드 검색</label><input id="allAdjustSearch" placeholder="예: LA358"></div>
+          <div class="field"><label for="allAdjustInsurance">보험유형</label><select id="allAdjustInsurance"><option value="all">전체</option><option>건강보험</option><option>의료급여</option><option>자동차보험</option><option>산재</option><option>미분류</option></select></div>
+        </div>
+        <div class="actions"><button type="button" class="btn" id="allAdjustDownload" disabled>전체 기간 조정 엑셀 다운로드</button></div>
+        <div class="tableWrap"><table id="allAdjustTable"></table></div>
+        <div class="actions hidden" id="allAdjustPager">
+          <button type="button" class="btn" id="allAdjustPrev">이전</button>
+          <span id="allAdjustPageText" class="hint" aria-live="polite"></span>
+          <button type="button" class="btn" id="allAdjustNext">다음</button>
+        </div>
+        <details style="margin-top:16px"><summary>코드별 실제 조정 원본 합계</summary>
+          <p class="hint">총괄 파일 전체를 보험유형으로 집계합니다. 날짜가 없는 요약도 포함합니다. 같은 파일에 상세가 있으면 상세 행을 사용합니다.</p>
+          <div class="tableWrap"><table id="reviewCodeTable"></table></div>
+        </details>
+      </div>
+    </details>
+    <details class="card review-section" id="reviewPanel">
+      <summary>선택 기간 심사결과와 차단술 간격 비교</summary>
+      <div class="review-body">
+      <p class="hint">같은 진료일의 처방량, 실제 심사결과와 간격 모의계산을 함께 확인합니다.</p>
       <div class="summary six" id="reviewSummary" aria-live="polite"></div>
       <div class="filters">
         <div class="field"><label for="reviewSearch">환자명 · 차트번호 · 코드 검색</label><input id="reviewSearch" placeholder="예: LA358"></div>
@@ -224,13 +256,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
         <p class="hint">선택한 기간과 검색 조건의 처방량입니다. LA 조정액은 요양개시일이 확인된 코드별 상세를 합산합니다.</p>
         <div class="tableWrap"><table id="reviewDoseTable"></table></div>
       </details>
-      <details style="margin-top:16px"><summary>코드별 실제 조정 원본 합계</summary>
-        <p class="hint">총괄 파일의 원본 범위입니다. 날짜가 없는 요약도 포함되므로 위 조회기간과 다를 수 있습니다. 같은 파일에 상세가 있으면 상세 행만 합산합니다.</p>
-        <div class="tableWrap"><table id="reviewCodeTable"></table></div>
-      </details>
-    </div>
-    <div class="card">
-      <div class="sectionTitle"><div><h2>③ 처방별 지급불능 분석</h2><div class="hint">처방 표기는 <b>LA코드 + 부가처방</b> 순서이며, 차단술 총투여량은 LA코드만 합산합니다.</div></div></div>
+      </div>
+    </details>
+    <details class="card review-section" id="payoutPanel">
+      <summary>처방별 지급불능 분석</summary>
+      <div class="review-body">
+      <p class="hint">처방 표기는 <b>LA코드 + 부가처방</b> 순서이며, 차단술 총투여량은 LA코드만 합산합니다.</p>
       <div class="summary six">
         <div class="kpi"><div class="t">전체 처방건</div><div class="v" id="dTotal">0</div></div>
         <div class="kpi"><div class="t">지급불능 매칭건</div><div class="v" id="dMatched">0</div></div>
@@ -266,7 +297,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;margi
       <div id="denial-flow" class="hidden"><div class="actions" style="margin-top:0"><button class="btn primary" type="button" onclick="copyAllPatientFlows()">전체 환자 흐름 보고용 복사</button></div><div class="hint" style="margin:10px 0">환자별 버튼은 해당 환자만, 전체 복사는 현재 검색 조건에 표시된 환자를 모두 복사합니다.</div><div id="denialFlowList"></div></div>
       <div id="denial-insight" class="hidden"><div id="denialInsight"></div></div>
       <div id="denial-unmatched" class="hidden"><div class="tableWrap"><table id="denialUnmatchedTable"></table></div></div>
-    </div>
+      </div>
+    </details>
   </div>
   <div id="laPage" class="page-view active">
   <!-- 기존 기능 유지 -->
@@ -578,9 +610,11 @@ const denialSearch=document.getElementById('denialSearch'),insuranceFilter=docum
 const denialComboTable=document.getElementById('denialComboTable'),denialDetailTable=document.getElementById('denialDetailTable'),denialUnmatchedTable=document.getElementById('denialUnmatchedTable');
 const denialMonthlyTable=document.getElementById('denialMonthlyTable'),denialFlowList=document.getElementById('denialFlowList'),denialInsight=document.getElementById('denialInsight');
 let rawRows=[],months=[],visits=[],currentBaseStats=null,currentComboVisits=[],denialRows=[],denialMatches=[],flowCopyData=[];
-let reviewData={claims:[],details:[],summary:[]}, reviewUpload=0, reviewPage=0;
+let reviewData={claims:[],details:[],summary:[]}, reviewUpload=0, reviewPage=0, allAdjustPage=0;
 const REVIEW_HEADERS=['시행일 / 요양개시일','차트번호','수진자','보험','차단술 코드 · 수량','LA 총투여량','실제 결과','LA 조정 코드','LA 조정액','명세서 조정액','지급불능 청구액','전회 대상 시행 간격(일)','모의 기준일과 간격(일)','간격 모의계산','예상 조정액','조정 내역 · 사유'];
 const REVIEW_DOSE_HEADERS=['LA코드','환자 수','처방 방문','총투여량','환자당 투여량','방문당 투여량','실제 LA 조정 상세 행','실제 LA 조정액','간격 미달 예상 방문'];
+const ALL_ADJUST_HEADERS=['요양개시일','보험','수진자','명일련','묶음번호','LA 조정 코드','LA 조정액','명세서 조정액','조정 내역 · 사유'];
+const REVIEW_CODE_HEADERS=['LA 기본코드','조정 상세 행·요약 건수','조정금액'];
 (function(){
   const saved=localStorage.getItem('jinsul-theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
@@ -605,7 +639,7 @@ document.querySelectorAll('.page-tab').forEach(btn=>btn.addEventListener('click'
   document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active'));
   btn.classList.add('active');document.getElementById(btn.dataset.page).classList.add('active');
-  if(btn.dataset.page==='denialPage')renderReview();
+  if(btn.dataset.page==='denialPage')renderDenial();
   window.scrollTo({top:0,behavior:'smooth'});
 }));
 document.getElementById('editExtraPricesBtn').addEventListener('click',()=>{
@@ -622,6 +656,17 @@ document.getElementById('savePriceBtn').addEventListener('click',e=>{e.stopPropa
 document.getElementById('restorePriceBtn').addEventListener('click',e=>{e.stopPropagation();restoreDefaultPrices()});
 fileInput.addEventListener('change',handleFiles);
 denialInput.addEventListener('change',handleDenialFiles);
+for(const [id,render] of [['allAdjustPanel',renderAllAdjustments],['reviewPanel',renderReview],['payoutPanel',renderDenial]]){
+  const panel=document.getElementById(id);
+  panel.addEventListener('toggle',()=>{if(panel.open)render();});
+}
+['allAdjustSearch','allAdjustInsurance'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{
+  allAdjustPage=0;
+  renderAllAdjustments();
+}));
+document.getElementById('allAdjustPrev').addEventListener('click',()=>{allAdjustPage--;renderAllAdjustments();});
+document.getElementById('allAdjustNext').addEventListener('click',()=>{allAdjustPage++;renderAllAdjustments();});
+document.getElementById('allAdjustDownload').addEventListener('click',exportAllAdjustments);
 ['reviewSearch','reviewInsurance','reviewView','reviewCodes','reviewDays'].forEach(id=>document.getElementById(id).addEventListener('input',()=>renderReview(true)));
 document.getElementById('reviewPrev').addEventListener('click',()=>{reviewPage--;renderReview();});
 document.getElementById('reviewNext').addEventListener('click',()=>{reviewPage++;renderReview();});
@@ -689,6 +734,7 @@ async function handleDenialFiles(e){
   }
   if(upload!==reviewUpload)return;
   reviewData=combinationReview.dedupe(next);
+  allAdjustPage=0;
   denialRows=combinationReview.uniqueClaims(payouts);
   setupInsuranceFilter();matchDenials();
   if(!visits.length && (reviewData.claims.length||denialRows.length))dateStart.disabled=dateEnd.disabled=false;
@@ -1028,6 +1074,78 @@ function prescriptionLabel(v){
   return [...la,...ex].join(' + ');
 }
 function denialRateClass(n){return n>=50?'rate-high':n>=20?'rate-mid':'rate-low'}
+function reviewCodeTotals(insurance){
+  const totals=new Map();
+  for(const item of [...reviewData.details,...reviewData.summary]){
+    if(insurance!=='all'&&item.insurance!==insurance)continue;
+    if(!totals.has(item.code))totals.set(item.code,{code:item.code,count:0,amount:0});
+    const total=totals.get(item.code);
+    total.count+=item.count??1;
+    total.amount+=item.amount;
+  }
+  return [...totals.values()].sort((a,b)=>a.code.localeCompare(b.code));
+}
+function allAdjustReport(){
+  const insurance=document.getElementById('allAdjustInsurance').value||'all';
+  const search=normalizeName(document.getElementById('allAdjustSearch').value);
+  const inInsurance=row=>insurance==='all'||row.insurance===insurance;
+  const actual={claims:reviewData.claims.filter(inInsurance),details:reviewData.details.filter(inInsurance)};
+  const rows=combinationReview.compare(actual,[],[],new Map()).filter(row=>{
+    const identifiers=[row.name,...row.claims.map(claim=>claim.serial),...row.details.flatMap(item=>[item.serial,item.rawCode])];
+    return !search||normalizeName(identifiers.join(' ')).includes(search);
+  });
+  return {rows,codeTotals:reviewCodeTotals(insurance)};
+}
+function allAdjustCells({dateKey,name,claims,details}){
+  const items=[...claims,...details];
+  const distinct=values=>[...new Set(values.filter(Boolean))].join(' · ');
+  const amounts=claims.map(row=>row.adjustment).filter(Number.isFinite);
+  return [
+    dateKey||'날짜 미연결',distinct(items.map(row=>row.insurance)),name,
+    distinct(items.map(row=>row.serial)),distinct(claims.map(row=>row.bundle)),
+    distinct(details.map(row=>row.rawCode)),details.length?details.reduce((sum,row)=>sum+row.amount,0):null,
+    amounts.length?amounts.reduce((sum,amount)=>sum+amount,0):null,distinct(items.map(row=>row.reason))
+  ];
+}
+function renderAllAdjustments(){
+  const get=id=>document.getElementById(id);
+  if(!get('allAdjustPanel').open||!get('denialPage').classList.contains('active'))return;
+  const {rows,codeTotals}=allAdjustReport();
+  const details=rows.flatMap(row=>row.details);
+  const total=details.reduce((sum,row)=>sum+row.amount,0);
+  const cards=[
+    ['심사조정 명세서',fmtInt(rows.reduce((sum,row)=>sum+row.claims.length,0))],
+    ['LA 조정 상세',fmtInt(details.length)],
+    ['LA 상세 조정액',details.length?fmtWon(total):'—'],
+    ['날짜 미연결 LA 상세',fmtInt(rows.reduce((sum,row)=>sum+(row.dateKey?0:row.details.length),0))]
+  ];
+  get('allAdjustSummary').innerHTML=cards.map(([label,value])=>`<div class="kpi"><div class="t">${label}</div><div class="v">${value}</div></div>`).join('');
+  const pageSize=100,pages=Math.max(1,Math.ceil(rows.length/pageSize));
+  allAdjustPage=Math.max(0,Math.min(allAdjustPage,pages-1));
+  const visible=rows.slice(allAdjustPage*pageSize,(allAdjustPage+1)*pageSize);
+  get('allAdjustTable').innerHTML='<thead><tr>'+ALL_ADJUST_HEADERS.map(label=>`<th>${label}</th>`).join('')+'</tr></thead><tbody>'+
+    (visible.length?visible.map(row=>'<tr>'+allAdjustCells(row).map((value,i)=>{
+      const formatted=value===null||value===''?'—':i===6||i===7?fmtWon(value):esc(value);
+      return `<td${i===8?' class="left" style="white-space:normal;min-width:200px"':''}>${formatted}</td>`;
+    }).join('')+'</tr>').join(''):'<tr><td colspan="9" class="empty">조회 결과가 없습니다. 심사조정건조회 또는 코드별조정총괄 파일을 올려주세요.</td></tr>')+'</tbody>';
+  get('allAdjustPrev').disabled=allAdjustPage===0;
+  get('allAdjustNext').disabled=allAdjustPage+1>=pages;
+  get('allAdjustPager').classList.toggle('hidden',pages<2);
+  get('allAdjustPageText').textContent=`${allAdjustPage+1} / ${pages} 페이지 · 전체 ${fmtInt(rows.length)}행`;
+  get('allAdjustDownload').disabled=!rows.length&&!codeTotals.length;
+  get('reviewCodeTable').innerHTML='<thead><tr>'+REVIEW_CODE_HEADERS.map(label=>`<th>${label}</th>`).join('')+'</tr></thead><tbody>'+
+    (codeTotals.length?codeTotals.map(item=>`<tr><td>${item.code}</td><td>${fmtInt(item.count)}</td><td>${fmtWon(item.amount)}</td></tr>`).join(''):
+    '<tr><td colspan="3" class="empty">코드별조정총괄 파일을 올려주세요.</td></tr>')+'</tbody>';
+}
+function exportAllAdjustments(){
+  const {rows,codeTotals}=allAdjustReport();
+  if(!rows.length&&!codeTotals.length)return;
+  const wb=XLSX.utils.book_new();
+  const add=(name,data)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),name);
+  if(rows.length)add('전체기간_실제심사조정',[ALL_ADJUST_HEADERS,...rows.map(allAdjustCells)]);
+  if(codeTotals.length)add('LA_조정_원본합계',[REVIEW_CODE_HEADERS,...codeTotals.map(item=>[item.code,item.count,item.amount])]);
+  XLSX.writeFile(wb,'전체기간_실제심사조정.xlsx');
+}
 function reviewReport(){
   const value=id=>document.getElementById(id).value;
   const days=Number(value('reviewDays'));
@@ -1050,14 +1168,7 @@ function reviewReport(){
       default: return true;
     }
   });
-  const codeTotals=new Map();
-  for(const item of matchedInsurance([...reviewData.details,...reviewData.summary])){
-    if(!codeTotals.has(item.code))codeTotals.set(item.code,{code:item.code,count:0,amount:0});
-    const total=codeTotals.get(item.code);
-    total.count+=item.count??1;
-    total.amount+=item.amount;
-  }
-  return {days,codes,rows,visible,codeTotals:[...codeTotals.values()].sort((a,b)=>a.code.localeCompare(b.code))};
+  return {days,codes,rows,visible,codeTotals:reviewCodeTotals(insurance)};
 }
 function reviewDoseRows(rows){
   const codes=new Map();
@@ -1115,7 +1226,7 @@ function reviewTableCell(value,index){
 function renderReview(resetPage=false){
   const get=id=>document.getElementById(id);
   if(resetPage)reviewPage=0;
-  if(!get('denialPage').classList.contains('active'))return;
+  if(!get('reviewPanel').open||!get('denialPage').classList.contains('active'))return;
   const report=reviewReport(), {rows,visible,codeTotals,days,codes}=report;
   const flagged=rows.filter(row=>row.estimate?.flagged);
   const actual=rows.flatMap(row=>row.claims), details=rows.filter(row=>row.dateKey).flatMap(row=>row.details);
@@ -1149,9 +1260,6 @@ function renderReview(resetPage=false){
   get('reviewDoseTable').innerHTML='<thead><tr>'+REVIEW_DOSE_HEADERS.map(label=>`<th>${label}</th>`).join('')+'</tr></thead><tbody>'+
     (doseRows.length?doseRows.map(row=>'<tr>'+row.map((value,index)=>`<td>${value===null?'—':index===7?fmtWon(value):esc(value)}</td>`).join('')+'</tr>').join(''):
     '<tr><td colspan="9" class="empty">조회 조건에 해당하는 LA 자료가 없습니다.</td></tr>')+'</tbody>';
-  get('reviewCodeTable').innerHTML='<thead><tr><th>LA 기본코드</th><th>조정 상세 행·요약 건수</th><th>조정금액</th></tr></thead><tbody>'+
-    (codeTotals.length?codeTotals.map(item=>`<tr><td>${item.code}</td><td>${fmtInt(item.count)}</td><td>${fmtWon(item.amount)}</td></tr>`).join(''):
-    '<tr><td colspan="3" class="empty">코드별조정총괄 파일을 올려주세요.</td></tr>')+'</tbody>';
 }
 function appendReviewSheets(wb){
   const report=reviewReport();
@@ -1172,8 +1280,9 @@ function appendReviewSheets(wb){
     ...report.codeTotals.map(item=>[item.code,item.count,item.amount,'업로드한 총괄 원본'])]);
 }
 function renderDenial(){
+  renderAllAdjustments();
   renderReview(true);
-  if(!denialComboTable)return;
+  if(!denialComboTable||!document.getElementById('payoutPanel').open||!document.getElementById('denialPage').classList.contains('active'))return;
   const pv=periodVisits(),visitSet=new Set(pv),q=normalizeName(denialSearch?.value||''),ins=insuranceFilter?.value||'all';
   const matchByVisit=new Map();
   denialMatches.forEach(m=>{if(m.visit&&visitSet.has(m.visit)&&(ins==='all'||m.denial.insurance===ins))matchByVisit.set(m.visit,m.denial)});
@@ -1273,6 +1382,7 @@ function restoreDefaultPrices(){
   statusEl.textContent='파일 초기 단가로 복원했습니다. 심평원 최신 수가로 갱신한 것은 아닙니다.';document.getElementById('priceSaveStatus').textContent=statusEl.textContent;
 }
 function renderEmpty(){
+  renderAllAdjustments();
   renderReview(true);
   document.getElementById('missingLaFees').classList.add('hidden');
   codeTable.innerHTML=doseTable.innerHTML='<tbody><tr><td class="empty">엑셀 업로드 후 결과가 표시됩니다.</td></tr></tbody>';
@@ -1286,7 +1396,7 @@ function renderEmpty(){
 }
 function resetAll(){
   reviewUpload++;
-  reviewPage=0;
+  reviewPage=allAdjustPage=0;
   reviewData={claims:[],details:[],summary:[]};
   rawRows=[];months=[];visits=[];currentBaseStats=null;currentComboVisits=[];denialRows=[];denialMatches=[];
   fileInput.value='';denialInput.value='';monthStart.innerHTML='';monthEnd.innerHTML='';monthStart.disabled=monthEnd.disabled=true;
@@ -1294,7 +1404,9 @@ function resetAll(){
   searchInput.value='';typeFilter.value='all';minCount.value=1;matchMode.value='all';comboLaSearch.value='';
   document.querySelectorAll('#extraChecks input').forEach(x=>x.checked=false);
   denialSearch.value='';insuranceFilter.innerHTML='<option value="all">전체</option>';denialView.value='all';denialStatus.textContent='심사자료 미업로드';
-  for(const [id,value] of Object.entries({reviewSearch:'',reviewInsurance:'all',reviewView:'all',reviewCodes:'LA357, LA358, LA359',reviewDays:'14'}))document.getElementById(id).value=value;
+  for(const [id,value] of Object.entries({allAdjustSearch:'',allAdjustInsurance:'all',reviewSearch:'',reviewInsurance:'all',reviewView:'all',reviewCodes:'LA357, LA358, LA359',reviewDays:'14'}))document.getElementById(id).value=value;
+  for(const id of ['allAdjustPanel','reviewPanel','payoutPanel'])document.getElementById(id).open=false;
+  for(const id of ['allAdjustSummary','allAdjustTable','reviewSummary','reviewTable','reviewDoseTable','reviewCodeTable'])document.getElementById(id).replaceChildren();
   statusEl.textContent='엑셀 파일을 선택하면 자동으로 분석합니다.';renderEmpty();
 }
 function exportExcel(){

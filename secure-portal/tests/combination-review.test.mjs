@@ -81,3 +81,36 @@ test('14-day estimate keeps its anchor after short visits and uses history befor
   assert.deepEqual(Array.from(run('reviewDoseRows(reviewReport().visible)[0]')),['LA358',2,3,3.5,1.75,1.17,0,null,1]);
   assert.equal(run("LA_INFO.LA358.price=0; reviewReport().rows.find(row=>row.dateKey==='2026-11-08').estimate.loss"),NaN);
 });
+
+test('all-period actual results and their Excel export keep outside dates and undated code detail',()=>{
+  const {context,run,review}=boot();
+  const health=review.readBook([claimSheet('심사조정건조회','1','2026-10-01')],'건강보험.xlsx');
+  const aid=review.readBook([claimSheet('심사조정건조회','2','2026-11-08')],'의료급여.xlsx');
+  const linked=review.readBook([codesSheet],'건강보험.xlsx').details;
+  context.data={claims:[...health.claims,...aid.claims],details:[...linked,{...linked[0],serial:'3'}],summary:[]};
+  context.dateStart.value='2026-11-01';
+  context.dateEnd.value='2026-11-30';
+  run('reviewData=data; renderAllAdjustments()');
+  assert.equal(context.allAdjustTable.innerHTML,'');
+  assert.equal(run("reviewReport().rows.some(row=>row.dateKey==='2026-10-01')"),false);
+  assert.deepEqual(Array.from(run('allAdjustReport().rows'),row=>row.dateKey),['2026-11-08','2026-10-01','']);
+  context.allAdjustPanel.open=true;
+  run('renderAllAdjustments()');
+  assert.match(context.allAdjustTable.innerHTML,/2026-10-01/);
+  assert.match(context.allAdjustTable.innerHTML,/날짜 미연결/);
+  context.dateEnd.value='2026-09-30';
+  context.allAdjustInsurance.value='건강보험';
+  const sheets={};
+  context.XLSX={utils:{book_new:()=>({}),aoa_to_sheet:a=>a,book_append_sheet:(_wb,rows,name)=>{sheets[name]=rows;}},writeFile(){}};
+  run('exportAllAdjustments()');
+  assert.deepEqual(Array.from(sheets['전체기간_실제심사조정'].slice(1),row=>row[0]),['2026-10-01','날짜 미연결']);
+  assert.equal(sheets['LA_조정_원본합계'][1][2],10000);
+});
+
+test('review panels start collapsed',()=>{
+  for(const id of ['allAdjustPanel','reviewPanel','payoutPanel']){
+    const start=html.match(new RegExp(`<details[^>]*id="${id}"[^>]*>`))?.[0];
+    assert.ok(start);
+    assert.doesNotMatch(start,/\sopen(?:[\s=>]|$)/);
+  }
+});
