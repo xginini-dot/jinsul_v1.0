@@ -14,7 +14,7 @@ export const apps = [
  ['ysarang-Birthday.html','생일자 목록','만 18세 이상 월별 생일자 확인',0],
  ['blockcount.html','차단술 처방량','투여량·처방 횟수 분석',1],
  ['LAcord.html','2주 간격 조정 예상','PDNB·MBB·FJB 매출 변화 예상',1],
- ['ysarang-combination.html','신경차단술 조합','의사랑 조합별 통계·공통 수가',1],
+ ['ysarang-combination.html','신경차단술 조합','처방량·심사조정·지급불능·간격 비교',1],
  ['bit-block.html','비트 차단술','비트 차단술 분석',1],
  ['ysarang-block.html','의사랑 차단술','의사랑 차단술 분석',1],
  ['jinsul-treatment.html','치료유형 분석','주사·차단술·치료별 청구 분석',1],
