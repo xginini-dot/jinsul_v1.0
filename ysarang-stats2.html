@@ -1396,6 +1396,15 @@
             body.light #conversionOutput tr.rate-row td { background:rgba(159,135,100,.08)!important; }
             @media(max-width:760px){ .conversion-note-grid{grid-template-columns:1fr;} }
 
+            #newPatientLists .hint { margin:0 0 12px; }
+            #newPatientLists details { border:1px solid var(--border); border-radius:12px; background:var(--card2); }
+            #newPatientLists details + details { margin-top:10px; }
+            #newPatientLists summary { padding:12px 14px; cursor:pointer; font-weight:700; }
+            #newPatientLists summary strong { margin-left:8px; color:var(--muted); font-size:.9em; white-space:nowrap; }
+            #newPatientLists .patient-list-table { max-height:28rem; overflow:auto; border-top:1px solid var(--border); }
+            #newPatientLists :is(th,td) { white-space:normal; overflow-wrap:anywhere; }
+            #newPatientLists .patient-list-table .hint { margin:0; padding:12px 14px; }
+
             /* ===== 중복 초진·신환 목록 ===== */
             .duplicate-card.is-hidden .duplicate-body { display:none; }
             .daily-card.is-hidden .daily-body { display:none; }
@@ -2871,6 +2880,19 @@ body.jinsul-analysis-open{
                 <div id="output"></div>
             </div>
 
+            <section class="card table-card no-print" id="newPatientLists" hidden aria-labelledby="newPatientListsTitle">
+                <h3 class="card-title" id="newPatientListsTitle">신환 환자 명단</h3>
+                <p class="hint">90초진을 제외한 신환이 대상입니다. 조회 기간 내 초진일부터 내원일과 주사치료일을 각각 세며, 같은 환자의 같은 날짜는 1회로 계산합니다. 주사치료는 외래 내원일과 일치하는 주사 파일 기록을 사용합니다.</p>
+                <details id="singleVisitPatients">
+                    <summary>1회 내원 환자 <strong id="singleVisitPatientCount"></strong></summary>
+                    <div id="singleVisitPatientOutput" class="patient-list-table"></div>
+                </details>
+                <details id="singleInjectionPatients">
+                    <summary>1회 주사치료 환자 <strong id="singleInjectionPatientCount"></strong></summary>
+                    <div id="singleInjectionPatientOutput" class="patient-list-table"></div>
+                </details>
+            </section>
+
             <div class="card table-card" id="drCarmCard" style="display:none"><h3 class="card-title"><span>💉 진료실별 씨암 · 기타주사</span><span class="toolbar no-print"><button type="button" id="drCountBtn">초진환자 횟수 분포</button><button type="button" id="drGapBtn">주사간격 분포</button><button type="button" onclick="copyTable('#drCarmOutput')">📋 복사</button><button type="button" onclick="drExportTable('drCarmOutput','의사랑_씨암_기타주사.xlsx')">엑셀 다운로드</button><button type="button" onclick="openFullTable('#drCarmOutput','씨암 · 기타주사')">전체화면</button></span></h3><p class="hint" id="drCarmNote"></p><div id="drCarmOutput" style="overflow:auto"></div><div style="margin-top:24px"><h3 class="card-title"><span>📅 진료실별 근무일수</span><span class="toolbar no-print"><label for="drWorkMode">기록 기준</label><select id="drWorkMode"><option value="first">신환(초진) 기록이 있는 날</option><option value="all">신환 + 재진 기록이 있는 날</option></select><button type="button" onclick="copyTable('#drWorkOutput')">📋 복사</button><button type="button" onclick="drExportTable('drWorkOutput','의사랑_진료실별_근무일수.xlsx')">엑셀 다운로드</button></span></h3><p class="hint" id="drWorkNote"></p><div id="drWorkOutput" style="overflow:auto"></div></div></div>
 
             <div class="card table-card daily-card is-hidden" id="dailyCard">
@@ -3840,6 +3862,51 @@ body.jinsul-analysis-open{
                 return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
             }
 
+            function renderPatientListTable(headers, rows){
+                if (!rows.length) return '<p class="hint">해당 환자가 없습니다.</p>';
+                const head = headers.map(label => `<th scope="col">${label}</th>`).join('');
+                const body = rows.map(row => `<tr>${row.map(value => `<td>${escapeDuplicateText(value)}</td>`).join('')}</tr>`).join('');
+                return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+            }
+
+            function renderNewPatientLists(initialEvents, visitDates, injectionDates){
+                const initialByPatient = new Map();
+                for (const event of initialEvents) {
+                    if (event.finalClass !== '초진') continue;
+                    const previous = initialByPatient.get(event.id);
+                    if (!previous || event.date < previous.date) initialByPatient.set(event.id, event);
+                }
+
+                const newPatients = Array.from(initialByPatient.values()).sort((a, b) =>
+                    a.date.localeCompare(b.date) || a.id.localeCompare(b.id, 'ko', {numeric:true}));
+                const onceVisits = [];
+                const onceInjections = [];
+                for (const patient of newPatients) {
+                    const visits = Array.from(visitDates.get(patient.id) || []).filter(date => date >= patient.date);
+                    const injections = Array.from(injectionDates.get(patient.id) || []).filter(date => date >= patient.date);
+                    const row = [patient.id, patient.name || '—', patient.date, patient.room];
+                    if (visits.length === 1) onceVisits.push(row);
+                    if (injections.length === 1) onceInjections.push([...row, injections[0], visits.length]);
+                }
+
+                const columns = ['차트번호', '환자명', '초진일', '진료실'];
+                $('#singleVisitPatientCount').textContent = `${onceVisits.length.toLocaleString('ko-KR')}명`;
+                $('#singleVisitPatientOutput').innerHTML = renderPatientListTable(columns, onceVisits);
+                $('#singleInjectionPatientCount').textContent = `${onceInjections.length.toLocaleString('ko-KR')}명`;
+                $('#singleInjectionPatientOutput').innerHTML = renderPatientListTable([...columns, '주사치료일', '내원 횟수'], onceInjections);
+                $('#newPatientLists').hidden = false;
+            }
+
+            function clearNewPatientLists(){
+                $('#newPatientLists').hidden = true;
+                $('#singleVisitPatients').open = false;
+                $('#singleInjectionPatients').open = false;
+                $('#singleVisitPatientCount').textContent = '';
+                $('#singleInjectionPatientCount').textContent = '';
+                $('#singleVisitPatientOutput').innerHTML = '';
+                $('#singleInjectionPatientOutput').innerHTML = '';
+            }
+
             function daysBetweenISO(a,b){
                 if(!a || !b) return null;
                 const da=new Date(a+'T12:00:00'), db=new Date(b+'T12:00:00');
@@ -4379,6 +4446,7 @@ function renderInjectionMatchNote(summary){
                     });
                 });
 
+                renderNewPatientLists(allInitialEvents, visitDates, injectionDates);
                 if (!outpatientRecords.length) {
                     window.__latestStats = [];
                     window.__latestByAge = [];
@@ -4608,6 +4676,7 @@ function renderInjectionMatchNote(summary){
             [['outpatientFiles','outpatientFilesName'],['injectionFiles','injectionFilesName'],['carmFiles','carmFilesName']].forEach(([inputId,nameId])=>{
                 $('#'+inputId).addEventListener('change',()=>{
                     window.__latestFileMap=null;
+                    clearNewPatientLists();
                     window.newPatientAgePrepare?.(null);
                     window.__weeklyContext=null;
                     $('#weeklyOpenBtn').disabled=true;
@@ -4621,6 +4690,7 @@ function renderInjectionMatchNote(summary){
 
             $('#clearBtn').addEventListener('click', () => {
                 window.__latestFileMap = null;
+                clearNewPatientLists();
                 window.__weeklyContext = null;
                 $('#weeklyOpenBtn').disabled = true;
                 $('#outpatientFiles').value = '';
